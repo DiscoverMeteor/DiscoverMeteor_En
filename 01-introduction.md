@@ -1,0 +1,105 @@
+---
+title: Introduction
+slug: introduction
+date: 0001/01/01
+number: 1
+points: 10
+photoUrl: http://www.flickr.com/photos/62303607@N00/7779436538/
+photoAuthor: Richard
+contents: Learn what makes Meteor special.|Read about the story of this book.|Learn how this book is organized.
+---
+
+Do a little mental experiment for me. Imagine you're opening the same folder in two different windows on your computer. 
+
+Now click inside one of the two windows and delete a file. Did the file disappear from the other window as well?
+
+You don't need to actually do these steps to know that it did. When we modify something on our local filesystems, the change is applied everywhere without the need for refreshes or callbacks. It just happens. 
+
+However, let's think about how the same scenario would play out on the web. For example, let's say you opened the same WordPress site admin in two browser windows and then created a new post in one of them. Unlike on the desktop, no matter how long you wait, the other window won't reflect the change unless you refresh it. 
+
+Over the years, we've gotten used to the idea that a website is something that you only communicate with in short, separate bursts. 
+
+But Meteor is part of a new wave of frameworks and technologies that are looking to challenge the status quo by making the web real-time and reactive.
+
+### What is Meteor?
+
+Meteor is a platform built on top of Node.js for building real-time web apps. It's what sits between your app's database and its user interface and makes sure that both are kept in sync.
+
+Since it's built on Node.js, Meteor uses JavaScript on both the client and on the server. What's more, Meteor is also able to share code between both environments. 
+
+The result of all this is a platform that manages to be very powerful and very simple by abstracting away many of the usual hassles and pitfalls of web app development.
+
+### Why Meteor?
+
+So why should you spend your time learning Meteor rather than another web framework? Leaving aside all the various features of Meteor, we believe it boils down to one thing: Meteor is easy to learn.
+
+More so than any other framework, Meteor makes it possible to get a real-time web app up and running on the web in a matter of hours. And if you've ever done front-end development before, you'll already be familiar with JavaScript and won't even need to learn a new language.
+
+Meteor might be the ideal framework for your needs, or then again it might not. But since you can get started over the course of a few evenings or a week-end, why not try it and find out for yourself?
+
+### Why This Book?
+
+For the past 6 months, we've been working on [Telescope](http://telesc.pe), an open-source Meteor app that lets anybody create their own social news site (think [Reddit](http://reddit.com) or [Hacker news](http://news.ycombinator.com)), where people can submit links and vote on them.
+
+We learned a ton building the app, but it wasn't always easy to find the answers to our questions. We had to piece things together from many different sources, and in many cases even invent our own solutions. So with this book, we wanted to share all those lessons, and create a simple step-by-step guide that will walk you through building a full-fledged Meteor app from scratch. 
+
+The app we're building is a slightly simplified version of Telescope, which we call Microscope. While building it, we'll address all the different elements that go into building a Meteor app, such as user accounts, Meteor collections, routing, and more. 
+
+And after you're done reading the book, if you want to go further you'll be able to easily understand the code of Telescope, since it follows the same patterns. 
+
+### About the Authors
+
+In case you're wondering who we are and why you should trust us, here is a little more background on both of us.  
+
+<%= image "tom-photo.jpg", "portrait" %>
+
+**Tom Coleman** is one part of [Percolate Studio](http://percolatestudio.com/), a web development shop with a focus on quality and user experience. He's also the co-creator of [Meteorite](https://github.com/oortcloud/meteorite) and the [Atmosphere](http://atmosphere.meteor.com) package repository, and is also behind many other Meteor open-source projects (such as the [Router](https://github.com/tmeasday/meteor-router)).
+
+<%= image "sacha-photo.jpg", "portrait" %>
+
+**Sacha Greif** has worked with startups such as [Hipmunk](http://hipmunk.com) and [RubyMotion](http://rubymotion.com) as a product and web designer. He's the creator of [Telescope](http://telesc.pe) and [Sidebar](http://sidebar.io) (which is based on Telescope), and is also the founder of [Folyo](http://folyo.me).
+
+### Chapters & Sidebars
+
+We wanted this book to be useful both for the novice Meteor user and the advanced programmer, so we split the chapters into two categories: regular chapters (numbered 1 through 14) and sidebars (.5 numbers).
+
+Regular chapters will walk you through building the app, and will try to get you operational as soon as possible by explaining the most important steps without bogging you down with too much detail.
+
+On the other hand, sidebars will go deeper into Meteor's intricacies, and will help you get a better understanding of what's really going on behind the scenes.
+
+So if you're a beginner, feel free to skip the sidebars on your first read, and come back to them later on once you've played around with Meteor. 
+
+### Commits & Live Instances
+
+There's nothing worse than following along in a programming book and suddenly realizing your code has gotten out of sync with the examples and that nothing works like it should anymore. 
+
+To prevent this, we've set up [a GitHub repository for Microscope](https://github.com/SachaG/Microscope), and we'll also provide direct links to git commits every few code changes. Additionally, each commit also links to a live instance of the app at this particular commit, so you can compare it with your local copy. Here's an example of what that will look like:
+
+<%= commit "11-2", "Display notifications in the header." %>
+
+But note that just because we provide these commits doesn't mean you should just go from one `git checkout` to the next. You will learn much better if you take the time to manually type out your app's code!
+
+### A Few Other Resources
+
+If you ever want to learn more about a particular aspect of Meteor, the [official Meteor documentation](http://docs.meteor.com/) is the best place to start. 
+
+We also recommend [Stack Overflow](http://stackoverflow.com/questions/tagged/meteor) for troubleshooting and questions, and the #meteor [IRC channel](https://webchat.freenode.net/) if you need live help. 
+
+<% note do %>
+
+### Do I Need Git?
+
+While being familiar with Git version control is not strictly necessary to follow along with this book, we strongly recommend it. 
+
+If you want to get up to speed, we recommend Nick Farina's [Git Is Simpler Than You Think](http://nfarina.com/post/9868516270/git-is-simpler). 
+
+If you're a Git novice, we also recommend the [GitHub for Mac](http://mac.github.com/) app, which lets you clone and manage repos without using the command line. 
+
+<% end %>
+
+### Getting in Touch
+
+- If you'd like to get in touch with us, you can email us at [hello@discovermeteor.com](mailto:hello@discovermeteor.com).
+- Additionally, if you find a typo or another mistake in the book's contents, you can let us know by [submitting a bug in this GitHub repo](https://github.com/DiscoverMeteor/book/issues). 
+- If you have a problem with Microscope's code, you can [submit a bug in Microscope's repository](https://github.com/DiscoverMeteor/Microscope/issues).
+- Finally, for every other question you can also just leave us a comment in this app's side panel. 

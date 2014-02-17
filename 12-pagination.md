@@ -1,0 +1,475 @@
+---
+title: Pagination
+slug: pagination
+date: 0012/01/01
+number: 12
+points: 10
+photoUrl: http://www.flickr.com/photos/ikewinski/8625379401/
+photoAuthor: Mike Lewinski
+contents: Learn more about Meteor's subscriptions, and how we can use them to control data.|Implement infinite-style pagination.|Use the `iron-router-progress` package to implement a nifty iOS-style progress bar.|Create a special subscription to deal with direct links to posts page.
+---
+
+Things are looking great with Microscope, and we can expect a hit reception when it's released to the world. 
+
+So we should probably think a little about the performance implication of the number of new posts that will be entered into the site as it takes off!
+
+We've spoken before about how a client-side collection should contain a subset of the data on the server, and we've even managed to achieve this for our notification and comments collections. 
+
+At present though, we are still publishing all of our posts in one go, to all connected users. Eventually, if thousands of links are posted, this will become problematic. To solve this, we need to paginate our posts.
+
+### Adding More Posts
+
+First, in our fixture data, let's load up enough posts so that pagination actually makes sense:
+
+~~~js
+// Fixture data 
+if (Posts.find().count() === 0) {
+
+  //...
+  
+  Posts.insert({
+    title: 'The Meteor Book',
+    userId: tom._id,
+    author: tom.profile.name,
+    url: 'http://themeteorbook.com',
+    submitted: now - 12 * 3600 * 1000,
+    commentsCount: 0
+  });
+  
+  for (var i = 0; i < 10; i++) {
+    Posts.insert({
+      title: 'Test post #' + i,
+      author: sacha.profile.name,
+      userId: sacha._id,
+      url: 'http://google.com/?q=test-' + i,
+      submitted: now - i * 3600 * 1000,
+      commentsCount: 0
+    });
+  }
+}
+~~~
+<%= caption "server/fixtures.js" %>
+<%= highlight "15~24" %>
+
+After running `meteor reset`, you should now get something like this: 
+
+<%= screenshot "12-1", "Displaying dummy data. " %>
+
+<%= commit "12-1", "Added enough posts that pagination is necessary." %>
+
+### Infinite Pagination
+
+We'll be implementing an "infinite" style pagination. What we mean by that is that we'll first show, say, 10 posts on the screen, with a “load more” link pinned at the bottom. Clicking this link will add 10 more posts to the lists, and so on *ad infinitum*. This means we can control our entire pagination system with a single parameter representing the number of posts to display onscreen. 
+
+Now we'll need a way to tell the server about this parameter so that it knows how many posts to send up to the client. It so happens that we're already subscribing to the `posts` publication in the router, so we'll take advantage of this and let the router handle our pagination as well. 
+
+The easiest way to set this up is simply to make the posts limit parameter part of the path, giving us URLs of the form `http://localhost:3000/25`. An added bonus of using the URL over other methods is that if you are currently displaying 25 posts and happen to reload the browser window by mistake, you'll still be seeing 25 posts once the page loads again.
+
+In order to do this properly, we'll need to change the way we subscribe to posts. Just like we previously did in the *Comments* chapter, we'll need to move our subscription code from the *router* level to the *route* level. 
+
+This might all be a lot to take in at once, but it will become clearer with the code.
+
+First, we'll stop subscribing to the `posts` publication in the `Router.configure()` block. Just delete `Meteor.subscribe('posts'),`, leaving only the `notifications` subscription:
+
+~~~js
+Router.configure({
+  layoutTemplate: 'layout',
+  loadingTemplate: 'loading',
+  waitOn: function() { 
+    return [Meteor.subscribe('notifications')]
+  }
+});
+~~~
+<%= caption "lib/router.js" %>
+<%= highlight "5" %>
+
+We'll then add a `postsLimit` parameter to the route's path. Adding a `?` after the parameter name means that it's optional. So our route will not only match `http://localhost:3000/50`, but also plain old `http://localhost:3000`. 
+
+~~~js
+Router.map(function() {
+  //...
+  
+  this.route('postsList', {
+    path: '/:postsLimit?'
+  });
+});
+~~~
+<%= caption "lib/router.js" %>
+<%= highlight "5" %>
+
+It's important to note that a path of the form `/:parameter?` will match every possible path. Since each route will be parsed successively to see if it matches the current path, we need to make sure we organize our routes in order of decreasing specificity.
+
+In other words, routes that target more specific routes like `/posts/:_id` should come first, and our `postsList` route should be moved to the bottom of the file since it pretty much matches everything,
+
+It's now time to tackle the tough problem of subscribing and finding the right data. We need to deal with the case where the `postsLimit` parameter isn't present, so we'll assign it a default value. We'll use “5” to really give us enough room to play around with pagination.
+
+~~~js
+Router.map(function() {
+  //..
+  
+  this.route('postsList', {
+    path: '/:postsLimit?',
+    waitOn: function() {
+      var postsLimit = parseInt(this.params.postsLimit) || 5; 
+      return Meteor.subscribe('posts', {sort: {submitted: -1}, limit: postsLimit});
+    }
+  });
+});
+~~~
+<%= caption "lib/router.js" %>
+<%= highlight "6~9" %>
+
+You'll notice we're now passing a JavaScript object ({limit: postsLimit}) along with the name of our `posts` publication. This object will serve as the `options` parameter for the server side `Posts.find()` statement. Let's switch over to our server-side code to implement this:
+
+~~~js
+Meteor.publish('posts', function(options) {
+  return Posts.find({}, options);
+});
+
+Meteor.publish('comments', function(postId) {
+  return Comments.find({postId: postId});
+});
+
+Meteor.publish('notifications', function() {
+  return Notifications.find({userId: this.userId});
+});
+~~~
+<%= caption "server/publications.js" %>
+<%= highlight "1~3" %>
+
+<% note do %>
+
+### Passing Parameters
+
+Our publications code is in effect telling the server it can trust any JavaScript object sent by the client (in our case, `{limit: postsLimit}`) to serve as the `find()` statement's `options`. This makes it possible for users to submit any options they'd like via the browser console.
+
+In our case, this is relatively harmless, since all a user could do is reorder posts differently, or change the limit (which is what we want to enable in the first place). 
+
+But you shouldn't use this pattern when storing private data on unpublished fields, since the user could manipulate the `fields` option to access it, and you should probably also avoid using it for the `find()` statement's selector argument for the same security reasons. 
+
+A more secure pattern could be passing the individual parameters themselves instead of the whole object, to make sure you stay in control of your data:
+
+~~~js
+Meteor.publish('posts', function(sort, limit) {
+  return Posts.find({}, {sort: sort, limit: limit});
+});
+~~~
+
+<% end %>
+
+Now that we're subscribing at the route level, it would also make sense to set the data context in the same place. We'll deviate a bit from our previous pattern and make the `data` function return a JavaScript object instead of simply returning a cursor. This lets us create a *named* data context, which we'll call `posts`. 
+
+What this means is simply that instead of being implicitely available as `this` inside the template, our data context will be available at `posts`. Apart from this small element, the code should feel familiar:
+
+~~~js
+Router.map(function() {
+  this.route('postsList', {
+    path: '/:postsLimit?',
+    waitOn: function() {
+      var limit = parseInt(this.params.postsLimit) || 5; 
+      return Meteor.subscribe('posts', {sort: {submitted: -1}, limit: limit});
+    },
+    data: function() {
+      var limit = parseInt(this.params.postsLimit) || 5; 
+      return {
+        posts: Posts.find({}, {sort: {submitted: -1}, limit: limit})
+      };
+    }
+  });
+  
+  //..
+});
+~~~
+<%= caption "lib/router.js" %>
+<%= highlight "8~13" %>
+
+Now that we're setting the data context at the router level we can safely get rid of the `posts` template helper inside the `posts_list.js` file. And since we named our data context `posts` (the same name as the helper), we don't even need to touch our `postsList` template!
+
+Let's recap. Here's what our new and improved `router.js` code should look like:
+
+~~~js
+Router.configure({
+  layoutTemplate: 'layout',
+  loadingTemplate: 'loading',
+  waitOn: function() { 
+    return [Meteor.subscribe('notifications')]
+  }
+});
+
+Router.map(function() {
+  //...
+
+  this.route('postsList', {
+    path: '/:postsLimit?',
+    waitOn: function() {
+      var limit = parseInt(this.params.postsLimit) || 5; 
+      return Meteor.subscribe('posts', {sort: {submitted: -1}, limit: limit});
+    },
+    data: function() {
+      var limit = parseInt(this.params.postsLimit) || 5; 
+      return {
+        posts: Posts.find({}, {sort: {submitted: -1}, limit: limit})
+      };
+    }
+  });
+});
+~~~
+<%= caption "lib/router.js" %>
+<%= highlight "5, 11~21" %>
+
+<%= commit "12-2", "Augmented the postsList route to take a limit." %>
+
+Let's give our brand new pagination system a try. We now have the ability to display an arbitrary number of posts on the homepage simply by changing the URL parameter. For example, try accessing `http://localhost:3000/3`. You should now see something like this:
+
+<%= screenshot "12-2", "Controlling the number of posts on the homepage. " %>
+
+<% note do %>
+
+### Why Not Pages?
+
+Why are we using an “infinite pagination” approach instead of showing successive pages with 10 posts each, like what Google does for search results? This is actually due to the real-time paradigm embraced by Meteor. 
+
+Let's imagine we are paginating our `Posts` collection using the Google results pagination pattern, and that we're currently on page 2, which shows posts 10 to 20. What happens if another users deletes any of the previous 10 posts?
+
+Since our app is real-time, our dataset would change. Post 10 would now become post 9, and drop out of our view, while post 11 would now be in range. The end result would be that the user would suddenly see their posts change for no apparent reason!
+
+Even if we tolerated this UX quirk, traditional pagination is also hard to implement for technical reasons. 
+
+Let's go back to our previous example. We're publishing posts 10 to 20 from the `Posts` collection, but how would you find those posts on the client? You can't pick posts 10 to 20, as there are only ten posts altogether in the client-side data set. 
+
+One solution would simply be to publish those 10 posts on the server, and then do a `Posts.find()` client-side to pick up *all* published posts.
+
+This works if you only have a single subscription. But what if you start to have more than one post subscription, as we'll do soon? 
+
+Let's say one subscription asks for posts 10 to 20, and another one for posts 30 to 40. You now have 20 posts loaded client-side in total, with no way of knowing which ones belong to which subscription. 
+
+For all these reasons, traditional pagination just doesn't make much sense when working with Meteor. 
+
+<% end %>
+
+### Creating a Route Controller
+
+You might have noticed that we're repeating the `var limit = parseInt(this.params.postsLimit) || 5;` line twice. Plus, hard-coding the number “5” isn't exactly ideal. This is not the end of the world, but since it's always better to follow the DRY (Don't Repeat Yourself) principle if you can, let's see how we can refactor things a bit. 
+
+We'll introduce a new aspect of Iron Router, *Route Controllers*. A route controller is simply a way to group routing features together in a nifty reusable package that any route can inherit from. Right now we'll only use it for a single route, but you'll see in the next chapter how this feature will come in handy. 
+
+~~~js
+PostsListController = RouteController.extend({
+  template: 'postsList',
+  increment: 5, 
+  limit: function() { 
+    return parseInt(this.params.postsLimit) || this.increment; 
+  },
+  findOptions: function() {
+    return {sort: {submitted: -1}, limit: this.limit()};
+  },
+  waitOn: function() {
+    return Meteor.subscribe('posts', this.findOptions());
+  },
+  data: function() {
+    return {posts: Posts.find({}, this.findOptions())};
+  }
+});
+
+Router.map(function() {
+  //...
+
+  this.route('postsList', {
+    path: '/:postsLimit?',
+    controller: PostsListController
+  });
+});
+~~~
+<%= caption "lib/router.js" %>
+
+Let's go through step. First, we're creating our controller by extending `RouteController`. We then set the `template` property just like we did before, and then a new `increment` property. 
+
+We then define a new `limit` function which will return the current limit, and a `findOptions` function which will return an options object. This might seem like an extra step, but we'll make use of it later on.
+
+Next, we define our `waitOn` and `data` functions just like before, except they're now making use of our new `findOptions` function. 
+
+The last thing to do is to tell the `postsList` route to route to our brand new controller, with the `controller` property. 
+
+<%= commit "12-3", "Refactored postsLists route into a RouteController." %>
+
+### Adding A Load More Link
+
+We have a working pagination, and our code is looking good. There's just one problem: there's no way to actually *use* that pagination except by changing the URL manually. This definitely doesn't make for great user experience, so let's get to work on fixing this. 
+
+What we want to do is simple enough. We'll add a “load more” button at the bottom of our posts list, which will increment the number of posts currently displayed by 5 every time it's clicked. So if I'm currently on the URL `http://localhost:3000/5`, clicking “load more” should bring me to `http://localhost:3000/10`. If you've made it this far in the book, we trust you can handle a little arithmetic!
+
+As before, we'll add our pagination logic in our route. Remember when we explicitely named our data context rather than just use an anonymous cursor? Well, there's no rule that says the `data` function can only pass cursors, so we'll use the same technique to generate the URL of our “load more” button.
+
+~~~js
+PostsListController = RouteController.extend({
+  template: 'postsList',
+  increment: 5, 
+  limit: function() { 
+    return parseInt(this.params.postsLimit) || this.increment; 
+  },
+  findOptions: function() {
+    return {sort: {submitted: -1}, limit: this.limit()};
+  },
+  waitOn: function() {
+    return Meteor.subscribe('posts', this.findOptions());
+  },
+  posts: function() {
+    return Posts.find({}, this.findOptions());
+  },
+  data: function() {
+    var hasMore = this.posts().fetch().length === this.limit();
+    var nextPath = this.route.path({postsLimit: this.limit() + this.increment});
+    return {
+      posts: this.posts(),
+      nextPath: hasMore ? nextPath : null
+    };
+  }
+});
+~~~
+<%= caption "lib/router.js" %>
+<%= highlight "16~23" %>
+
+Let's take a deeper look at this bit of router magic. Remember that the `postsList` route (which will inherit from the `PostsListController` controller we're currently working on) takes a `postsLimit` parameter.
+
+So when we feed `{postsLimit: this.limit() + this.increment}` to `this.route.path()`, we're telling the `postsList` route to build its own path using that JavaScript object as data context. 
+
+In other words, this is exactly the same thing as using the `{{pathFor 'postsList'}}` Handlebars helper, except we're replacing the implicit `this` by our own custom-made data context.
+
+We're taking that path and adding it to the data context for our template, but *only* if there are more posts to display. The way we do that is a bit tricky. 
+
+We know that `this.limit()` returns the current number of posts we'd like to show, which can either be the value in the current URL, or our default value (5) if the URL doesn't contain any parameter. 
+
+On the other hand, `this.posts` refers to the current cursor, so `this.posts.fetch().length` refers to the number of posts that are actually in the cursor.
+
+So what we're saying here is that if we ask for `n` posts and we get `n` back, we'll keep showing the “load more” button. But if we ask for `n` and we get *less* than `n` back, then it means we've hit the limit and we should stop showing that button. 
+
+That being said, our system fails in one case: when the number of items in our database is *exactly* `n`. If that happens, the client will ask for `n` posts and get `n` posts back and keep showing the “load more” button, unaware that there are no more items left.
+
+Sadly, there are no simple workarounds to this problem, so for now we'll have to settle with this less-than-perfect implementation.
+
+All that's left to do is to add the “load more” link at the bottom of our posts list, making sure to only show it if we actually have more posts to load:
+
+~~~html
+<template name="postsList">
+  <div class="posts">
+    {{#each posts}}
+      {{> postItem}}
+    {{/each}}
+    
+    {{#if nextPath}}
+      <a class="load-more" href="{{nextPath}}">Load more</a>
+    {{/if}}
+  </div>
+</template>
+~~~
+<%= caption "client/views/posts/posts_list.html" %>
+<%= highlight "7~10" %>
+
+Here's what your post list should now look like:
+
+<%= screenshot "12-3", "The “load more” button. " %>
+
+<%= commit "12-4", "Added nextPath() to the controller and use it to step through posts." %>
+
+
+<% note do %>
+
+### Count vs Length
+
+You might be wondering why we used `this.posts.fetch().length` instead of the saner `this.posts.count()`. This is simply a temporary workaround to deal with [a bug](https://github.com/meteor/meteor/issues/654) present in Meteor at the time of writing. Let's hope it's fixed soon!
+
+<% end %>
+
+### A Better Progress Bar
+
+Our pagination is now working properly, but it suffers from an annoying quirk: every time we click “load more” and the router asks for more posts, we're sent to the `loading` template while we wait for the new data to come in. The result is that we're sent back to the top of the page every time and need to scroll all the way back down to resume our browsing. 
+
+It would be much, much better if we could stay on the same page all throughout the operation, while still providing some kind of indication that new data is currently being loaded. Thankfully, that's precisely what the `iron-router-progress` package is for. 
+
+Similar to iOS's Safari or sites like Medium and YouTube, `iron-router-progress` adds a thin loading bar at the top of the screen. Implementing it is as easy as adding the package to your app:
+
+~~~bash
+mrt add iron-router-progress
+~~~
+<%= caption "bash console" %>
+
+Through the magic of smart packages, our new progress indicator will work perfectly right out of the box! The progress bar will activate for each route, and automatically complete once the route's required data is done loading. 
+
+We'll just do a single tweak. Let's disable `iron-router-progress` for the `postSubmit` route since it doesn't need to wait for any subscription data (after all, it's just an empty form):
+
+~~~js
+Router.map(function() {
+ 
+  //...
+  
+  this.route('postSubmit', {
+    path: '/submit',
+    disableProgress: true
+  });
+});
+~~~
+<%= caption "lib/router.js" %>
+<%= highlight "7" %>
+
+<%= commit "12-5", "Use the iron-router-progress package to make pagination nicer." %>
+
+### Accessing Any Post
+
+We're currently loading the five newest post by default, but what happens once someone browses to a post's individual page?
+
+<%= screenshot "12-4", "An empty template." %>
+
+If you try it, you'll be faced with an empty post template. This makes sense: we've told the router to subscribe to the `posts` publication when loading the `postsList` route, but we haven't told it what to do about the `postPage` route. 
+
+But so far, all we know how to do is subscribe to a list of the `n` latest posts. How do we ask the server for a single specific post? We'll let you in on a little secret here: you can have more than one publication for each collection! 
+
+So to get our missing posts back, we'll simply make a new, separate `singlePost` publication that only publishes one post, identified by `_id`. 
+
+~~~js
+Meteor.publish('posts', function(options) {
+  return Posts.find({}, options);
+});
+
+Meteor.publish('singlePost', function(id) {
+  return id && Posts.find(id);
+});
+~~~
+<%= caption "server/publications.js" %>
+<%= highlight "5~7" %>
+
+Now, let's subscribe to the right posts client-side. We were already subscribing to the `comments` publication on the `postPage` route's `waitOn` function, so we can simply add the subscription to `singlePost` in there. And let's not forget to also add our subscription to the `postEdit` route, since it also needs the same data:
+
+~~~js
+Router.map(function() {
+
+  //...
+    
+  this.route('postPage', {
+    path: '/posts/:_id',
+    waitOn: function() {
+      return [
+        Meteor.subscribe('singlePost', this.params._id),
+        Meteor.subscribe('comments', this.params._id)
+      ];
+    },
+    data: function() { return Posts.findOne(this.params._id); }
+  });
+
+  this.route('postEdit', {
+    path: '/posts/:_id/edit',
+    waitOn: function() { 
+      return Meteor.subscribe('singlePost', this.params._id);
+    },
+    data: function() { return Posts.findOne(this.params._id); }    
+  });
+  
+  /...
+
+});
+~~~
+<%= caption "lib/router.js" %>
+<%= highlight "7~12,18~20" %>
+
+<%= commit "12-6","Use a single post subscription to ensure that we can always see the right post." %>
+
+With pagination done, our app no longer suffers from scaling problems, and users are sure to contribute even more links than before. So wouldn't it be nice to have a way to somehow rank those links? This is precisely the topic of the next chapter, *Voting*. 

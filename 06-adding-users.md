@@ -1,0 +1,173 @@
+---
+title: Adding Users
+slug: adding-users
+date: 0006/01/01
+number: 6
+points: 10
+photoUrl: http://www.flickr.com/photos/kroqert/9687074783/
+photoAuthor: Bård Harald Krogen
+contents: Learn about user accounts in Meteor.|Add all the authentication we'll need for Microscope.|Use the built-in accounts-ui package to get an instant user interface.
+---
+
+So far, we've managed to create and display some static fixture data in a sensible fashion and wire it together into a simple prototype. 
+
+We've even seen how our UI is responsive to changes in the data, and inserted or changed data appears immediately. Still, our site is hamstrung by the fact that we can't enter data. In fact, we don't even have users yet! 
+
+Let's see how we can fix that.
+
+### Accounts: users made simple
+
+In most web frameworks, adding user accounts is a familiar drag. Sure, you have to do it on almost every project, but it's never as easy as it could be. What's more, as soon as you have to deal with OAuth or other 3rd party authentication schemes, things tend to get ugly fast.
+
+Luckily, Meteor has you covered. Thanks to the way Meteor packages can contribute code on both the server (JavaScript) and client (JavaScript, HTML, and CSS) side, we can get an accounts system almost for free. 
+
+We could just use Meteor's built-in UI for accounts (with `mrt add accounts-ui`) but since we've built our whole app with Bootstrap, we'll use the `accounts-ui-bootstrap-dropdown` package instead (don't worry, the only difference is the styling). On the command line, we type:
+
+~~~bash
+$ mrt add accounts-ui-bootstrap-dropdown
+$ mrt add accounts-password
+~~~
+<%= caption "Terminal" %>
+
+Those two commands make the special accounts templates available to us; we can include them in our site using the `{{loginButtons}}` helper. A handy tip: you can control on which side your log-in dropdown shows up using the `align` attribute (for example: `{{loginButtons  align="right"}}`).
+
+We'll add the buttons to our header. And since that header is starting to grow larger, let's give it more room in its own template (we'll put it in `client/views/includes/`). We're also using some extra markup and Bootstrap classes to make sure everything looks nice:
+
+~~~html
+<template name="layout">
+  <div class="container">
+    {{>header}}
+    <div id="main" class="row-fluid">
+      {{yield}}
+    </div>
+  </div>
+</template>
+~~~
+<%= caption "client/views/application/layout.html" %>
+<%= highlight "6" %>
+
+~~~html
+<template name="header">
+  <header class="navbar">
+    <div class="navbar-inner">
+      <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </a>
+      <a class="brand" href="{{pathFor 'postsList'}}">Microscope</a>
+      <div class="nav-collapse collapse">
+        <ul class="nav pull-right">
+          <li>{{loginButtons}}</li>
+        </ul>
+      </div>
+    </div>
+  </header>
+</template>
+~~~
+<%= caption "client/views/includes/header.html" %>
+
+Now, when we browse to our app, we see the accounts login buttons in the top right hand corner of our site.
+
+<%= screenshot "6-1", "Meteor's built-in accounts UI" %>
+
+We can use these to sign up, log in, request a change of password, and everything else that a simple site needs for password-based accounts.
+
+To tell our accounts system that we want users to log-in via a username, we simply add an `Accounts.ui` config block in a new `config.js` file inside `client/helpers/`:
+
+~~~js
+Accounts.ui.config({
+  passwordSignupFields: 'USERNAME_ONLY'
+});
+~~~
+<%= caption "client/helpers/config.js" %>
+
+<%= commit "6-1", "Added accounts and added template to the header" %>
+
+### Creating Our First User
+
+Go ahead and sign up for an account: the "Sign in" button will change to show your username. This confirms that a user account has been created for you. But where is that user account data coming from? 
+
+By adding the `accounts` package, Meteor has created a special new collection, which can be accessed at `Meteor.users`. To see it, open your browser console and type:
+
+~~~js
+❯ Meteor.users.findOne();
+~~~
+<%= caption "Browser console" %>
+
+The console should return an object representing your user object; if you take a look, you can see that your username is in there, as well as an `_id` that uniquely identifies you. Note that you can also get the currently logged-in user with `Meteor.user()`.
+
+Now log out and sign up again with a different username. `Meteor.user()` should now return a second user. But wait, let's run:
+
+~~~js
+❯ Meteor.users.find().count();
+1
+~~~
+<%= caption "Browser console" %>
+
+The console returns 1. Hold on, shouldn't that be 2? Has the first user been deleted? If you try logging in as that first user again, you'll see that's not the case.
+
+Let's make sure and check in the canonical data-store, the Mongo database. We'll log into Mongo (`meteor mongo` in your terminal) and check:
+
+~~~bash
+> db.users.count()
+2
+~~~
+<%= caption "Mongo console" %>
+
+There are definitely two users. So why can we only see a single one at a time in the browser?
+
+### A Mystery Publication!
+
+If you think back to Chapter 4, you might remember that by turning off `autopublish`, we stopped collections from automatically sending all the data from the server into each connected client's local version of the collection.  We needed to create a publication and subscription pair to channel the data across. 
+
+Yet we never set up any kind of user publication. So how come we can even see any user data at all?
+
+The answer is that the accounts package actually does "auto-publish" the currently logged in user's basic account details no matter what. If it didn't, then that user could never log in to the site!
+
+The accounts package only publishes the *current* user though. This explains why one user can't see another's account details.
+
+So the publication is only publishing one user object per logged-in user (and none when you are not logged in).
+
+What's more, documents in our user collection don't seem to contain the same fields on the server and on the client. In Mongo, a user has a lot of data in it. To see it, just go back to your Mongo terminal and type:
+
+~~~bash
+> db.users.findOne()
+{
+	"createdAt" : 1365649830922,
+	"_id" : "kYdBd9hr3fWPGPcii",
+	"services" : {
+		"password" : {
+			"srp" : {
+				"identity" : "qyFCnw4MmRbmGyBdN",
+				"salt" : "YcBjRa7ArXn5tdCdE",
+				"verifier" : "df2c001edadf4e475e703fa8cd093abd4b63afccbca48fad1d2a0986ff2bcfba920d3f122d358c4af0c287f8eaf9690a2c7e376d701ab2fe1acd53a5bc3e843905d5dcaf2f1c47c25bf5dd87764d1f58c8c01e4539872a9765d2b27c700dcdedadf5ac82521467356d3f91dbeaf9848158987c6d359c5423e6b9cabf34fa0b45"
+			}
+		},
+		"resume" : {
+			"loginTokens" : [
+				{
+					"token" : "BMHipQqjfLoPz7gru",
+					"when" : 1365649830922
+				}
+			]
+		}
+	},
+	"username" : "tmeasday"
+}
+~~~
+<%= caption "Mongo console" %>
+
+On the other hand, in the browser the user object is much more pared down, as you can see by typing the equivalent command:
+
+~~~js
+❯ Meteor.users.findOne();
+Object {_id: "kYdBd9hr3fWPGPcii", username: "tmeasday"}
+~~~
+<%= caption "Browser console" %>
+
+This example shows us how a local collection can be a *secure subset* of the real database. The logged-in user only sees enough of the real dataset to get the job done (in this case, signing in). This is a useful pattern to learn from, as you'll see later on. 
+
+That doesn't mean you can't make more user data public if you want to. You can refer to the [Meteor docs](http://docs.meteor.com/#meteor_users) to see how to optionally publish more fields in the `Meteor.users` collection.
+
+

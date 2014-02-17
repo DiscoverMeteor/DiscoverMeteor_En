@@ -1,0 +1,223 @@
+---
+title: Errors
+slug: errors
+date: 0009/01/01
+number: 9
+points: 10
+photoUrl: http://www.flickr.com/photos/ikewinski/9413892879/
+photoAuthor: Mike Lewinski
+contents: Create a better mechanism for displaying errors and messages.|Learn how to use `Template.rendered` to know when a user has seen an error.|Use a router filter to make sure errors are only seen once.
+---
+
+Merely using the browser's standard `alert()` dialog to warn the user when there's problem with their submission is a bit dissatisfying, and it certainly doesn't make for great UX. We can do better. 
+
+Instead, let's build a more versatile error reporting mechanism that will do a better job of telling the user what's going on without breaking up their flow.
+
+### Introducing Local Collections
+
+We are going to implement a simple system which keeps track of which errors a user has seen and displays the new ones in a "flash" area of the site. This UX pattern is useful when we want to inform a user that something has happened without disrupting their workflow too much.
+
+What we will create is similar to the flash messages often found in Ruby on Rails apps, but is more subtle in that it's implemented client side and knows when a user has seen a message.
+
+To start off with, we create a collection to store our errors in. Given that the errors are only relevant to the current session and don't need to be persistent in any way, we are going to do something new, and create a _local collection_. What this means is that the `Errors` collection will only exist in the browser, and will make no attempt to synchronize with the server.
+
+To achieve this, we simply create the error in a client-only file, with the collection name set to `null`. We create a `throwError` function that simply inserts an error into our new local collection:
+
+~~~js
+// Local (client-only) collection
+Errors = new Meteor.Collection(null);
+~~~
+<%= caption "client/helpers/errors.js" %>
+
+Now that the collection has been created, we can add a `throwError` function which we'll call to add errors to it. We don't need to worry about `allow` or `deny` or anything like that, as this is a local collection and will not be saved to the Mongo database.
+
+~~~js
+throwError = function(message) {
+  Errors.insert({message: message})
+}
+~~~
+<%= caption "client/helpers/errors.js" %>
+
+The advantage of using a local collection to store the errors is that, like all collections, it's reactive -- meaning we can declaratively display the errors in the same way we display any other collection data.
+
+### Displaying errors
+
+We are going to display the errors at the top of our main layout:
+
+~~~html
+<template name="layout">
+  <div class="container">
+    {{> header}}
+    {{> errors}}
+    <div id="main" class="row-fluid">
+      {{yield}}
+    </div>
+  </div>
+</template>
+~~~
+<%= caption "client/views/application/layout.html" %>
+<%= highlight "7" %>
+
+Let's now create the `errors` and `error` templates in `errors.html`:
+
+~~~html
+<template name="errors">
+  <div class="errors row-fluid">
+    {{#each errors}}
+      {{> error}}
+    {{/each}}
+  </div>
+</template>
+
+<template name="error">
+  <div class="alert alert-error">
+    <button type="button" class="close" data-dismiss="alert">&times;</button>
+    {{message}}
+  </div>
+</template>
+~~~
+<%= caption "client/views/includes/errors.html" %>
+
+<% note do %>
+
+### Twin Templates
+
+You'll notice we're putting two templates in a single file. Up to now we've tried to adhere to a "one file, one template" convention, but as far as Meteor is concerned putting all our templates in a single file works just as well (although it would make for a very confusing `main.html`!).
+
+In this case, since both error templates are fairly short, we'll make an exception and put them in the same file to make our repo a bit cleaner. 
+
+<% end %>
+
+We just need to integrate our template helper, and we'll be good to go!
+
+~~~js
+Template.errors.helpers({
+  errors: function() {
+    return Errors.find();
+  }
+});
+~~~
+<%= caption "client/views/includes/errors.js" %>
+
+<%= commit "9-1", "Basic error reporting." %>
+
+### Creating errors
+
+We now know how to display errors, but we still need to create some before we'll see anything. Errors are most commonly triggered by users entering new content, so we'll check for errors in our post creation callback, and display a message for any errors that get raised.
+
+In addition, if we get the `302` error (which indicates that a post with the same URL already exists), we'll redirect the user to the existing post. We obtain the existing post's `_id` from `error.details` (remember we passed that post's `_id` as the third `details` argument of our `Error` class in chapter 7). 
+
+~~~js
+Template.postSubmit.events({
+  'submit form': function(e) {
+    e.preventDefault();
+    
+    var post = {
+      url: $(e.target).find('[name=url]').val(),
+      title: $(e.target).find('[name=title]').val(),
+      message: $(e.target).find('[name=message]').val()
+    }
+    
+    Meteor.call('post', post, function(error, id) {
+      if (error) {
+        // display the error to the user
+        throwError(error.reason);
+        
+        if (error.error === 302)
+          Router.go('postPage', {_id: error.details})
+      } else {
+        Router.go('postPage', {_id: id});
+      }
+    });
+  }
+});
+~~~
+<%= caption "client/views/posts/post_submit.js" %>
+<%= highlight "12~14, 16~21" %>
+
+<%= commit "9-2", "Actually use the error reporting." %>
+
+Give it a try: try creating a post and entering the URL `http://meteor.com`. As this URL is already attached to a post in the fixtures, you should see:
+
+<%= screenshot "9-1", "Triggering an error" %>
+
+### Clearing Errors
+
+Now you might have tried clicking the error's close button. If you did, you would see the error disappear, only to return as soon as you loaded another page. What's going on?
+
+That close button triggers Twitter Bootstrap's embedded JavaScript: it has nothing to do with Meteor! So what's happening is that Bootstrap is removing the error `<div>` from the DOM, but not from the Meteor collection. Meaning the error will of course pop right back up as soon as Meteor re-renders the page. 
+
+So unless we want errors relentlessly coming back from the dead to remind users of past mistakes and slowly drive them to insanity, we better add a way to remove errors from the collection, too.  
+
+First, we'll modify the `throwError` function to include a `seen` property. This will be useful later on to keep track of whether an error has been actually seen by the user. 
+
+Once that's done, we can code up a simple `clearErrors` function that clears those "seen" errors:
+
+~~~js
+// Local (client-only) collection
+Errors = new Meteor.Collection(null);
+
+throwError = function(message) {
+  Errors.insert({message: message, seen: false})
+}
+
+clearErrors = function() {
+  Errors.remove({seen: true});
+}
+~~~
+<%= caption "client/helpers/errors.js" %>
+<%= highlight "5,8~10" %>
+
+Next, we'll clear errors in the router so that navigating to another page will make these errors vanish forever:
+
+~~~js
+// ...
+
+Router.before(requireLogin, {only: 'postSubmit'})
+Router.before(function() { clearErrors() });
+~~~
+<%= caption "lib/router.js" %>
+<%= highlight "4" %>
+
+In order for our `clearErrors()` function to do its job, errors need to be marked as `seen`. To do this properly, there's one edge case we need to take care of: when we throw up an error and then redirect the user somewhere else (as we do when they try to post a duplicate link), the redirection happens instantly. This means that the user never has the chance to actually see the error before it's cleared. 
+
+This is where our `seen` property will come in handy. We need to ensure that it's only set to `true` if the user has actually seen the error. 
+
+To achieve this, we'll use `Meteor.defer()`. This function tells Meteor to execute its callback "just after" whatever's going on now. If it helps, you can consider that `defer()` is like telling the browser to wait 1 millisecond before proceeding. 
+
+What we're doing is telling Meteor to set `seen` to `true` 1 millisecond after the `errors` template has been rendered. But remember how we said that redirection happens instantly? This means that the redirection will kick in before the `defer` callback, which will never have a chance to be executed.
+
+This is exactly what we want: if it's not executed our error will not be marked as `seen`, which means it won't be cleared, which means it'll appear on the page our user is redirected to just like we wanted!
+
+~~~js
+Template.errors.helpers({
+  errors: function() {
+    return Errors.find();
+  }
+});
+
+Template.error.rendered = function() {
+  var error = this.data;
+  Meteor.defer(function() {
+    Errors.update(error._id, {$set: {seen: true}});
+  });
+};
+~~~
+<%= caption "client/views/includes/errors.js" %>
+<%= highlight "7~12" %>
+
+<%= commit "9-3", "Monitor which errors have been seen, and clear on routing." %>
+
+The `rendered` callback triggers once our template has been rendered in the browser. Inside the callback, `this` refers to the current template instance, and `this.data` lets us access the data of the object that is currently being rendered (in our case, an error).
+
+Whew! That was a lot of work for something users will hopefully never see!
+
+<% note do %>
+
+### The `rendered` callback
+
+A template's `rendered` callback triggers every time it's rendered in the browser. This of course includes the first time it pops up on the screen, but it's important to remember that the callback will also fire every time the template is re-rendered, e.g. every time any of its data changes.
+
+Rendered callbacks will typically fire at least twice: first when the app initially loads, and a second time once collection data has been loaded. So you should be careful when putting any code that shouldn't fire twice (such as an alert, or analytics event tracking code) in them.
+
+<% end %>

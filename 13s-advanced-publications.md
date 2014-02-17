@@ -1,0 +1,195 @@
+---
+title: Advanced Publications
+slug: advanced-publications
+date: 0013/01/02
+number: 13.5
+points: 10
+sidebar: true
+photoUrl: http://www.flickr.com/photos/ikewinski/8390558986/
+photoAuthor: Mike Lewinski
+contents: Learn more advanced patterns for manipulating publications.|See just how flexible publications and subscriptions can get. 
+---
+
+By now you should have a good grasp of how publications and subscriptions interact. So let's get rid of the training wheels and examine a few more advanced scenarios.
+ 
+### Publishing a Collection Multiple Times
+
+In [our first sidebar about publications](/chapter/publications-and-subscriptions/), we saw some of the more common publication and subscription patterns, and we learned how the `_publishCursor` function made them very easy to implement for our own sites.
+
+First, let's recall what `_publishCursor` does for us exactly: it takes all the documents that match a given cursor, and pushes them down into the client-side collection *of the same name*. Notice that the name of the _publication_ is in no way involved.
+
+This means we can have _more than one publication_ linking the client and server versions of any collection.
+
+We've already encountered this pattern in our [pagination chapter](/chapter/pagination/), when we published a paginated subset of all the posts in addition to the currently displayed post. 
+
+Another similar use case is to publish an *overview* of a large set of documents, as well as the full details of a single item:
+
+<%= diagram "doublecollection", "Publishing a collection twice", "pull-center" %>
+
+~~~js
+Meteor.publish('allPosts', function() {
+  return Posts.find({}, {fields: {title: true, author: true}});
+});
+
+Meteor.publish('postDetail', function(postId) {
+  return Posts.find(postId);
+});
+~~~
+
+Now when the client subscribes to those two publications (using `autorun` to ensure that the right `postId` is being sent to the `postDetail` subscription), its `'posts'` collection gets populated from two sources: a list of titles and author's names from the first subscription, and the full details of a post from the second.
+
+You may realise that the post published by `postDetail` is also being published by `allPosts` (although with only a subset of its properties). However, Meteor takes care of the overlap by merging the fields and ensuring there is no duplicate post.
+
+This is great, because now when we render the list of post summaries, we are dealing with data objects that have just enough data for us to show what we need. However, when we render out the page for a single post, we have everything we need to show it. Of course, we need to take care on the client to not expect all fields to be available on all posts in this case -- this is a common gotcha!
+
+It should be noted that you're not limited to varying document properties. You could very well publish the same properties in both publications, but order items differently.
+
+~~~js
+Meteor.publish('newPosts', function(limit) {
+  return Posts.find({}, {sort: {submitted: -1}, limit: limit});
+});
+
+Meteor.publish('bestPosts', function(limit) {
+  return Posts.find({}, {sort: {votes: -1, submitted: -1}, limit: limit});
+});
+~~~
+<%= caption "server/publications.js" %>
+
+### Subscribing to a Publication Multiple Times
+
+We've just seen how you can publish a single collection more than once. It turns out you can accomplish a very similar result with another pattern: creating a single publication, but *subscribing* to it multiple times. 
+
+In Microscope, we subscribe to the `posts` publication multiple times, but Iron Router sets up and tears down each subscription for us. Yet there's no reason why we couldn't subscribe multiple times *simultaneously*. 
+
+For example, let's say we wanted to load both the newest and best posts in memory at the same time:
+
+<%= diagram "subscribetwice", "Subscribing twice to one publication", "pull-center" %>
+
+We're setting up a single publication:
+
+~~~js
+Meteor.publish('posts', function(options) {
+  return Posts.find({}, options);
+});
+~~~
+
+And we then subscribe to this publication multiple times. In fact this is more or less exactly what we're doing in Microscope:
+
+~~~js
+Meteor.subscribe('posts', {submitted: -1, limit: 10});
+Meteor.subscribe('posts', {baseScore: -1, submitted: -1, limit: 10});
+~~~
+
+So what's happening here exactly? Each browser is opening up *two* different subscriptions, each connecting to the *same* publication on the server. 
+
+Each subscription provides different arguments to that publication, but fundamentally, each time a (different) set of documents is being plucked from the `posts` collection and sent down the wire to the client-side collection.
+
+### Multiple Collections in a Single Subscription
+
+Unlike more traditional relational databses like MySQL which make use of *joins*, NoSQL databases like Mongo are all about *denormalizing* and *embedding*. Let's see how that works in the context of Meteor.
+
+Let's look at a concrete example. We've added comments to our posts, and so far, we've been happy to only publish the comments on the single post that the user is looking at. 
+
+However, suppose we wanted to show comments on *all* the posts on the front page (keeping in mind that these posts will change as we paginate through them). This use case presents a good reason for embedding comments in posts, and in fact is what pushed us to denormalize comment *counts*.
+
+Of course we could always just embed comments in posts, getting rid of the `Comments` collection altogether. But like we previously saw in the *Denormalization* chapter, by doing so we would be losing some of the extra benefits of working with separate collections. 
+
+But it turns out there's a trick involving subscriptions that makes it possible to embed our comments while preserving separate collections. 
+
+Let's suppose that along with our front-page list of posts, we want to subscribe to a list of the top 2 comments for each post. 
+
+It would be difficult to accomplish this with an independent comments publication, especially if the list of posts was limited in some way (say, the 10 most recent). We'd have to write a publication that looked something like this:
+
+<%= diagram "multiplecollections", "Two collections in one subscription", "pull-center" %>
+
+~~~js
+Meteor.publish('topComments', function(topPostIds) {
+  return Comments.find({postId: topPostIds});
+});
+~~~
+
+This would be a problem from a performance standpoint, as the publication would need to get torn down and re-established each time the list of `topPostIds` changed. 
+
+There is a way around this though. We just use the fact that we can not only have more than one *publication* per *collection*, but we can also have more than one *collection* per *publication*:
+
+~~~js
+Meteor.publish('topPosts', function(limit) {
+  var sub = this, commentHandles = [], postHandle = null;
+  
+  // send over the top two comments attached to a single post
+  function publishPostComments(post) {
+    var comments = Comments.find({postId: post._id}, {limit: 2});
+    commentHandles[post._id] = comments.observe({
+      added: function(id, comment) {
+        sub.added('comments', id, comment);
+      }
+      // etc, see _publishCursor (in the Meteor core source code) for hints
+    });
+  }
+    
+  postHandle = Posts.find({}, {limit: limit}).observe({
+    added: function(id, post) {
+      publishPostComments(post);
+      sub.added('posts', id, post);
+    },
+    removed: function(id) {
+      // stop observing changes on the post's comments
+      commentHandles[id] && commentHandles[id].stop();
+      // delete the post
+      sub.removed('posts', id, _.keys(oldPost));
+    }
+    // etc, see _publishCursor for hints
+  });
+  
+  sub.ready();
+  
+  // make sure we clean everything up
+  sub.onStop(function() {
+    postsHandle.stop();
+    _.each(commentHandles, function(h) { h.stop(); });
+  });
+});
+~~~
+
+Note that we aren't returning anything in this publication, as we manually send messages to the `sub` ourselves (via `.added()` and friends). So we don't need to ask `_publishCursor` to do it for us by returning a cursor.
+
+Now, every time we publish a post we also automatically publish the top two comments attached to it. And all with a single subscription call!
+
+Although Meteor doesn't make this approach very straightforward yet, you can also look into the `publish-with-relations` package on Atmosphere, which aims to make this pattern easier to use.
+
+### Linking different collections
+
+What else can our newfound knowledge of the flexibility of subscriptions give us? Well, if we don't use `_publishCursor`, we don't need to follow the constraint that the source collection on the server needs to have the same name as the target collection on the client.
+
+<%= diagram "linkedcollections", "One collection for two subscriptions", "pull-center" %>
+
+One reason why we would want to do this is *Single Table Inheritance*. 
+
+Suppose that we wanted to reference various types of objects from our posts, each of which stored common fields but also differed slightly in content. For example, we could be building a Tumblr-like blogging engine where each post possesses the usual ID, timestamp, and title; but in addition can also feature an image, video, link, or just text.
+
+We could store all these objects in a single `'resources'` collection, using a `type` attribute to indicate which sort of object they are. (`video`, `image`, `link`, etc.).
+
+And although we'd have a single `Resources` collection on the server, we could  transform that single collection into multiple `Videos`, `Images`, etc. collections on the client with the following bit of magic:
+
+~~~js
+  Meteor.publish('videos', function() {
+    var sub = this;
+    
+    var handle = Resources.find({type: 'video'}).observe({
+      added: function(id, video) {
+        sub.added('videos', id, video);
+      }
+      // for other events, see _publishCursor for hints.
+    })
+    
+    // mark complete, clean up when stopped
+    sub.ready();
+    
+    sub.onStop(function() { handle.stop(); });
+  });
+~~~
+
+
+We are basically doing what `_publishCursor` does, but rather than publishing from `'resources'` to `'resources'`, instead we are publishing from `'resources'` to `'videos'`. 
+
+Is it a good idea to be doing this? It's not our place to judge. In any case, it's good to know what's possible in order to use Meteor to its fullest!

@@ -1,0 +1,269 @@
+---
+title: Editing Posts
+slug: editing-posts
+date: 0008/01/01
+number: 8
+points: 10
+photoUrl: http://www.flickr.com/photos/ikewinski/9473337133/
+photoAuthor: Mike Lewinski
+contents: Add a form for editing your posts.|Set up edit permissions.|Restrict which properties can be edited.
+---
+
+Now that we can create posts, the next step is being able to edit and delete them. While the UI code to do so is fairly simple, this is a good time to talk about how Meteor manages user permissions. 
+
+Let's first hook up our router. We'll add a route to access the post edit page and set its data context:
+
+~~~js
+Router.configure({
+  layoutTemplate: 'layout'
+});
+
+Router.map(function() {
+  this.route('postsList', {path: '/'});
+
+  this.route('postPage', {
+    path: '/posts/:_id',
+    data: function() { return Posts.findOne(this.params._id); }
+  });
+
+  this.route('postEdit', {
+    path: '/posts/:_id/edit',
+    data: function() { return Posts.findOne(this.params._id); }
+  });
+
+  this.route('postSubmit', {
+    path: '/submit'
+  });
+});
+
+var requireLogin = function() {
+  if (! Meteor.user()) {
+    if (Meteor.loggingIn())
+      this.render('loading')
+    else
+      this.render('accessDenied');
+  
+    this.stop();
+  }
+}
+
+Router.before(requireLogin, {only: 'postSubmit'});
+~~~
+<%= caption "lib/router.js" %>
+<%= highlight "12~15" %>
+
+### The Post Edit Template
+
+We can now focus on the template. Our `postEdit` template will be a fairly standard form:
+
+~~~html
+<template name="postEdit">
+  <form class="main">
+    <div class="control-group">
+        <label class="control-label" for="url">URL</label>
+        <div class="controls">
+            <input name="url" type="text" value="{{url}}" placeholder="Your URL"/>
+        </div>
+    </div>
+
+    <div class="control-group">
+        <label class="control-label" for="title">Title</label>
+        <div class="controls">
+            <input name="title" type="text" value="{{title}}" placeholder="Name your post"/>
+        </div>
+    </div>
+
+    <div class="control-group">
+        <div class="controls">
+            <input type="submit" value="Submit" class="btn btn-primary submit"/>
+        </div>
+    </div>
+    <hr/>
+    <div class="control-group">
+        <div class="controls">
+            <a class="btn btn-danger delete" href="#">Delete post</a>
+        </div>
+    </div>
+  </form>
+</template>
+~~~
+<%= caption "client/views/posts/post_edit.html" %>
+
+And here's the `post_edit.js` manager that goes with it:
+
+~~~js
+Template.postEdit.events({
+  'submit form': function(e) {
+    e.preventDefault();
+    
+    var currentPostId = this._id;
+    
+    var postProperties = {
+      url: $(e.target).find('[name=url]').val(),
+      title: $(e.target).find('[name=title]').val()
+    }
+    
+    Posts.update(currentPostId, {$set: postProperties}, function(error) {
+      if (error) {
+        // display the error to the user
+        alert(error.reason);
+      } else {
+        Router.go('postPage', {_id: currentPostId});
+      }
+    });
+  },
+  
+  'click .delete': function(e) {
+    e.preventDefault();
+    
+    if (confirm("Delete this post?")) {
+      var currentPostId = this._id;
+      Posts.remove(currentPostId);
+      Router.go('postsList');
+    }
+  }
+});
+~~~
+<%= caption "client/views/posts/post_edit.js" %>
+
+By now most of that code should be familiar to you. First, we have our template helper that fetches the current post and passes it on to the template. 
+
+We then have two template event callbacks: one for the form's `submit` event, and one for the delete link's `click` event. 
+
+The delete callback is extremely simple: suppress the default click event, then ask for confirmation. If you get it, obtain the current post ID from the Template's data context, delete it, and finally redirect the user to the homepage. 
+
+The update callback is a little longer, but not much more complicated. After suppressing the default event and getting the current post, we get the new form field values from the page and store them in a `postProperties` object. 
+
+We then pass this object to Meteor's `Collection.update()` Method, and use a callback that either displays an error if the update failed, or sends the user back to the post's page if the update succeeded. 
+
+### Adding Links
+
+We should also add edit links to our posts so that users have a way to access the post edit page:
+
+~~~html
+<template name="postItem">
+  <div class="post">
+    <div class="post-content">
+      <h3><a href="{{url}}">{{title}}</a><span>{{domain}}</span></h3>
+      <p>
+        submitted by {{author}}
+        {{#if ownPost}}<a href="{{pathFor 'postEdit'}}">Edit</a>{{/if}}
+      </p>
+    </div>
+    <a href="{{pathFor 'postPage'}}" class="discuss btn">Discuss</a>
+  </div>
+</template>
+~~~
+<%= caption "client/views/posts/post_item.html" %>
+<%= highlight "5~8" %>
+
+Of course, we don't want to show you an edit link to somebody else's form. This is where the `ownPost` helper comes in:
+
+~~~js
+Template.postItem.helpers({
+  ownPost: function() {
+    return this.userId == Meteor.userId();
+  },
+  domain: function() {
+    var a = document.createElement('a');
+    a.href = this.url;
+    return a.hostname;
+  }
+});
+~~~
+<%= caption "client/views/posts/post_item.js" %>
+<%= highlight "2~4" %>
+
+<%= screenshot "8-1", "Post edit form." %>
+
+<%= commit "8-1", "Added edit posts form." %>
+
+Our post edit form is looking good, but you won't be able to actually edit anything right now. What's going on?
+
+### Setting Up Permissions
+
+Since we've previously removed the `insecure` package, all client-side modifications are currently being denied. 
+
+To fix this, we'll set up some permission rules. First, create a new `permissions.js` file inside `lib`. This loads our permissions logic first (and is available in both environments):
+
+~~~js
+// check that the userId specified owns the documents
+ownsDocument = function(userId, doc) {
+  return doc && doc.userId === userId;
+}
+~~~
+<%= caption "lib/permissions.js" %>
+
+In the [Creating Posts](/chapter/creating-posts) chapter, we got rid of the `allow()` Methods because we were only inserting new posts via a server Method (which bypasses `allow()` anyway). 
+
+But now that we're editing and deleting posts from the client, let's go back to `posts.js` and add this `allow()` block:
+
+~~~js
+Posts = new Meteor.Collection('posts');
+
+Posts.allow({
+  update: ownsDocument,
+  remove: ownsDocument
+});
+
+
+Meteor.methods({
+  ...
+~~~
+<%= caption "collections/posts.js" %>
+<%= highlight "3~6" %>
+
+<%= commit "8-2", "Added basic permission to check the post's owner." %>
+
+### Limiting Edits
+
+Just because you can edit your own posts, doesn't mean you should be able to edit *every* property. For example, we don't want users to be able to create a post and then assign it to somebody else. 
+
+We use Meteor's `deny()` callback to ensure users can only edit specific fields: 
+
+~~~js
+Posts = new Meteor.Collection('posts');
+
+Posts.allow({
+  update: ownsDocument,
+  remove: ownsDocument
+});
+
+Posts.deny({
+  update: function(userId, post, fieldNames) {
+    // may only edit the following two fields:
+    return (_.without(fieldNames, 'url', 'title').length > 0);
+  }
+});
+~~~
+<%= caption "collections/posts.js" %>
+<%= highlight "8~13" %>
+
+<%= commit "8-3", "Only allow changing certain fields of posts." %>
+
+We're taking the `fieldNames` array that contains a list of the fields being modified, and using [Underscore](http://underscorejs.org/)'s `without()` Method to return a sub-array containing the fields that are *not* `url` or `title`. 
+
+If everything's normal, that array should be empty and its length should be 0. If someone is trying anything funky, that array's length will be 1 or more, and the callback will return `true` (thus denying the update).
+
+<% note do %>
+
+### Method Calls vs Client-side Data Manipulation
+
+To create posts, we are using a `post` Method, whereas to edit and delete them, we are calling `update` and `remove` directly on the client and limiting access via `allow` and `deny`. 
+
+When it is appropriate to do one and not the other?
+
+When things are relatively straightforward and you can adequately express your rules via `allow` and `deny`, it's usually simpler to do things directly from the client. 
+
+Directly manipulating the database from the client creates the perception of immediacy, and can make for a better user experience as long as you remember to handle failure cases gracefully (i.e. when the server comes back saying the change didn't succeed after all).
+
+However, as soon as you start needing to do things that should be outside the user's control (such as timestamping a new post or assigning it to the correct user), it's probably better to use a Method.
+
+Method calls are also more appropriate in a few other scenarios:
+
+- When you need to know or return values via callback rather than waiting for the reactivity and synchronization to propagate. 
+- For heavy database functions that would be too expensive to ship a large collection over. 
+- To summarize or aggregate data (e.g. count, average, sum). 
+
+<% end %>
+

@@ -1,0 +1,249 @@
+---
+title: Notifications
+slug: notifications
+date: 0011/01/01
+number: 11
+points: 10
+photoUrl: http://www.flickr.com/photos/ikewinski/8719868039/
+photoAuthor: Mike Lewinski
+contents: Add a notifications collection to notify users of other user's actions.|Learn how to only share the relevant notifications with a given user.|Learn more about Meteor publications and subscriptions.
+---
+
+Now that users can comment on each other's posts, it'd be good to let them know that a conversation has begun. 
+
+To do so, we'll notify the post's owner that there's been a comment on their post, and provide them with a link to view that comment.
+
+This is the kind of feature where Meteor really shines: because Meteor is realtime by default, we'll be displaying those notifications _instantly_. We don't need to wait for the user to refresh the page or check in any way, we can simply pop new notifications up without ever writing any special code. 
+
+### Creating notifications
+
+We'll create a notification when someone comments on your posts. In the future, notifications could be extended to cover many other scenarios, but for now this will be enough to keep users informed of what's going on.
+
+Let's create our `Notifications` collection, as well as a `createCommentNotification` function that will insert a matching notification for each new comment on one of your own posts:
+
+~~~js
+Notifications = new Meteor.Collection('notifications');
+
+Notifications.allow({
+  update: ownsDocument
+});
+
+createCommentNotification = function(comment) {
+  var post = Posts.findOne(comment.postId);
+  if (comment.userId !== post.userId) {
+    Notifications.insert({
+      userId: post.userId,
+      postId: post._id,
+      commentId: comment._id,
+      commenterName: comment.author,
+      read: false
+    });
+  }
+};
+~~~
+<%= caption "collections/notifications.js" %>
+
+Just like posts or comments, this `Notifications` collection will be shared by both client and server. As we need to update notifications once a user has seen them, we also enable updates, ensuring as usual that we restrict update permissions to a user's own data.
+
+We've also created a simple function that looks at the post that the user is commenting on, discovers who should be notified from there, and inserts a new notification. 
+
+We are already creating comments in a server-side Method, so we can just augment that Method to call our function. We'll replace `return Comments.insert(comment);` by `comment._id = Comments.insert(comment)` in order to save the `_id` of the newly created comment in a variable, then call our `createCommentNotification` function:
+
+~~~js
+Comments = new Meteor.Collection('comments');
+
+Meteor.methods({
+  comment: function(commentAttributes) {
+
+    // [...]
+
+    // create the comment, save the id
+    comment._id = Comments.insert(comment);
+    
+    // now create a notification, informing the user that there's been a comment
+    createCommentNotification(comment);
+    
+    return comment._id;
+  }
+});
+~~~
+<%= caption "collections/comments.js" %>
+<%= highlight "8~14" %>
+
+Let's also publish the notifications, and subscribe on the client:
+
+~~~js
+// [...]
+
+Meteor.publish('notifications', function() {
+  return Notifications.find();
+});
+~~~
+<%= caption "server/publications.js" %>
+
+~~~js
+Router.configure({
+  layoutTemplate: 'layout',
+  loadingTemplate: 'loading',
+  waitOn: function() { 
+    return [Meteor.subscribe('posts'), Meteor.subscribe('notifications')]
+  }
+});
+~~~
+<%= caption "lib/router.js" %>
+<%= highlight "5" %>
+
+<%= commit "11-1", "Added basic notifications collection." %>
+
+### Displaying Notifications
+
+Now we can go ahead and add a list of notifications to the header.
+
+~~~html
+<template name="header">
+  <header class="navbar">
+    <div class="navbar-inner">
+      <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </a>
+      <a class="brand" href="{{pathFor 'postsList'}}">Microscope</a>
+      <div class="nav-collapse collapse">
+        <ul class="nav">
+          {{#if currentUser}}
+            <li>
+              <a href="{{pathFor 'postSubmit'}}">Submit Post</a>
+            </li>
+            <li class="dropdown">
+              {{> notifications}}
+            </li>
+          {{/if}}
+        </ul>
+        <ul class="nav pull-right">
+          <li>{{loginButtons}}</li>
+        </ul>
+      </div>
+    </div>
+  </header>
+</template>
+~~~
+<%= caption "client/views/includes/header.html" %>
+<%= highlight "12~19" %>
+
+And create the `notifications` and `notification` templates (they'll share a single `notifications.html` file):
+
+~~~html
+<template name="notifications">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+    Notifications
+    {{#if notificationCount}}
+      <span class="badge badge-inverse">{{notificationCount}}</span>
+    {{/if}}
+    <b class="caret"></b>
+  </a>
+  <ul class="notification dropdown-menu">
+    {{#if notificationCount}}
+      {{#each notifications}}
+        {{> notification}}
+      {{/each}}
+    {{else}}
+      <li><span>No Notifications</span></li>
+    {{/if}}
+  </ul>
+</template>
+
+<template name="notification">
+  <li>
+    <a href="{{notificationPostPath}}">
+      <strong>{{commenterName}}</strong> commented on your post
+    </a>
+  </li>
+</template>
+~~~
+<%= caption "client/views/notifications/notifications.html" %>
+
+We can see that the plan is for each notification to contain a link to the post that was commented on, and the name of the user that commented on it. 
+
+Next, we need to make sure we select the right list of notifications in our manager, and update the notifications as "read" when the user clicks on the link to which they point. 
+
+~~~js
+Template.notifications.helpers({
+  notifications: function() {
+    return Notifications.find({userId: Meteor.userId(), read: false});
+  },
+  notificationCount: function(){
+  	return Notifications.find({userId: Meteor.userId(), read: false}).count();
+  }
+});
+
+Template.notification.helpers({
+  notificationPostPath: function() {
+    return Router.routes.postPage.path({_id: this.postId});
+  }
+})
+
+Template.notification.events({
+  'click a': function() {
+    Notifications.update(this._id, {$set: {read: true}});
+  }
+})
+~~~
+<%= caption "client/views/notifications/notifications.js" %>
+
+<%= commit "11-2", "Display notifications in the header." %>
+
+You may think that the notifications are not too different from the errors, and it's true that their structure is very similar. There is one key difference though: we've created a proper client-server synchronised collection. This means that our notifications are *persistent* and, as long as we use the same user account, will exist across browser refreshes and different devices.
+
+Give it a try: open up a second browser (let's say Firefox), create a new user account, and comment on a post that you've created with your main account (which you've left open in Chrome). You should see something like this:
+
+<%= screenshot "11-1", "Displaying notifications." %>
+
+### Controlling access to notifications
+
+Notifications are working well. However there's just a small problem: our notifications are public. 
+
+If you still have your second browser open, try running the following code in the browser console:
+
+~~~js
+❯ Notifications.find().count();
+1
+~~~
+<%= caption "Browser console" %>
+
+This new user (the one that *commented*) shouldn't have any notifications. The notification they can see in the `Notifications` collection actually belongs to our *original* user. 
+
+Aside from potential privacy issues, we simply can't afford to have every user's notifications loaded in every other user's browser. On a big enough site, this could overload the browser's available memory and start causing serious performance problems.
+
+We solve this issue with **publications**. We can use our publications to specify precisely which part of our collection we want to share with each browser.
+
+To accomplish this, we need to return a different cursor in our publication than `Notifications.find()`. Namely, we want to return a cursor that corresponds to the current user's notifications. 
+
+Doing so is straightforward enough, as a `publish` function has the current user's `_id` available at `this.userId`:
+
+~~~js
+Meteor.publish('notifications', function() {
+  return Notifications.find({userId: this.userId});
+});
+~~~
+<%= caption "server/publications.js" %>
+
+<%= commit "11-3", "Only sync notifications that are relevant to the user." %>
+
+Now if we check in our two browser windows, we should see two different notifications collections:
+
+~~~js
+❯ Notifications.find().count();
+1
+~~~
+<%= caption "Browser console (user 1)" %>
+
+~~~js
+❯ Notifications.find().count();
+0
+~~~
+<%= caption "Browser console (user 2)" %>
+
+In fact, the list of Notifications should even change as you log in and out of the app. This is because publications automatically re-publish whenever the user account changes.
+
+Our app is becoming more and more functional, and as more users join and start posting links we run the risk of ending up with a never-ending homepage. We'll address this in the next chapter by implementing pagination.
