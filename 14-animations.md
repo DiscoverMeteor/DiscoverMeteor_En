@@ -133,7 +133,7 @@ Don't forget to update the `postsList` template as well:
       {{> postItem}}
     {{/each}}
     
-    {{#if hasMorePosts}}
+    {{#if nextPath}}
       <a class="load-more" href="{{nextPath}}">Load more</a>
     {{/if}}
   </div>
