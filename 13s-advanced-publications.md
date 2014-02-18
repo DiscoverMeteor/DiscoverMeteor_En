@@ -117,37 +117,33 @@ Meteor.publish('topPosts', function(limit) {
   var sub = this, commentHandles = [], postHandle = null;
   
   // send over the top two comments attached to a single post
-  function publishPostComments(post) {
-    var comments = Comments.find({postId: post._id}, {limit: 2});
-    commentHandles[post._id] = comments.observe({
-      added: function(id, comment) {
-        sub.added('comments', id, comment);
-      }
-      // etc, see _publishCursor (in the Meteor core source code) for hints
-    });
+  function publishPostComments(postId) {
+    var commentsCursor = Comments.find({postId: postId}, {limit: 2});
+    commentHandles[post._id] = 
+      Meteor.Collection._publishCursor(commentsCursor, sub, 'comments');
   }
     
-  postHandle = Posts.find({}, {limit: limit}).observe({
+  postHandle = Posts.find({}, {limit: limit}).observeChanges({
     added: function(id, post) {
-      publishPostComments(post);
+      publishPostComments(post._id);
       sub.added('posts', id, post);
+    },
+    changed: function(id, fields) {
+      sub.changed('posts', id, fields);
     },
     removed: function(id) {
       // stop observing changes on the post's comments
       commentHandles[id] && commentHandles[id].stop();
       // delete the post
-      sub.removed('posts', id, _.keys(oldPost));
+      sub.removed('posts', id);
     }
-    // etc, see _publishCursor for hints
   });
   
   sub.ready();
   
-  // make sure we clean everything up
-  sub.onStop(function() {
-    postsHandle.stop();
-    _.each(commentHandles, function(h) { h.stop(); });
-  });
+  // make sure we clean everything up (note `_publishCursor`
+  //   does this for us with the comment observers)
+  sub.onStop(function() { postsHandle.stop(); });
 });
 ~~~
 
@@ -175,21 +171,14 @@ And although we'd have a single `Resources` collection on the server, we could  
   Meteor.publish('videos', function() {
     var sub = this;
     
-    var handle = Resources.find({type: 'video'}).observe({
-      added: function(id, video) {
-        sub.added('videos', id, video);
-      }
-      // for other events, see _publishCursor for hints.
-    })
+    var videosCursor = Resources.find({type: 'video'});
+    Meteor.Collection._publishCursor(videosCursor, sub, 'videos');
     
-    // mark complete, clean up when stopped
+    // _publishCursor doesn't call this for us in case we do this more than once.
     sub.ready();
-    
-    sub.onStop(function() { handle.stop(); });
   });
 ~~~
 
-
-We are basically doing what `_publishCursor` does, but rather than publishing from `'resources'` to `'resources'`, instead we are publishing from `'resources'` to `'videos'`. 
+We are telling `_publishCursor` to publish our videos (just like returning) the cursor would do, but rather than publish to the `resources` collection on the client, instead we are publishing from `'resources'` to `'videos'`. 
 
 Is it a good idea to be doing this? It's not our place to judge. In any case, it's good to know what's possible in order to use Meteor to its fullest!
