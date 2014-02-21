@@ -50,7 +50,7 @@ In this chapter, we'll start making use of the **browser console**, which is not
 
 #### Terminal
 
-<%= screenshot "terminal" %>
+<%= screenshot "terminal", "The Terminal" %>
 
 - Called from your operating system.
 - **Server-side** `console.log()` calls output here. 
@@ -59,7 +59,7 @@ In this chapter, we'll start making use of the **browser console**, which is not
 
 #### Browser Console
 
-<%= screenshot "browser-console" %>
+<%= screenshot "browser-console", "The Browser Console" %>
 
 - Called from inside the browser, executes JavaScript code.
 - **Client-side** `console.log()` calls output here. 
@@ -68,7 +68,7 @@ In this chapter, we'll start making use of the **browser console**, which is not
 
 #### Mongo Shell
 
-<%= screenshot "mongo-shell" %>
+<%= screenshot "mongo-shell", "The Mongo Shell" %>
 
 - Called from the Terminal with `meteor mongo` or `mrt mongo`.
 - Gives you direct access to your app's database. 

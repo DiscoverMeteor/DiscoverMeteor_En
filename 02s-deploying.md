@@ -76,6 +76,12 @@ And then authenticate with:
 $ modulus login
 ~~~
 
+We'll now create a Modulus project (note that you can also do this via Modulus' web dashboard):
+
+~~~bash
+$ modulus project create
+~~~
+
 The next step will be creating a MongoDB database for our app. We can create a MongoDB database with [Modulus itself](https://modulus.io/codex/database/getting_started), [MongoHQ](https://www.mongohq.com/) or with any other cloud MongoDB provider.
 
 Once we've created our MongoDB database, we can get the `MONGO_URL` for our database from Modulus' web UI (got to Dashboard > Databases > Select your database > Administration), then use it to configure our app like so:
