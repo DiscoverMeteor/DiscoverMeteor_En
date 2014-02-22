@@ -11,7 +11,6 @@ photoAutor: Mike Lewinski
 contents: See what happens behind the scenes when Meteor swaps two DOM elements.|Learn how to animate the reordering of posts.|Learn how to animate the insertion of new posts.
 ---
 
-
 setParameter = textSearchEnabled=true
 
 db.runCommand({getParameter: 1, textSearchEnabled: 1})

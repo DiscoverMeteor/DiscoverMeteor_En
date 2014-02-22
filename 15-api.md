@@ -370,4 +370,3 @@ Post not found.
 
 As of this writing, Meteor does not yet support *real* server-side rendering (i.e. rendering the same templates as on the client). But as we've just seen, that doesn't need to prevent us from building simple server-side routes for features such as RSS feeds or APIs. 
 
-

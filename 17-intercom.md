@@ -164,7 +164,6 @@ Deps.autorun(function(){
 
 <%= commit "17-2", "Sending custom user data." %>
 
-
 ### Enabling Secure Mode
 
 To prevent just anybody from using your app ID to make fake requests and impersonate other users, Intercom's secure mode uses a secret server-side only key to hash each email. 
@@ -204,7 +203,6 @@ Package.on_use(function (api) {
 ~~~
 <%= highlight "7,9" %>
 <%= caption "packages/intercom/package.js" %>
-
 
 Armed with our super-secret cryptographic hashing algorithm, we can now write our user creation hook. What we are aiming to do is ensure that users have a secret `intercomHash` field that we can send to Intercom. 
 
@@ -369,5 +367,4 @@ You can now complete your sign-up process by adding a photo, entering your credi
 It probably would also make sense to use the <a href="https://github.com/percolatestudio/meteor-intercom">community Intercom package</a>, which deals with a few more edge cases, like users logging out, and reactive intercom data.
 
 In any case, whether you end up using Intercom or not, we're willing to bet that the patterns introduced in this chapter will prove themselves to be quite useful!
-
 

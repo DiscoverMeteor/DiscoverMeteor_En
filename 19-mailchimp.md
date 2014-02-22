@@ -11,7 +11,6 @@ photoAutor: Mike Lewinski
 contents: See what happens behind the scenes when Meteor swaps two DOM elements.|Learn how to animate the reordering of posts.|Learn how to animate the insertion of new posts.
 ---
 
-
 ### Mailchimp
 
 ~~~js
@@ -100,7 +99,6 @@ Accounts.validateNewUser(function(user) {
 <%= caption "server/mailchimp.js" %>
 
 XXX: also removed temporary method
-
 
 <% note do %>
 

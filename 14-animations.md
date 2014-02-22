@@ -195,7 +195,6 @@ Template.postItem.events({
 <%= caption "/client/views/posts/post_item.js" %>
 <%= highlight "5~27" %>
 
-
 <%= commit "14-1", "Added post reordering animation." %>
 
 It shouldn't be too hard to follow along if you refer back to our previous diagram.

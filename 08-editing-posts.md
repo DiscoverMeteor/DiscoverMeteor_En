@@ -206,7 +206,6 @@ Posts.allow({
   remove: ownsDocument
 });
 
-
 Meteor.methods({
   ...
 ~~~

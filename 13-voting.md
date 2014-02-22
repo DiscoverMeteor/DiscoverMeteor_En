@@ -486,7 +486,6 @@ We'll also add links in the header:
 <%= caption "client/views/include/header.html" %>
 <%= highlight "9, 15~21" %>
 
-
 With all this done, we now gain a best posts list:
 
 <%= screenshot "13-4", "Ranking by points" %>

@@ -165,7 +165,6 @@ Tinytest.addAsync("Errors template works", function(test, done) {
 ~~~
 <%= caption "packages/errors/errors_tests.js" %>
 
-
 In these tests we're checking the basic `Meteor.Errors` functions work, as well as double checking that the `rendered` code in the template is still functioning.
 
 We won't cover the specifics of writing Meteor package tests here (as the API is not yet finalized and highly in flux), but hopefully it's fairly self explanatory how it works.

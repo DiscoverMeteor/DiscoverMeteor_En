@@ -289,7 +289,6 @@ Router.before(requireLogin, {only: 'postSubmit'});
 
 <%= commit "7-4", "Show a loading screen while waiting to login." %>
 
-
 ### Hiding the Link
 
 The easiest way to prevent users from trying to reach this page by mistake when they are logged out is to hide the link from them. We can do this pretty easily:
@@ -346,7 +345,6 @@ Template.postSubmit.events({
 });
 ~~~
 <%= caption "client/views/posts/post_submit.js" %>
-
 
 The `Meteor.call` function calls a Method named by its first argument. You can provide arguments to the call (in this case, the `post` object we constructed from the form), and finally attach a callback, which will execute when the server-side Method is done. Here we simply alert the user if there's a problem, or redirect the user to the freshly created post's discussion page if not.
 

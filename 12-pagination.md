@@ -371,7 +371,6 @@ Here's what your post list should now look like:
 
 <%= commit "12-4", "Added nextPath() to the controller and use it to step through posts." %>
 
-
 <% note do %>
 
 ### Count vs Length

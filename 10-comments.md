@@ -323,7 +323,6 @@ Meteor.methods({
 
 This is not doing anything too fancy, just checking that the user is logged in, that the comment has a body, and that it's linked to a post. 
 
-
 ### Controlling the Comments Subscription
 
 As things stand, we are publishing all comments across all posts to all connected clients. That seems a little wasteful. After all, we're only actually using a small subset of this data at any given time. So let's improve our publication and subscription to control exactly which comments are published. 
@@ -371,7 +370,6 @@ Meteor.publish('comments', function(postId) {
 ~~~
 <%= caption "server/publications.js" %>
 <%= highlight "5~7" %>
-
 
 <%= commit "10-4", "Made a simple publication/subscription for comments." %>
 
@@ -438,6 +436,3 @@ Finally, we can just simply remove the `commentsCount` helper from `client/views
 <%= commit "10-5", "Denormalized the number of comments into the post." %>
 
 Now that users can talk to each other, it would be a shame if they missed out on new comments. And what do you know, the next chapter will show you how to implement notifications to prevent just this!
-
-
-

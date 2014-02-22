@@ -13,7 +13,6 @@ contents: Learn how to use GitHub to follow along with the book.
 
 [GitHub](https://github.com/) is a social repository for open-source projects based around the [Git](http://git-scm.com/) version control system, and its primarily function is to make it easy to share code and collaborate on projects. But it's also a great learning tool. In this sidebar, we'll quickly go over a few ways you can use GitHub to follow along with *Discover Meteor*. 
 
-
 This sidebar assumes you're not that familiar with Git and GitHub. If you're already comfortable with both, feel free to skip on to the next chapter!
 
 ### Being Committed

@@ -177,7 +177,6 @@ You'll notice that Meteor Up supports password based and private key (PEM) based
 
 **Important note**: if you choose to use password-based authentication, make sure you've installed `sshpass` first ([refer to this guide](https://gist.github.com/arunoda/7790979)).
 
-
 **MongoDB Configuration**
 
 The next step is to configure a MongoDB database for your app. We recommend using [MongoHQ](https://www.mongohq.com/home) or any other cloud MongoDB provider, since they offer professional support and better management tools.

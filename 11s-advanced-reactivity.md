@@ -138,6 +138,3 @@ Meteor.setInterval(function() {
 <%= highlight "5~6" %>
 
 Admittedly, Meteor takes care of most of the heavy lifting for us and lets us benefit from reactivity without much work on our part. But hopefully, learning about these patterns will prove helpful if you ever need to push things further. 
-
-
-

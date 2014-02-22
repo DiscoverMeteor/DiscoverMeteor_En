@@ -170,4 +170,3 @@ This example shows us how a local collection can be a *secure subset* of the rea
 
 That doesn't mean you can't make more user data public if you want to. You can refer to the [Meteor docs](http://docs.meteor.com/#meteor_users) to see how to optionally publish more fields in the `Meteor.users` collection.
 
-

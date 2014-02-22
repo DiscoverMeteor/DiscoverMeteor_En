@@ -10,7 +10,6 @@ photoAuthor: Mike Lewinski
 contents: Review a few common Meteor terms. 
 ---
 
-
 In this book, you'll hear some words which may be new, or at least used in a new way in a Meteor context. We'll use this chapter to define them.
 
 #### Collection
