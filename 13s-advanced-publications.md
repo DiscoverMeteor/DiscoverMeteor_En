@@ -38,7 +38,7 @@ Meteor.publish('postDetail', function(postId) {
 
 Now when the client subscribes to those two publications (using `autorun` to ensure that the right `postId` is being sent to the `postDetail` subscription), its `'posts'` collection gets populated from two sources: a list of titles and author's names from the first subscription, and the full details of a post from the second.
 
-You may realise that the post published by `postDetail` is also being published by `allPosts` (although with only a subset of its properties). However, Meteor takes care of the overlap by merging the fields and ensuring there is no duplicate post.
+You may realize that the post published by `postDetail` is also being published by `allPosts` (although with only a subset of its properties). However, Meteor takes care of the overlap by merging the fields and ensuring there is no duplicate post.
 
 This is great, because now when we render the list of post summaries, we are dealing with data objects that have just enough data for us to show what we need. However, when we render out the page for a single post, we have everything we need to show it. Of course, we need to take care on the client to not expect all fields to be available on all posts in this case -- this is a common gotcha!
 

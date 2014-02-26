@@ -111,7 +111,7 @@ So going back to our previous example, if we want to trigger a new alert every t
 ~~~js
 Deps.autorun(function() {
   alert(Session.get('message'));
-}
+});
 ~~~
 
 As we've just seen, autoruns can be very useful to track reactive datasources and react imperatively to them. 
