@@ -44,17 +44,17 @@ Mongo is a document-based data-store, so the objects that come out of collection
 
 When a template needs to render something more complex than a document property it can call a helper, a function that is used to aid rendering.
 
-#### Kompensacja opóźnienia
+#### Latency Compensation
 
-Jest techniką, która umożliwia symulację wykonania Metody na kliencie, aby uniknąć opóźnienia (pot. lagu) spowodowanego czekanie na odpowiedź serwera.
+Is a technique to allow simulation of Method calls on the client, to avoid lagginess while waiting for the server to respond.
 
-#### Metoda
+#### Method
 
-Metody w Meteor'ze są zdalnymi wywołaniami funkcji zainicjowanymi na kliencie, a wykonywanymi na serwerze. Posiadają mechanizmy, które umożliwiają śledzenie zmian w kolekcjach oraz kompensację opóźnienia.
+A Meteor Method is a remote procedure call from the client to the server, with some special logic to keep track of collection changes and allow Latency Compensation.
 
 #### MiniMongo
 
-Kolekcja po stronie klienta jest magazynem danych rezydującym w pamięci operacyjnej, dostarczającej API na wzór Mongo. Biblioteka dostarczająca wspomniane funkcjonalności nazywana jest "MiniMongo" aby zaznaczyć, że jest okrojoną wersją bazy Mongo, która w całości działa w pamięci operacyjnej.
+The client-side collection is an in-memory data store offering a Mongo-like API. The library that supports this behaviour is called "MiniMongo", to indicate it's a smaller version of Mongo that runs completely in memory.
 
 #### Package
 
