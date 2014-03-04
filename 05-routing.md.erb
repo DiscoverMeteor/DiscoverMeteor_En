@@ -292,7 +292,7 @@ It turns out you can achieve the same result by passing the context as an *argum
 
 ### Using a Dynamic Named Route Helper
 
-Finally, we need to make sure that we're pointing to the right place whevener we want to link to an individual post. Again, we could do something like `<a href="/posts/{{_id}}>`, but using a route helper is just more reliable. 
+Finally, we need to make sure that we're pointing to the right place whevener we want to link to an individual post. Again, we could do something like `<a href="/posts/{{_id}}">`, but using a route helper is just more reliable. 
 
 We've named the post route `postPage`, so we can use a `{{pathFor 'postPage'}}` helper:
 
