@@ -70,7 +70,7 @@ In order to do this properly, we'll need to change the way we subscribe to posts
 
 This might all be a lot to take in at once, but it will become clearer with the code.
 
-First, we'll stop subscribing to the `posts` publication in the `Router.configure()` block. Just delete `Meteor.subscribe('posts'),`, leaving only the `notifications` subscription:
+First, we'll stop subscribing to the `posts` publication in the `Router.configure()` block. Just delete `Meteor.subscribe('posts')`, leaving only the `notifications` subscription:
 
 ~~~js
 Router.configure({
