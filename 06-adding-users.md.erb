@@ -37,9 +37,9 @@ We'll add the buttons to our header. And since that header is starting to grow l
 ~~~html
 <template name="layout">
   <div class="container">
-    {{>header}}
+    {{> header}}
     <div id="main" class="row-fluid">
-      {{yield}}
+      {{> yield}}
     </div>
   </div>
 </template>
@@ -59,7 +59,7 @@ We'll add the buttons to our header. And since that header is starting to grow l
       <a class="brand" href="{{pathFor 'postsList'}}">Microscope</a>
       <div class="nav-collapse collapse">
         <ul class="nav pull-right">
-          <li>{{loginButtons}}</li>
+          <li>{{> loginButtons}}</li>
         </ul>
       </div>
     </div>
