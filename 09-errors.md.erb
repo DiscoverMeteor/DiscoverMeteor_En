@@ -51,7 +51,7 @@ We are going to display the errors at the top of our main layout:
     {{> header}}
     {{> errors}}
     <div id="main" class="row-fluid">
-      {{yield}}
+      {{> yield}}
     </div>
   </div>
 </template>
@@ -174,8 +174,8 @@ Next, we'll clear errors in the router so that navigating to another page will m
 ~~~js
 // ...
 
-Router.before(requireLogin, {only: 'postSubmit'})
-Router.before(function() { clearErrors() });
+Router.onBeforeAction(requireLogin, {only: 'postSubmit'})
+Router.onBeforeAction(function() { clearErrors() });
 ~~~
 <%= caption "lib/router.js" %>
 <%= highlight "4" %>
