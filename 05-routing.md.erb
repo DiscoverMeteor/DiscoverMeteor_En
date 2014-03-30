@@ -84,7 +84,7 @@ While the newly created `layout.html` will now contain the app's outer layout:
     </div>
   </header>
   <div id="main" class="row-fluid">
-    {{yield}}
+    {{> yield}}
   </div>
   </div>
 </template>
@@ -160,13 +160,15 @@ Router.configure({
 Router.map(function() {
   this.route('postsList', {path: '/'});
 });
+
+Router.onBeforeAction('loading');
 ~~~
 <%= caption "lib/router.js" %>
 <%= highlight "3,4" %>
 
 Let's break things down. First, we've modified the `Router.configure()` block to provide the router with the name of a loading template (which we'll create soon) to redirect to while our app is waiting for data. 
 
-Second, we've also added a `waitOn` function, which returns our `posts` subscription. What this means is that the router will ensure that the `posts` subscription is loaded before sending the user through to the route they requested.
+Second, we've also added a `waitOn` function, which returns our `posts` subscription. Finally, we enabled a built in `loading` hook. What this means is that the router will ensure that the `posts` subscription is loaded before sending the user through to the route they requested.
 
 Note that since we're defining our `waitOn` function globally at the router level, this sequence will only happen once when a user first accesses your app. After that, the data will already be loaded in the browser's memory and the router won't need to wait for it again. 
 
