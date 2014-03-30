@@ -97,7 +97,7 @@ $ rm client/views/includes/errors.js
 One other thing we need to do is to make some minor updates to use the correct API:
 
 ~~~js
-Router.before(function() { Errors.clearSeen(); });
+Router.onBeforeAction(function() { Errors.clearSeen(); });
 ~~~
 <%= caption "lib/router.js" %>
 
