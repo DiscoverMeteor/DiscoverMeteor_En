@@ -56,13 +56,13 @@ For more information about Iron Router, check out [the full documentation on Git
 
 So far, we've built our layout using hard-coded template includes (such as `{{>postsList}}`).  So although the content of our app can change, the page's basic structure is always the same: a header, with a list of posts below it.
 
-The Iron Router lets us break out of this mold by taking over what renders inside the HTML `<body>` tag. So we won't define that tag's content ourselves, as we would with a regular HTML page. Instead, we will point the router to a special layout template that contains a `{{yield}}` template helper. 
+The Iron Router lets us break out of this mold by taking over what renders inside the HTML `<body>` tag. So we won't define that tag's content ourselves, as we would with a regular HTML page. Instead, we will point the router to a special layout template that contains a `{{> yield}}` template helper. 
 
-This `{{yield}}` helper will define a special dynamic zone that will automatically render whichever template corresponds to the current route (as a convention, we'll designate this special template as the “route templates” from now on):
+This `{{> yield}}` helper will define a special dynamic zone that will automatically render whichever template corresponds to the current route (as a convention, we'll designate this special template as the “route templates” from now on):
 
 <%= diagram "router-diagram", "Layouts and templates.", "pull-center" %>
 
-We'll start by creating our layout and adding the `{{yield}}` helper. First, we'll remove our HTML `<body>` tag from `main.html`, and move its contents to their own template, `layout.html`.
+We'll start by creating our layout and adding the `{{> yield}}` helper. First, we'll remove our HTML `<body>` tag from `main.html`, and move its contents to their own template, `layout.html`.
 
 So our slimmed down `main.html` now looks like this:
 
