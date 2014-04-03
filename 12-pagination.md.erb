@@ -164,6 +164,8 @@ What this means is simply that instead of being implicitely available as `this` 
 
 ~~~js
 Router.map(function() {
+  //..
+
   this.route('postsList', {
     path: '/:postsLimit?',
     waitOn: function() {
@@ -177,12 +179,10 @@ Router.map(function() {
       };
     }
   });
-  
-  //..
 });
 ~~~
 <%= caption "lib/router.js" %>
-<%= highlight "8~13" %>
+<%= highlight "10~15" %>
 
 Now that we're setting the data context at the router level we can safely get rid of the `posts` template helper inside the `posts_list.js` file. And since we named our data context `posts` (the same name as the helper), we don't even need to touch our `postsList` template!
 

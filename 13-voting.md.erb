@@ -441,11 +441,21 @@ Router.map(function() {
 });
 ~~~
 <%= caption "lib/router.js" %>
-<%= highlight "8,16,21~34,36~49" %>
+<%= highlight "8,20,25~37,40~53" %>
 
 Note that now that we have more than one route, we're taking the `nextPath` logic out of `PostsListController` and into `NewPostsListController` and `BestPostsListController`, since the path will be different in either case. 
 
 Additionally, when we sort by `votes`, we have a secondary sort by submitted timestamp to ensure that the ordering is correct.
+
+With our new controllers in place, we can now safely get rid of the previous `postsList` route. Just delete the following code:
+
+```
+ this.route('postsList', {
+  path: '/:postsLimit?',
+  controller: PostsListController
+ })
+```
+<%= caption "lib/router.js" %>
 
 We'll also add links in the header:
 
@@ -485,7 +495,7 @@ We'll also add links in the header:
 </template>
 ~~~
 <%= caption "client/views/include/header.html" %>
-<%= highlight "9, 15~21" %>
+<%= highlight "9, 12~17" %>
 
 With all this done, we now gain a best posts list:
 
