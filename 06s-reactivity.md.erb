@@ -95,12 +95,16 @@ Computations are generally set up to simply re-evaluate their contents on invali
 Now that we understand the theory behind computations, actually setting one up will seem disproportionately easy. We simply use the `Deps.autorun` function to enclose a block of code in a computation and make it reactive:
 
 ~~~js
-Deps.autorun(function() {
-  console.log('There are ' + Posts.find().count() + ' posts');
+Meteor.startup(function() {
+  Deps.autorun(function() {
+    console.log('There are ' + Posts.find().count() + ' posts');
+  });
 });
 ~~~
 
-Behind the scenes, `autorun` creates a computation, and wires it up to re-evaluate whenever the data sources it depends on change. We've set up a very simple computation that simply logs the number of posts to the console. Since `Posts.find()` is a reactive data source, it will take care of telling the computation to re-evaluate every time the number of posts changes.
+Note that we need to wrap the `Deps` block inside a `Meteor.startup()` block to ensure that it only runs once Meteor has finished loading the `Posts` collection. 
+
+Behind the scenes, `autorun` then creates a computation, and wires it up to re-evaluate whenever the data sources it depends on change. We've set up a very simple computation that simply logs the number of posts to the console. Since `Posts.find()` is a reactive data source, it will take care of telling the computation to re-evaluate every time the number of posts changes.
 
 ~~~js
 > Posts.insert({title: 'New Post'});
