@@ -318,7 +318,7 @@ PostsListController = RouteController.extend({
     return Posts.find({}, this.findOptions());
   },
   data: function() {
-    var hasMore = this.posts().fetch().length === this.limit();
+    var hasMore = this.posts().count() === this.limit();
     var nextPath = this.route.path({postsLimit: this.limit() + this.increment});
     return {
       posts: this.posts(),
@@ -340,7 +340,7 @@ We're taking that path and adding it to the data context for our template, but *
 
 We know that `this.limit()` returns the current number of posts we'd like to show, which can either be the value in the current URL, or our default value (5) if the URL doesn't contain any parameter. 
 
-On the other hand, `this.posts` refers to the current cursor, so `this.posts.fetch().length` refers to the number of posts that are actually in the cursor.
+On the other hand, `this.posts` refers to the current cursor, so `this.posts.count()` refers to the number of posts that are actually in the cursor.
 
 So what we're saying here is that if we ask for `n` posts and we get `n` back, we'll keep showing the “load more” button. But if we ask for `n` and we get *less* than `n` back, then it means we've hit the limit and we should stop showing that button. 
 
@@ -371,14 +371,6 @@ Here's what your post list should now look like:
 <%= screenshot "12-3", "The “load more” button. " %>
 
 <%= commit "12-4", "Added nextPath() to the controller and use it to step through posts." %>
-
-<% note do %>
-
-### Count vs Length
-
-You might be wondering why we used `this.posts.fetch().length` instead of the saner `this.posts.count()`. This is simply a temporary workaround to deal with [a bug](https://github.com/meteor/meteor/issues/654) present in Meteor at the time of writing. Let's hope it's fixed soon!
-
-<% end %>
 
 ### A Better Progress Bar
 
