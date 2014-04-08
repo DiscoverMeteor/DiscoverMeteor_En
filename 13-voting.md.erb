@@ -273,7 +273,7 @@ We're changing our class from `.upvote` to `.upvotable`, so don't forget to chan
 Next, you may notice that posts with a single vote are labelled "1 vote**s**", so let's take the time to pluralize those labels properly. Pluralization can be a complicated process, but for now we'll do it in a fairly simplistic way. We'll make a general Handlebars helper that we can use anywhere:
 
 ~~~js
-Handlebars.registerHelper('pluralize', function(n, thing) {
+UI.registerHelper('pluralize', function(n, thing) {
   // fairly stupid pluralizer
   if (n === 1) {
     return '1 ' + thing;
