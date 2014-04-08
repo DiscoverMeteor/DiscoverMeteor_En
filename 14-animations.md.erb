@@ -246,7 +246,7 @@ What's more, case B includes two sub-cases, B1 and B2: either we're *teleporting
 
 This is where the `offset` variable comes in. Since we're using *relative* positioning, we'll want to figure out where to send the element *relative* to its current position. This means subtracting the new position from the previous one. 
 
-To figure out whether we're in case B1 or B2, we can simply look at `offset`: if `offset` is larger than 0, it means we're *moving* the element *away* from its origin. On the other hand if `offset` is equal to 0, it means we're *animating* the element *back* to its origin coordinate, and we can add the class `animate` to the element to make sure it transitions slowly. 
+To figure out whether we're in case B1 or B2, we can simply look at `offset`: if `offset` is different than 0, it means we're *moving* the element *away* from its origin. On the other hand if `offset` is equal to 0, it means we're *animating* the element *back* to its origin coordinate, and we can add the class `animate` to the element to make sure it transitions slowly. 
 
 ### Timing Out
 
@@ -320,4 +320,4 @@ On the other hand, here we only want to show and hide an element independently o
 
 <% end %>
 
-We should finally have the animation behavior we wanted. Load up your app and give it a try! And you can also play around with the `.post` and `.post.invisible` classes to see if you can come up with other transitions. Hint: [CSS easing functions](http://matthewlein.com/ceaser/) are a good place to start!
+We should finally have the animation behavior we wanted. Load up your app and give it a try! And you can also play around with the `.post.animated` classes to see if you can come up with other transitions. Hint: [CSS easing functions](http://matthewlein.com/ceaser/) are a good place to start!
