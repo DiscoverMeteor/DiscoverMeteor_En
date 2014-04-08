@@ -20,26 +20,24 @@ The crucial point to keep in mind is that elements in the DOM cannot really be �
 
 This makes animation a little tricky, as we can't just animate B to move it to a new position, because B will be gone as soon as Meteor re-renders the page (which happens instantly thanks to reactivity). But don't worry, we'll find a way. 
 
-### The Soviet Runner Technique
+### The Soviet Runner
 
-If you've ever watched one of the racing events at the Olympics, you've probably witnessed a situation where an athlete jumps the gun, and everybody has to walk back to the starting blocks before running again. 
-
-A famous example of this happened at the 1980 summer Olympics in Moscow, where the Soviets equipped one of their runners with a teleporter that instantly placed him 10 meters ahead of the competition as soon as the gun was shot. 
+The year was 1980, at the height of the Cold War. The Olympics were being held in Moscow, and the Soviets were determined to win the 100 meters dash at any cost. So a group of brilliant Soviet scientists equipped one of their athletes with a teleporter, and as soon as the gunshot was heard the runner was instantly moved to the finish line. 
 
 Thankfully, race officials noticed the infraction immediately, and the athlete had no choice but to teleport back to the starting blocks, before being allowed to participate in the race by running like everybody else. 
 
-Well, maybe my historical sources aren't quite so reliable. But try to keep the "Soviet runner with a teleporter" analogy in mind as we go through this chapter.
+My historical sources aren't that reliable, so you should take that story with a grain of salt. But do try and keep the "Soviet runner with a teleporter" analogy in mind as we go through this chapter.
 
-### Step By Step Animation
+### Breaking It Down
 
-We'll use the principle we just discussed to animate our posts. When a DOM element “jumps the gun” and is instantly teleported to its new position, we'll blow our whistle and send it back to the “starting block” (i.e. his previous position), before slowly animating it to its new position. 
+When Meteor receives an update and reactively modifies the DOM, our post will be instantly teleported to its final position, just like the soviet runner. But whether at the Olympics or in our app, we can't just have stuff teleporting around. So we’ll teleport the element back to the “starting blocks” and make it “run” (in other words, animate it) back to the finish line.
 
 So to switch posts A and B (positioned in positions p1 and p2, respectively), we would go through the following steps:
 
 1. Delete B
 2. Create B' before A in the DOM
-3. Move B' to p2
-4. Move A to p1
+3. Teleport B' to p2
+4. Teleport A to p1
 5. Animate A to p2
 6. Animate B' to p1
 
@@ -47,7 +45,7 @@ The following diagram explains these steps in more detail:
 
 <%= diagram "animation_diagram", "Switching two posts", "pull-center" %>
 
-Note that in steps 3 and 4 we're not *animating* A and B' to their positions but "teleporting" them instantly. Since this is instantaneous, it will give the illusion that B was never deleted, and properly position both elements to be animated back to their new position.
+Again, in steps 3 and 4 we're not *animating* A and B' to their positions but “teleporting” them instantly. Since this is instantaneous, it will give the illusion that B was never deleted, and properly position both elements to be animated back to their new position.
 
 Thankfully, Meteor takes care of steps 1 & 2 for us, so we only need to worry about steps 3 through 6. 
 
