@@ -81,21 +81,7 @@ Meteor.setInterval(function() {
 
 What we've done is setup a `_currentLikeCountListeners` dependency, which tracks all the computations within which `currentLikeCount()` has been used. When the value of `_currentLikeCount` changes, we call the `changed()` function on that dependency, which invalidates all the tracked computations.
 
-These computations can then go ahead and deal with the change on a case-by-case basis. In the case of a template's computation, it means that the template re-draws itself.
-
-### Template Computation and Controlling Redraws
-
-The reason why each template has its own computation is to control the amount of redrawing that happens onscreen.
-
-When we call one template from within another, we're setting up a second computation inside the first. So when the reactive data used by the inner template changes, that inner template is redrawn yet the *outer* template remains the unchanged. In this way, computations are used to control the scope of reactive changes. 
-
-Meteor also gives us a little bit of extra help to augment the basic mechanisms of nesting templates. 
-
-First, the `{{#constant}}` block helper *kills* reactivity within itself. So any data that is gathered by helpers within the block is only ever used once. And even if the containing template is redrawn, the HTML of the constant area is left unchanged as it would render again the exact same way. This makes constant regions a great way to manage third party widgets that aren't expecting Meteor to re-draw the DOM from under them.
-
-The second feature that can help us control reactivity is the `{{#isolate}}` block helper, which sets up a *new* computation within a template. In other words, it has the same effect as moving that section of template into a sub-template in terms of reactivity and redrawing. 
-
-So if one of the reactive data sources within the isolate block changes, the isolated area will re-draw, but the remainder of the containing template will not. If the containing template re-draws however, the isolated area will redraw as well.
+These computations can then go ahead and deal with the change on a case-by-case basis. 
 
 ### Comparing Deps to Angular
 
