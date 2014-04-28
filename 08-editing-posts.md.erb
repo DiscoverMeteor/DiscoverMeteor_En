@@ -39,14 +39,14 @@ Router.map(function() {
   });
 });
 
-var requireLogin = function() {
+var requireLogin = function(pause) {
   if (! Meteor.user()) {
     if (Meteor.loggingIn())
       this.render('loading')
     else
       this.render('accessDenied');
   
-    this.stop();
+    pause();
   }
 }
 
