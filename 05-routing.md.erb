@@ -164,7 +164,7 @@ Router.map(function() {
 Router.onBeforeAction('loading');
 ~~~
 <%= caption "lib/router.js" %>
-<%= highlight "3,4" %>
+<%= highlight "3,4, 11" %>
 
 Let's break things down. First, we've modified the `Router.configure()` block to provide the router with the name of a loading template (which we'll create soon) to redirect to while our app is waiting for data. 
 
@@ -175,6 +175,8 @@ Note that since we're defining our `waitOn` function globally at the router leve
 And since we are now letting the router handle our subscription, you can now safely remove it from `main.js` (which should now be empty). 
 
 It's usually a good idea to wait on your subscriptions, not just for the user experience, but also because it means you can safely assume that data will always be available from within a template. This eliminates the need to deal with templates being rendered before their underlying data is available, which often requires tricky workarounds. 
+
+We'll also add an `onBeforeAction` filter to trigger Iron Router's built-in `loading` hook and make sure we're showing the loading template while we wait. 
 
 The final piece of the puzzle is the actual loading template. We'll use the `spin` package to create a nice animated loading spinner. Add it with `mrt add spin`, and then create the `loading` template as follows:
 
@@ -295,7 +297,7 @@ It turns out you can achieve the same result by passing the context as an *argum
 
 ### Using a Dynamic Named Route Helper
 
-Finally, we need to make sure that we're pointing to the right place whevener we want to link to an individual post. Again, we could do something like `<a href="/posts/{{_id}}">`, but using a route helper is just more reliable. 
+Finally, we need to make sure that we're pointing to the right place whenever we want to link to an individual post. Again, we could do something like `<a href="/posts/{{_id}}">`, but using a route helper is just more reliable. 
 
 We've named the post route `postPage`, so we can use a `{{pathFor 'postPage'}}` helper:
 
