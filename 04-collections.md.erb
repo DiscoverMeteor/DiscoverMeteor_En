@@ -239,7 +239,7 @@ Now, if we open up a browser console, we see all three posts loaded up into Mini
 ~~~
 <%= caption "Browser console" %>
 
-To get these posts into rendered HTML, we can use a template helper. In Chapter 3 we saw how Meteor allows us to bind a *data context* to our Handlebars templates to build HTML views of simple data structures. We can bind in our collection data in the exact same way. We'll just replace our static `postsData` JavaScript object by a dynamic collection.
+To get these posts into rendered HTML, we can use a template helper. In Chapter 3 we saw how Meteor allows us to bind a *data context* to our Spacebars templates to build HTML views of simple data structures. We can bind in our collection data in the exact same way. We'll just replace our static `postsData` JavaScript object by a dynamic collection.
 
 Speaking of which, feel free to delete the `postsData` code at this point. Here's what `posts_list.js` should now look like:
 
@@ -269,7 +269,7 @@ Now, rather than pulling a list of posts as a static array from a variable, we r
 
 <%= screenshot "4-3", "Using live data" %>
 
-So we can clearly see that our `{{#each}}` helper has iterated over all of our `Posts`, and displayed them on the screen. The server-side collection pulled the posts from Mongo, passed them over the wire to our client-side collection, and our handlebars helper passed them into the template. 
+So we can clearly see that our `{{#each}}` helper has iterated over all of our `Posts`, and displayed them on the screen. The server-side collection pulled the posts from Mongo, passed them over the wire to our client-side collection, and our Spacebars helper passed them into the template. 
 
 Now, we'll take this one step further; let's add another post via the console:
 
@@ -286,7 +286,7 @@ Look back at the browser -- you should see this:
 
 <%= screenshot "4-4", "Adding posts via the console" %>
 
-You have just seen reactivity in action for the first time. When we told handlebars to iterate over the `Posts.find()` cursor, it knew how to observe that cursor for changes, and patch the HTML in the simplest way to display the correct data on screen.
+You have just seen reactivity in action for the first time. When we told Spacebars to iterate over the `Posts.find()` cursor, it knew how to observe that cursor for changes, and patch the HTML in the simplest way to display the correct data on screen.
 
 <% note do %>
 

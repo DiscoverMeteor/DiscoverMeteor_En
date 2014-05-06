@@ -311,7 +311,7 @@ The easiest way to prevent users from trying to reach this page by mistake when 
 
 <%= commit "7-5", "Only show submit post link if logged in." %>
 
-The `currentUser` helper is provided to us by the `accounts` package and is the handlebars equivalent of `Meteor.user()`. Since it's reactive, the link will appear or disappear as you log in and out of the app.
+The `currentUser` helper is provided to us by the `accounts` package and is the Spacebars equivalent of `Meteor.user()`. Since it's reactive, the link will appear or disappear as you log in and out of the app.
 
 ### Meteor Method: Better Abstraction and Security
 
@@ -405,7 +405,7 @@ First, we define our `user` variable and check if a post with the same link alre
 
 Next, if there's another post with the same URL, we throw a `302` error (which means redirect) telling the user that they should just go and look at that previously created post. 
 
-Meteor's `Error` class takes three arguments. The first one (`error`) will be the `302` numeric code, the second one (`reason`) is a short human-readable explanation of the error, and the last one (`details`) can be any useful additional information.
+Meteor's `Error` class takes three arguments. The first one (`error`) is an error code of your choice (in this case we're picking `302`), the second one (`reason`) is a short human-readable explanation of the error, and the last one (`details`) can be any useful additional information.
 
 In our case, we'll use this third argument to pass the ID of the post that we just found. Spoiler alert: we'll use this later on to redirect the user to the pre-existing post.
 

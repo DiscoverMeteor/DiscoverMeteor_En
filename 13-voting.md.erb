@@ -6,7 +6,7 @@ number: 13
 points: 10
 photoUrl: http://www.flickr.com/photos/ikewinski/8561920811/
 photoAuthor: Mike Lewinski
-contents: Build a system where users can vote on posts.|Rank our posts by vote on a "best" post page.|Learn how to write a general handlebars helper.|Learn a little more about data security in Meteor.|Cover some interesting performance considerations in MongoDB.
+contents: Build a system where users can vote on posts.|Rank our posts by vote on a "best" post page.|Learn how to write a general Spacebars helper.|Learn a little more about data security in Meteor.|Cover some interesting performance considerations in MongoDB.
 paragraphs: 49
 ---
 
@@ -270,7 +270,7 @@ We're changing our class from `.upvote` to `.upvotable`, so don't forget to chan
 
 <%= commit "13-2", "Grey out upvote link when not logged in / already voted." %>
 
-Next, you may notice that posts with a single vote are labelled "1 vote**s**", so let's take the time to pluralize those labels properly. Pluralization can be a complicated process, but for now we'll do it in a fairly simplistic way. We'll make a general Handlebars helper that we can use anywhere:
+Next, you may notice that posts with a single vote are labelled "1 vote**s**", so let's take the time to pluralize those labels properly. Pluralization can be a complicated process, but for now we'll do it in a fairly simplistic way. We'll make a general Spacebars helper that we can use anywhere:
 
 ~~~js
 UI.registerHelper('pluralize', function(n, thing) {
@@ -282,9 +282,9 @@ UI.registerHelper('pluralize', function(n, thing) {
   }
 });
 ~~~
-<%= caption "client/helpers/handlebars.js" %>
+<%= caption "client/helpers/Spacebars.js" %>
 
-The helpers we've created before have been tied to the manager and template that they apply to. But by using `Handlebars.registerHelper`, we've created a *global* helper that can be used within any template:
+The helpers we've created before have been tied to the manager and template that they apply to. But by using `Spacebars.registerHelper`, we've created a *global* helper that can be used within any template:
 
 ~~~html
 <template name="postItem">
@@ -494,7 +494,7 @@ We'll also add links in the header:
   </header>
 </template>
 ~~~
-<%= caption "client/views/include/header.html" %>
+<%= caption "client/views/includes/header.html" %>
 <%= highlight "9, 12~17" %>
 
 We also need to update our post deleting event handler:
@@ -586,11 +586,11 @@ Template.header.helpers({
 
 ### Helper Arguments
 
-We haven't used that specific pattern up to now, but just like any other Handlebars tags, template helper tags can take arguments. 
+We haven't used that specific pattern up to now, but just like any other Spacebars tags, template helper tags can take arguments. 
 
 And while you can of course pass specific named arguments to your function, you can also pass an unspecified number of anonymous parameters and retrieve them by calling the `arguments` object inside a function. 
 
-In this last case, you will probably want to convert the `arguments` object to a regular JavaScript array and then call `pop()` on it to get rid of the hash added at the end by Handlebars.
+In this last case, you will probably want to convert the `arguments` object to a regular JavaScript array and then call `pop()` on it to get rid of the hash added at the end by Spacebars.
 
 <% end %>
 

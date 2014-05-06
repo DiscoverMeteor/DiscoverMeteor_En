@@ -29,7 +29,7 @@ $ mrt add iron-router
 ~~~
 <%= caption "Terminal" %>
 
-This command downloads and installs the iron-router package into our app, ready to use. Note that you might sometimes need to restart your Meteor app (with `ctrl+c` to kill the process, then `mrt` to start it again) before a package can be used.
+This command downloads and installs the iron-router package into our app, ready to use. Note that you might sometimes need to restart your Meteor app (with `ctrl+c` to kill the process, then `meteor` to start it again) before a package can be used.
 
 Note that the Iron Router is a third-party package, meaning that you'll need Meteorite to install it (`meteor add iron-router` won't work).
 
@@ -124,9 +124,9 @@ Let's clear up a bit of ambiguity here. We named our route `postsList`, but we a
 
 By default, Iron Router will look for a template with the same name as the route. In fact, it will even look for a *path* based on the route name, meaning that if we hadn't defined a custom path (which we did by providing a `path` option in our route definition), our template would've been accessible at URL `/postsList` by default. 
 
-You may be wondering why we even need to name our routes in the first place. Naming routes lets us use a few Iron Router features that make it easier to build links inside our app. The most useful one is the `{{pathFor}}` Handlebars helper,  which returns the URL path component of any route.
+You may be wondering why we even need to name our routes in the first place. Naming routes lets us use a few Iron Router features that make it easier to build links inside our app. The most useful one is the `{{pathFor}}` Spacebars helper,  which returns the URL path component of any route.
 
-We want our main home link to point us back to the posts list, so instead of specifying a static `/` URL, we can also use the Handlebars helper. The end result will be the same, but this gives us more flexibility since the helper will always output the right URL even if we change the route's path in the router. 
+We want our main home link to point us back to the posts list, so instead of specifying a static `/` URL, we can also use the Spacebars helper. The end result will be the same, but this gives us more flexibility since the helper will always output the right URL even if we change the route's path in the router. 
 
 ~~~html
 <header class="navbar">

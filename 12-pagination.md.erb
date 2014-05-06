@@ -334,7 +334,7 @@ Let's take a deeper look at this bit of router magic. Remember that the `postsLi
 
 So when we feed `{postsLimit: this.limit() + this.increment}` to `this.route.path()`, we're telling the `postsList` route to build its own path using that JavaScript object as data context. 
 
-In other words, this is exactly the same thing as using the `{{pathFor 'postsList'}}` Handlebars helper, except we're replacing the implicit `this` by our own custom-made data context.
+In other words, this is exactly the same thing as using the `{{pathFor 'postsList'}}` Spacebars helper, except we're replacing the implicit `this` by our own custom-made data context.
 
 We're taking that path and adding it to the data context for our template, but *only* if there are more posts to display. The way we do that is a bit tricky. 
 

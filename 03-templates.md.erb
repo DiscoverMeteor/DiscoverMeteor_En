@@ -6,7 +6,7 @@ number: 3
 points: 1
 photoUrl: http://www.flickr.com/photos/73449134@N04/8194499092/
 photoAuthor: Mike Lewinski
-contents: Learn about Meteor's templating language, Handlebars.|Create your first three templates.|Learn how Meteor managers work.|Get a basic prototype working with static data.
+contents: Learn about Meteor's templating language, Spacebars.|Create your first three templates.|Learn how Meteor managers work.|Get a basic prototype working with static data.
 paragraphs: 46
 ---
 
@@ -81,7 +81,7 @@ And `post_item.html`:
 
 Note the `name="postsList"` attribute of the template element. This is the name that will be used by Meteor to keep track of what template goes where. 
 
-It's time to introduce Meteor's templating system, [Handlebars](http://handlebarsjs.com). Handlebars is simply HTML, with the addition of three things: *partials*, *expressions* and *block helpers*.
+It's time to introduce Meteor's templating system, Spacebars. Spacebars is simply HTML, with the addition of three things: *partials*, *expressions* and *block helpers*.
 
 *Partials* use the `{{> templateName}}` syntax, and simply tell Meteor to replace the partial with the template of the same name (in our case `postItem`).
 
@@ -93,7 +93,7 @@ Finally, *block helpers* are special tags that control the flow of the template,
 
 ### Going Further
 
-You can refer to the [official Handlebars site](http://handlebarsjs.com) or [this handy tutorial](http://javascriptissexy.com/handlebars-js-tutorial-learn-everything-about-handlebars-js-javascript-templating/) if you'd like to learn more about Handlebars. 
+You can refer to the [Spacebars documentation]() if you'd like to learn more about Spacebars. 
 
 <% end %>
 
@@ -109,7 +109,7 @@ We've mentioned "template helpers" a lot throughout this chapter without really 
 
 ### Template Managers
 
-Up to now we've been dealing with Handlebars, which is little more than HTML with a few tags sprinkled in. Unlike other languages like PHP (or even regular HTML pages, which can include JavaScript), Meteor keeps templates and their logic separated, and these templates don't do much by themselves. 
+Up to now we've been dealing with Spacebars, which is little more than HTML with a few tags sprinkled in. Unlike other languages like PHP (or even regular HTML pages, which can include JavaScript), Meteor keeps templates and their logic separated, and these templates don't do much by themselves. 
 
 In order to come to life, a template needs a **manager**. You can think of the manager as the chef that takes raw ingredients (your data) and prepares them, before handing out the finished dish to the waiter (the template) who then presents it to you. 
 

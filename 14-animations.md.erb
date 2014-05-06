@@ -188,7 +188,8 @@ var Positions = new Meteor.Collection(null);
 Template.postItem.helpers({
 
   //..
-
+  
+  },
   attributes: function() {
     var post = _.extend({}, Positions.findOne({postId: this._id}), this);
     var newPosition = post._rank * POST_HEIGHT;
@@ -212,7 +213,7 @@ Template.postItem.helpers({
 //..
 ~~~
 <%= caption "/client/views/posts/post_item.js" %>
-<%= highlight "1~2, 8~25" %>
+<%= highlight "1~2, 8~26" %>
 
 At the very top of our document, we're setting the height of each DOM element, in other words our `.post` divs. This presents the obvious downside that any change to this height (for example, a post title wrapping on two lines) will break our animation logic. But for the sake of keeping things simple, we'll assume that every post will be exactly 80 pixels high for now. 
 

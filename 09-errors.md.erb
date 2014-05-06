@@ -57,7 +57,7 @@ We are going to display the errors at the top of our main layout:
 </template>
 ~~~
 <%= caption "client/views/application/layout.html" %>
-<%= highlight "7" %>
+<%= highlight "4" %>
 
 Let's now create the `errors` and `error` templates in `errors.html`:
 
@@ -212,13 +212,3 @@ Template.error.rendered = function() {
 The `rendered` callback triggers once our template has been rendered in the browser. Inside the callback, `this` refers to the current template instance, and `this.data` lets us access the data of the object that is currently being rendered (in our case, an error).
 
 Whew! That was a lot of work for something users will hopefully never see!
-
-<% note do %>
-
-### The `rendered` callback
-
-A template's `rendered` callback triggers every time it's rendered in the browser. This of course includes the first time it pops up on the screen, but it's important to remember that the callback will also fire every time the template is re-rendered, e.g. every time any of its data changes.
-
-Rendered callbacks will typically fire at least twice: first when the app initially loads, and a second time once collection data has been loaded. So you should be careful when putting any code that shouldn't fire twice (such as an alert, or analytics event tracking code) in them.
-
-<% end %>

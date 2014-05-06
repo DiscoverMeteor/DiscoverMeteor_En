@@ -142,7 +142,7 @@ Template.postPage.helpers({
 
 We put the `{{#each comments}}` block inside the post template, so `this` is a post within the `comments` helper. To find the relevant comments, we check those that are linked to that post via the `postId` attribute.
 
-Given what we've learnt about helpers and handlebars, rendering a comment is fairly straightforward. We'll create a new `comments` directory inside `views` to store all our comment information:
+Given what we've learnt about helpers and Spacebars, rendering a comment is fairly straightforward. We'll create a new `comments` directory inside `views` to store all our comment information:
 
 ~~~html
 <template name="comment">
@@ -336,7 +336,21 @@ But we now want our subscription to depend on a path parameter, and that paramet
 
 This has another consequence: instead of loading our data when we initialize our app, we'll now be loading it whenever we hit our *route*. This means that you'll now get loading times while browsing within the app, but it's an unavoidable downside unless you intend to front-load the entirety of your data set forever. 
 
-Here's what our new route-level `waitOn` function looks like:
+First, we'll stop preloading all comments in the `configure` block by removing `Meteor.subscribe('comments')`:
+
+~~~js
+Router.configure({
+  layoutTemplate: 'layout',
+  loadingTemplate: 'loading',
+  waitOn: function() { 
+    return Meteor.subscribe('posts');
+  }
+});
+~~~
+<%= caption "lib/router.js" %>
+<%= highlight "5" %>
+
+And we'll add a new route-level `waitOn` function:
 
 ~~~js
 Router.map(function() {
