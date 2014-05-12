@@ -129,9 +129,9 @@ Template.postEdit.events({
 ~~~
 <%= caption "client/views/posts/post_edit.js" %>
 
-By now most of that code should be familiar to you. First, we have our template helper that fetches the current post and passes it on to the template. 
+By now most of that code should be familiar to you.
 
-We then have two template event callbacks: one for the form's `submit` event, and one for the delete link's `click` event. 
+We have two template event callbacks: one for the form's `submit` event, and one for the delete link's `click` event. 
 
 The delete callback is extremely simple: suppress the default click event, then ask for confirmation. If you get it, obtain the current post ID from the Template's data context, delete it, and finally redirect the user to the homepage. 
 
