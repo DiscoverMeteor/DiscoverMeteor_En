@@ -160,7 +160,7 @@ Meteor.publish('posts', function(sort, limit) {
 
 Now that we're subscribing at the route level, it would also make sense to set the data context in the same place. We'll deviate a bit from our previous pattern and make the `data` function return a JavaScript object instead of simply returning a cursor. This lets us create a *named* data context, which we'll call `posts`. 
 
-What this means is simply that instead of being implicitely available as `this` inside the template, our data context will be available at `posts`. Apart from this small element, the code should feel familiar:
+What this means is simply that instead of being implicitly available as `this` inside the template, our data context will be available at `posts`. Apart from this small element, the code should feel familiar:
 
 ~~~js
 Router.map(function() {
