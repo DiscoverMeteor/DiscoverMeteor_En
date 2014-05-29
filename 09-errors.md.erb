@@ -144,11 +144,9 @@ Give it a try: try creating a post and entering the URL `http://meteor.com`. As 
 
 ### Clearing Errors
 
-Now you might have tried clicking the error's close button. If you did, you would see the error disappear, only to return as soon as you loaded another page. What's going on?
+If you click the error's close button at this point, you'll see the error disappear, because that close button triggers Twitter Bootstrap's embedded JavaScript. 
 
-That close button triggers Twitter Bootstrap's embedded JavaScript: it has nothing to do with Meteor! So what's happening is that Bootstrap is removing the error `<div>` from the DOM, but not from the Meteor collection. Meaning the error will of course pop right back up as soon as Meteor re-renders the page. 
-
-So unless we want errors relentlessly coming back from the dead to remind users of past mistakes and slowly drive them to insanity, we better add a way to remove errors from the collection, too.  
+But while Bootstrap is removing the error `<div>` from the DOM, it's not removing the error object from the Meteor collection. So let's add a way to clean up our local collection once an error has done its job. 
 
 First, we'll modify the `throwError` function to include a `seen` property. This will be useful later on to keep track of whether an error has been actually seen by the user. 
 
