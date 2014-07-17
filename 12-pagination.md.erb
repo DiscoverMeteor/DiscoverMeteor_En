@@ -464,4 +464,16 @@ Router.map(function() {
 
 <%= commit "12-6","Use a single post subscription to ensure that we can always see the right post." %>
 
+<% note do %>
+
+### A Poor User Experience?
+
+You might notice that the list scrolls to the top when you hit the load more button. 
+This isn’t the greatest user experience! 
+This [bug](https://github.com/DiscoverMeteor/Microscope/issues/106) is due to a problem with the Iron Router Progress package and Iron Router 0.7.1. 
+
+If you want to see it working better, try Iron Router version 0.7.0.
+
+<% end %>
+
 With pagination done, our app no longer suffers from scaling problems, and users are sure to contribute even more links than before. So wouldn't it be nice to have a way to somehow rank those links? This is precisely the topic of the next chapter, *Voting*. 
