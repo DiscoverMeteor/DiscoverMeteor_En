@@ -385,9 +385,59 @@ mrt add iron-router-progress
 ~~~
 <%= caption "bash console" %>
 
-Through the magic of smart packages, our new progress indicator will work perfectly right out of the box! The progress bar will activate for each route, and automatically complete once the route's required data is done loading. 
+Through the magic of smart packages, our new progress indicator will work perfectly right out of the box! The progress bar will activate for each route, and automatically complete once the route's required data is done loading.
 
-We'll just do a single tweak. Let's disable `iron-router-progress` for the `postSubmit` route since it doesn't need to wait for any subscription data (after all, it's just an empty form):
+Because we want to show the post list even as we browse between pages, we don't want the loading hook to run for our `PostListController` pages -- we can do this by no longer waiting on the subscription:
+
+~~~js
+PostsListController = RouteController.extend({
+  // ...
+  
+  onBeforeAction: function() {
+    this.postsSub = Meteor.subscribe('posts', this.findOptions());
+  },
+  posts: function() {
+    return Posts.find({}, this.findOptions());
+  },
+  data: function() {
+    var hasMore = this.posts().count() === this.limit();
+    return {
+      posts: this.posts(),
+      ready: this.postsSub.ready,
+      nextPath: hasMore ? this.nextPath() : null
+    };
+  }
+});
+~~~
+<%= caption "lib/router.js" %>
+<%= highlight "3~5,13" %>
+
+Instead of subscribing in a `waitOn`, we subscribe in a `onBeforeAction` hook, keeping a reference to the subscription handle in `this.postsSub`, so we can pass the "readiness" into the template.
+
+Then, the template, we can show a spinner at the bottom of the post list when we are loading a new set of posts by checking that ready state:
+
+~~~html
+<template name="postsList">
+  <div class="posts">
+    {{#each postsWithRank}}
+      {{> postItem}}
+    {{/each}}
+    
+    {{#if nextPath}}
+      <a class="load-more" href="{{nextPath}}">Load more</a>
+    {{else}}
+      {{#unless ready}}
+        LOADING
+      {{/unless}}
+    {{/if}}
+  </div>
+</template>
+~~~
+<%= caption "client/views/posts/posts_list.html" %>
+<%= highlight "10~12" %>
+
+
+We'll add another simple tweak. Let's disable `iron-router-progress` for the `postSubmit` route since it doesn't need to wait for any subscription data (after all, it's just an empty form):
 
 ~~~js
 Router.map(function() {
@@ -463,17 +513,5 @@ Router.map(function() {
 <%= highlight "7~12,18~20" %>
 
 <%= commit "12-6","Use a single post subscription to ensure that we can always see the right post." %>
-
-<% note do %>
-
-### A Poor User Experience?
-
-You might notice that the list scrolls to the top when you hit the load more button. 
-This isn’t the greatest user experience! 
-This [bug](https://github.com/DiscoverMeteor/Microscope/issues/106) is due to a problem with the Iron Router Progress package and Iron Router 0.7.1. 
-
-If you want to see it working better, try Iron Router version 0.7.0.
-
-<% end %>
 
 With pagination done, our app no longer suffers from scaling problems, and users are sure to contribute even more links than before. So wouldn't it be nice to have a way to somehow rank those links? This is precisely the topic of the next chapter, *Voting*. 
