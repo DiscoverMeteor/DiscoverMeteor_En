@@ -97,9 +97,9 @@ Iron Router supports a variety of options for server-side routing responses, not
 
 ### Building The RSS Package From NPM
 
-As you've probably guessed by now, the first thing we'll use server-side routes for is building an RSS feed for our `/new` view. Building our feed entirely by hand would quickly get tedious, so we'll use an existing [node package](https://npmjs.org/) to help generate it for us.
+As you've probably guessed by now, the first thing we'll use server-side routes for is building an RSS feed for our `/new` view. Building our feed entirely by hand would quickly get tedious, so we'll use an existing [Node.js package](https://npmjs.org/) to help generate it for us.
 
-Unlike Atmosphere packages (which are specific to Meteor), Node Packaged Modules are not optimized for Meteor apps. A lot of them still work just fine though! 
+Unlike Atmosphere packages (which are specific to Meteor), Node.js Packaged Modules are not optimized for Meteor apps. A lot of them still work just fine though! 
 
 To make use of the NPM RSS package, we'll create our own RSS local package to act as a wrapper. Create a new `rss` directory inside `/packages`, and add the following code to its `package.js`:
 

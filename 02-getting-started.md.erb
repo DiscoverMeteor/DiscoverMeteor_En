@@ -40,12 +40,12 @@ Since we'll be relying on third-party packages for some of Microscope's features
 
 ### Installing Meteorite
 
-You'll need to ensure node and git are installed on your machine. Install them in the standard way for your OS, or try these links:
+You'll need to ensure Node.js and Git are installed on your machine. Install them in the standard way for your OS, or try these links:
  
-- [Node download site](http://nodejs.org/download/)
+- [Node.js download site](http://nodejs.org/download/)
 - [Git download site](http://git-scm.com/downloads)
 
-Second, let's install Meteorite. As it's a [npm](https://npmjs.org/) executable (Node Packaged Module, Node's standard module format), we install it with:
+Second, let's install Meteorite. As it's a [npm](https://npmjs.org/) executable (Node.js Packaged Module, Node.js's standard module format), we install it with:
 
 ~~~bash
 $ npm install -g meteorite
@@ -111,6 +111,8 @@ Now point your browser to `http://localhost:3000/` (or the equivalent `http://0.
 
 Congratulations! You've got your first Meteor app running. By the way, to stop the app all you need to do is bring up the terminal tab where the app is running, and press `ctrl+c`. 
 
+Also note that if you're using Git, this is a good time to initialize your repo with `git init`. 
+
 ### Adding a Package
 
 We will now use Meteorite to add a smart package that will let us include [Bootstrap](http://getbootstrap.com/) in our project:
@@ -131,7 +133,7 @@ When speaking about packages in the context of Meteor, it pays to be specific. M
 - Meteor **smart packages** are a group of [about 37 packages](http://docs.meteor.com/#packages) (you can get the full list with `meteor list`) that come bundled with Meteor and that you can optionally import into your own app. You can add them even when you're not using Meteorite, with `meteor add packagename`. 
 - **Local packages** are custom packages you can create yourself and put in the `/packages` directory. You don't need Meteorite to use them either.
 - **Atmosphere smart packages** are third-party Meteor packages listed on [Atmosphere](http://atmosphere.meteor.com). Meteorite is needed to import and use them. 
-- **NPM packages** (Node Packaged Modules) are Node.js packages. Although they don't work out of the box with Meteor, they *can* be used by the previous types of packages. 
+- **NPM packages** (Node.js Packaged Modules) are Node.js packages. Although they don't work out of the box with Meteor, they *can* be used by the previous types of packages. 
 
 <% end %>
 

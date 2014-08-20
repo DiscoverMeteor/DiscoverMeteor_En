@@ -194,7 +194,7 @@ In a perfect world, we'd also run the link shortening function when editing a po
 
 With our shortened URLs working, we can now display shortened links instead of the normal ones. Since we're shortening URLs at the time of posting, previously existing links will obviously not have short URLs. We'll take care of this with a simple `postUrl` helper:
 
-~~~js
+~~~html
 <template name="postItem">
   <div class="post">
     <a href="#" class="upvote btn {{upvotedClass}}">⬆</a>
@@ -363,7 +363,7 @@ With this method, `clicks` becomes a property of the post document and is stored
 
 And to make sure everything is working properly, we'll also display a click counter on each of our posts:
 
-~~~js
+~~~html
 <template name="postItem">
   <div class="post">
     <a href="#" class="upvote btn {{upvotedClass}}">⬆</a>

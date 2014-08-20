@@ -21,7 +21,7 @@ We will be learning how to deploy a Meteor app in few different ways. Feel free 
 
 ### Introducing Sidebars
 
-This is a **sidebar** chapter. Sidebars take a deeper look at more general Meteor topics independantly of the rest of the book.
+This is a **sidebar** chapter. Sidebars take a deeper look at more general Meteor topics independently of the rest of the book.
 
 So if you'd rather go on with building Microscope, you can safely skip it for now and come back to it later. 
 
@@ -43,13 +43,13 @@ You can refer to [the official documentation](http://docs.meteor.com/#deploying)
 
 ### Deploying On Modulus
 
-[Modulus](https://modulus.io/) is a great option for deploying NodeJS apps. It's one of the few PaaS (platform-as-a-service) provider that officially support Meteor, and there are already quite a few people running production Meteor apps on it. 
+[Modulus](https://modulus.io/) is a great option for deploying Node.js apps. It's one of the few PaaS (platform-as-a-service) provider that officially support Meteor, and there are already quite a few people running production Meteor apps on it. 
 
 <% note do %>
 
 ### Demeteorizer
 
-Modulus open-sourced a tool called [demeteorizer](https://github.com/onmodulus/demeteorizer) which converts your Meteor app into a standard NodeJS app.
+Modulus open-sourced a tool called [demeteorizer](https://github.com/onmodulus/demeteorizer) which converts your Meteor app into a standard Node.js app.
 
 <% end %>
 
@@ -73,7 +73,7 @@ $ modulus project create
 
 The next step will be creating a MongoDB database for our app. We can create a MongoDB database with [Modulus itself](https://modulus.io/codex/database/getting_started), [MongoHQ](https://www.mongohq.com/) or with any other cloud MongoDB provider.
 
-Once we've created our MongoDB database, we can get the `MONGO_URL` for our database from Modulus' web UI (got to Dashboard > Databases > Select your database > Administration), then use it to configure our app like so:
+Once we've created our MongoDB database, we can get the `MONGO_URL` for our database from Modulus' web UI (go to Dashboard > Databases > Select your database > Administration), then use it to configure our app like so:
 
 ~~~bash
 $ modulus env set MONGO_URL "mongodb://<user>:<pass>@mongo.onmodulus.net:27017/<database_name>"
@@ -188,7 +188,7 @@ Before we can deploy, we'll need to set up the server so it's ready to host Mete
 $ mup setup
 ~~~
 
-This will take few minutes depending on the server's performance and the network connectivity. After the setup is successful, we can finally deploy our app with:
+This will take a few minutes depending on the server's performance and the network connectivity. After the setup is successful, we can finally deploy our app with:
 
 ~~~bash
 $ mup deploy

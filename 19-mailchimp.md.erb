@@ -107,7 +107,7 @@ XXX: also removed temporary method
 
 Why do we go to all this effort to wrap the MailChimp API in essentially the same API with some extra fibers attached?
 
-The reason is that one of the core design decisions made in Meteor was to use syncronous APIs. This is a fairly controversial decision when you consider that the vast majority of existing node packages have asyncronous APIs and thus need to be wrapped in a similar fashion to become 'meteoric'. 
+The reason is that one of the core design decisions made in Meteor was to use syncronous APIs. This is a fairly controversial decision when you consider that the vast majority of existing Node.js packages have asyncronous APIs and thus need to be wrapped in a similar fashion to become 'meteoric'. 
 
 However, there is a reason for this tradeoff--syncronous APIs are easier to deal with. Most programmers agree that when your program is stepping through a series of instructions such as:
 
@@ -117,6 +117,6 @@ However, there is a reason for this tradeoff--syncronous APIs are easier to deal
 
 That it's much easier to write such code in an imperative way (much like the list is written), rather than via a "callback soup".
 
-When you are writing code that needs to flexibly respond to many different event simulatenously in a controlled fashion, then a callback style approach can be very powerful (and to be fair, many complex node applications do this), but when your code is performing the "drudgery" of server side web application logic, this power tends to get in your way.
+When you are writing code that needs to flexibly respond to many different event simulatenously in a controlled fashion, then a callback style approach can be very powerful (and to be fair, many complex Node.js applications do this), but when your code is performing the "drudgery" of server side web application logic, this power tends to get in your way.
 
 <% end %>

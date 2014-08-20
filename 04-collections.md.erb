@@ -108,7 +108,7 @@ Mongo's syntax is familiar, as it uses a JavaScript interface. We won't be doing
 
 ### Client-Side Collections
 
-Collections get more interesting client-side. When you declare `Posts = new Meteor.Collection('posts');` on the client, what you are creating is a _local, in-browser cache_ of the real Mongo collection. When we talk about a client-side collections being a "cache", we mean it in the sense that it contains a *subset* of your data, and offers very *quick* access to this data.
+Collections get more interesting client-side. When you declare `Posts = new Meteor.Collection('posts');` on the client, what you are creating is a _local, in-browser cache_ of the real Mongo collection. When we talk about a client-side collection being a "cache", we mean it in the sense that it contains a *subset* of your data, and offers very *quick* access to this data.
 
 It's important to understand this point as it's fundamental to the way Meteor works. In general, a client side collection consists of a subset of all the documents stored in the Mongo collection (after all, we generally don't want to send our *whole* database to the client). 
 
@@ -124,7 +124,7 @@ Meteor's client-side Mongo implementation is called MiniMongo. It's not a perfec
 
 ### Client-Server Communication
 
-The key piece of all this is how the client-side collection sychronizes its data with the server-side collection of the same name (`'posts'` in our case).
+The key piece of all this is how the client-side collection synchronizes its data with the server-side collection of the same name (`'posts'` in our case).
 
 Rather than explaining this in detail, let's just watch what happens.
 

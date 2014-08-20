@@ -41,9 +41,7 @@ Router.map(function() {
 Router.onBeforeAction('loading');
 ~~~
 <%= caption "lib/router.js" %>
-<%= highlight "14~17" %>
-
-We're using the router's `data` function to set the `postPage` template's data context. Remember that whatever we put into the data context will be available as `this` inside the template helpers. 
+<%= highlight "15~17" %>
 
 ### Adding A Link To The Header
 
@@ -409,7 +407,7 @@ Meteor's `Error` class takes three arguments. The first one (`error`) is an erro
 
 In our case, we'll use this third argument to pass the ID of the post that we just found. Spoiler alert: we'll use this later on to redirect the user to the pre-existing post.
 
-If all those checks pass, we grab the fields that we want to insert (to ensure a user calling this Method in browser console can't put spurious data into our database), and include some information about the submitting user -- as well as the current time -- into  the post. 
+If all those checks pass, we grab the fields that we want to insert using [Underscore](http://underscorejs.org/)'s [pick](http://underscorejs.org/#pick) (to ensure a user calling this Method in browser console can't put spurious data into our database), and include some information about the submitting user -- as well as the current time -- into  the post using [extend](http://underscorejs.org/#extend). 
 
 Finally, we insert the post, and return the new post's `id` to the user.
 

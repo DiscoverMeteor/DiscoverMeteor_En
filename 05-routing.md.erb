@@ -78,14 +78,14 @@ While the newly created `layout.html` will now contain the app's outer layout:
 ~~~html
 <template name="layout">
   <div class="container">
-  <header class="navbar">
-    <div class="navbar-inner">
-      <a class="brand" href="/">Microscope</a>
+    <header class="navbar">
+      <div class="navbar-inner">
+        <a class="brand" href="/">Microscope</a>
+      </div>
+    </header>
+    <div id="main" class="row-fluid">
+      {{> yield}}
     </div>
-  </header>
-  <div id="main" class="row-fluid">
-    {{> yield}}
-  </div>
   </div>
 </template>
 ~~~

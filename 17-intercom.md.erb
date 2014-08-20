@@ -186,7 +186,7 @@ IntercomHash = function(user, secret) {
 ~~~
 <%= caption "packages/intercom/intercom_server.js" %>
 
-Note the use of `Npm.require`, Meteor's method of using NPM packages (we don't need to add a `Npm.depends` in our `package.js` here because `crypto` is a built in node package - it doesn't actually come from NPM at all!).
+Note the use of `Npm.require`, Meteor's method of using NPM packages (we don't need to add a `Npm.depends` in our `package.js` here because `crypto` is a built in Node.js package - it doesn't actually come from NPM at all!).
 
 Now we just need to add that function to our intercom package, and export it so we can use it in the server `IntercomHash`.
 

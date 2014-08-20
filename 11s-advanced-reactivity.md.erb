@@ -87,7 +87,7 @@ These computations can then go ahead and deal with the change on a case-by-case 
 
 [Angular](http://angularjs.org/) is a client-side only reactive rendering library, developed by the good folks at Google. It's illustrative to compare Meteor's approach to dependency tracking to Angular's, as the approaches are quite different.
 
-We've seen that Meteor's model uses blocks of code called computations. These computations are tracked by special "reactive" data sources (functions) that take care of invalidating them when appropriate. So the data source _explicitly_ informs all of it's dependencies when they need to call `invalidate()`. Note that although this is generally when data has changed, the data source could potentially also decide to trigger invalidation for other reasons.
+We've seen that Meteor's model uses blocks of code called computations. These computations are tracked by special "reactive" data sources (functions) that take care of invalidating them when appropriate. So the data source _explicitly_ informs all of its dependencies when they need to call `invalidate()`. Note that although this is generally when data has changed, the data source could potentially also decide to trigger invalidation for other reasons.
 
 Additionally, although computations usually just re-run when invalidated, you can set them up to behave any way you want. All this gives us a high level of control over reactivity.
 
