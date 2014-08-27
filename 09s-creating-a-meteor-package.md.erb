@@ -13,11 +13,11 @@ paragraphs: 22
 
 We've built a re-usable pattern with our errors work, so why not package it up into a smart package and share it with the rest of the Meteor community?
 
-To get started, we need to make sure we have a Meteor Developer account. You can go claim yours at meteor.com, but there's a good chance you already did so when you signed up for the Book! In either case, you should figure out what your username as we'll make heavy use of it in this chapter. 
+To get started, we need to make sure we have a Meteor Developer account. You can go claim yours at meteor.com, but there's a good chance you already did so when you signed up for the book! In either case, you should figure out what your username is, as we'll make heavy use of it in this chapter. 
 
-We'll use the username `tmeasday` in this chapter--you can substitute your own in for it.
+We'll use the username `tmeasday` in this chapter -- you can substitute your own in for it.
 
-First we need to create some structure for our package to reside in. We can use the `meteor create --package tmeasday:errors` command to do so. Note that Meteor has created a folder `packages/tmeasday:errors/`, with some files inside. We'll start by editing `package.js`, the file that informs Meteor of how the package should be used, and the symbols that it exports.
+First we need to create some structure for our package to reside in. We can use the `meteor create --package tmeasday:errors` command to do so. Note that Meteor has created a folder named `packages/tmeasday:errors/`, with some files inside. We'll start by editing `package.js`, the file that informs Meteor of how the package should be used, and which objects or functions it needs to export.
 
 ~~~js
 Package.describe({
@@ -38,7 +38,7 @@ Package.onUse(function (api, where) {
 ~~~
 <%= caption "packages/tmeasday:errors/package.js" %>
 
-When developing a package for real, you should add a `git` section to the `Package.describe` (assuming you are hosting the package on a git server). That way users can read the source code, and if you are using GitHub, READMEs will display on Atmosphere.
+When developing a package for real-world use, it's good practice to fill the `Package.describe` block's `git` section with your repo's Git URL (such as `https://github.com/tmeasday/meteor-errors.git`). This way users can read the source code, and (assuming you are using GitHub) your package's readme will appear on Atmosphere.
 
 Let's add three files to the package. (We can remove the boilerplate that Meteor put down) We can pull these files from Microscope without much change except for some proper namespacing and a slightly cleaner API:
 
@@ -179,7 +179,7 @@ To tell Meteor how to run the tests in `package.js`, use the following code:
 
 ~~~js
 Package.onTest(function(api) {
-  api.use('errors', 'client');
+  api.use('tmeasday:errors', 'client');
   api.use(['tinytest', 'test-helpers'], 'client');  
   
   api.add_files('errors_tests.js', 'client');
@@ -192,7 +192,7 @@ Package.onTest(function(api) {
 Then we can run the tests with:
 
 ~~~bash
-$ meteor test-packages errors
+$ meteor test-packages tmeasday:errors
 ~~~
 <%= caption "Terminal" %>
 
@@ -202,7 +202,7 @@ $ meteor test-packages errors
 
 Now, we want to release the package and make it available to the world. We do this by pushing it to Meteor's package server, and getting it onto Atmopshere.
 
-Luckily, it's very easy. We just change directory into the package, and run `meteor publish --create`:
+Luckily, it's very easy. We just `cd` into the package's directory, and run `meteor publish --create`:
 
 ~~~bash
 cd packages/tmeasday:errors
