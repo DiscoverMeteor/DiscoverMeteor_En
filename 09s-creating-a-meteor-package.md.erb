@@ -1,6 +1,6 @@
 ---
-title: Creating a Meteorite Package
-slug: creating-a-meteorite-package
+title: Creating a Meteor Package
+slug: creating-a-meteor-package
 date: 0009/01/02
 number: 9.5
 points: 10
@@ -13,7 +13,7 @@ paragraphs: 22
 
 We've built a re-usable pattern with our errors work, so why not package it up into a smart package and share it with the rest of the Meteor community?
 
-First we need to create some structure for our package to reside in. We put the package in a directory named `packages/errors/`. This creates a custom package that's automatically used. (You might have noticed that Meteorite installs packages via symlinks in the `packages/` directory).
+First we need to create some structure for our package to reside in. We put the package in a directory named `packages/errors/`. This creates a custom package that's automatically used. (You might have noticed that Meteor installs packages via symlinks in the `packages/` directory).
 
 Second, we'll create `package.js` in that folder, the file that informs Meteor of how the package should be used, and the symbols that it exports.
 
@@ -195,7 +195,7 @@ $ meteor test-packages errors
 
 Now, we want to release the package and make it available to the world. We do this by putting it on Atmosphere.
 
-First, we need to add a `smart.json`, to tell Meteorite and Atmosphere the important details about the package:
+First, we need to add a `smart.json`, to tell Meteor and Atmosphere the important details about the package:
 
 ~~~json
 {
@@ -217,7 +217,7 @@ We put in some basic metadata to provide information about the package, includin
 
 Once all this is in place, releasing is easy. We'll need to create a git repository, push to a remote git server somewhere, and link to that location in our `smart.json`.
 
-The process for doing this for [GitHub](http://github.com) is to first create a new repository, then follow the standard practice to get the package's code within that repository. Then, we use the `mrt release` command to publish it:
+The process for doing this for [GitHub](http://github.com) is to first create a new repository, then follow the standard practice to get the package's code within that repository. Then, we use the `meteor release` command to publish it:
 
 ~~~bash
 $ git init
@@ -225,23 +225,22 @@ $ git add -A
 $ git commit -m "Created Errors Package"
 $ git remote add origin https://github.com/tmeasday/meteor-errors.git
 $ git push origin master
-$ mrt release .
+$ meteor release .
 Done!
 ~~~
 <%= caption "Terminal (run from within `packages/errors`)" %>
 
 Note: package names have to be unique. If you are following along word-for-word and use the same package name, there will be a conflict and it won't work. In the future though Atmosphere will be name-spaced by author, so you can expect this to change.
 
-Second Note: You'll need to login at http://atmosphere.meteor.com/accounts and create a username and password which you'll enter on the command line when you call `mrt release .`.
+Second Note: You'll need to login at http://atmosphere.meteor.com/accounts and create a username and password which you'll enter on the command line when you call `meteor release .`.
 
-Now that the package is released, we can now delete it from the project and then add it back in directly using Meteorite:
-
+Now that the package is released, we can now delete it from the project and then add it back in directly:
 ~~~bash
 $ rm -r packages/errors
-$ mrt add errors
+$ meteor add errors
 ~~~
 <%= caption "Terminal (run from the top level of the app)" %>
 
 <%= scommit "9-5-4", "Removed package from development tree." %>
 
-Now we should see Meteorite download our package for the very first time. Well done!
+Now we should see Meteor download our package for the very first time. Well done!

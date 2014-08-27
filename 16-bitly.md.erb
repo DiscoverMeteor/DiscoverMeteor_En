@@ -90,14 +90,14 @@ All that's left is to tell Meteor to load that settings file. We can do this by 
 Then restart it with:
 
 ~~~bash
-$ mrt --settings settings.json
+$ meteor --settings settings.json
 ~~~
 
 <% note do %>
 
 ### Adding An Alias
 
-Typing `mrt --settings settings.json` every single time instead of just `mrt` might get a little tiring. So if you want, you can create an alias for this command.
+Typing `meteor --settings settings.json` every single time instead of just `meteor` might get a little tiring. So if you want, you can create an alias for this command.
 
 The following steps will strongly depend on your environment and configuration, but assuming you're running Mac OS, you'll have to edit the `.bash_profile` file that lives in your local user directory:
 
@@ -110,10 +110,10 @@ $ open -a TextEdit .bash_profile
 Then, simply add this line at the end of the file:
 
 ~~~bash
-alias mrtset='mrt --settings settings.json'
+alias meteorset='meteor --settings settings.json'
 ~~~
 
-After saving and reloading your terminal window, you should now be able to run all your Meteor apps with the `mrtset` command, and have your `settings.json` file automatically included to boot!
+After saving and reloading your terminal window, you should now be able to run all your Meteor apps with the `meteorset` command, and have your `settings.json` file automatically included to boot!
 
 <% end %>
 

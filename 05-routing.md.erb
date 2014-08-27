@@ -25,13 +25,11 @@ Not only does it help with routing (setting up paths), but it can also take care
 First, let's install the package from Atmosphere: 
 
 ~~~bash
-$ mrt add iron-router
+$ meteor add iron-router
 ~~~
 <%= caption "Terminal" %>
 
 This command downloads and installs the iron-router package into our app, ready to use. Note that you might sometimes need to restart your Meteor app (with `ctrl+c` to kill the process, then `meteor` to start it again) before a package can be used.
-
-Note that the Iron Router is a third-party package, meaning that you'll need Meteorite to install it (`meteor add iron-router` won't work).
 
 <% note do %>
 
@@ -178,7 +176,7 @@ It's usually a good idea to wait on your subscriptions, not just for the user ex
 
 We'll also add an `onBeforeAction` filter to trigger Iron Router's built-in `loading` hook and make sure we're showing the loading template while we wait. 
 
-The final piece of the puzzle is the actual loading template. We'll use the `spin` package to create a nice animated loading spinner. Add it with `mrt add spin`, and then create the `loading` template as follows:
+The final piece of the puzzle is the actual loading template. We'll use the `spin` package to create a nice animated loading spinner. Add it with `meteor add spin`, and then create the `loading` template as follows:
 
 ~~~html
 <template name="loading">

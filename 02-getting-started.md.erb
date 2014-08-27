@@ -6,7 +6,7 @@ number: 2
 points: 1
 photoUrl: http://www.flickr.com/photos/ikewinski/9511230392/
 photoAuthor: Mike Lewinski
-contents: Install Meteor & Meteorite.|Learn about the 5 types of Meteor packages.|Setup the file structure of your Meteor app.
+contents: Install Meteor.|Learn about the 5 types of Meteor packages.|Setup the file structure of your Meteor app.
 paragraphs: 49
 ---
 
@@ -28,61 +28,16 @@ If you can't (or don't want to) install Meteor locally, we recommend checking ou
 
 Nitrous.io is a service that lets you run apps and edit their code right in your browser, and we've written [a short guide](https://www.discovermeteor.com/blog/meteor-nitrous) to help you get set up. 
 
-You can simply follow that guide up to (and including) the "Installing Meteor & Meteorite" section, and then follow along with the book again starting from the "Creating a Simple App" section of this chapter. 
+You can simply follow that guide up to (and including) the "Installing Meteor" section, and then follow along with the book again starting from the "Creating a Simple App" section of this chapter. 
 
-<% end %>
- 
-### Meteorite
-
-Due to the fact that Meteor doesn't yet support third-party packages out of the box, Tom Coleman (one of this book's authors) and some members of the community have created [Meteorite](http://oortcloud.github.com/meteorite/), a wrapper for Meteor. Meteorite also takes care of installing Meteor for you and hooking it together with any packages you might find.
-
-Since we'll be relying on third-party packages for some of Microscope's features, let's install Meteorite. 
-
-### Installing Meteorite
-
-You'll need to ensure Node.js and Git are installed on your machine. Install them in the standard way for your OS, or try these links:
- 
-- [Node.js download site](http://nodejs.org/download/)
-- [Git download site](http://git-scm.com/downloads)
-
-Second, let's install Meteorite. As it's a [npm](https://npmjs.org/) executable (Node.js Packaged Module, Node.js's standard module format), we install it with:
-
-~~~bash
-$ npm install -g meteorite
-~~~
-
-<% note do %>
-
-### Permission errors?
-
-On some machines you may need root permission to install Meteorite. To avoid problems, make sure you use `sudo -H`:
-
-~~~bash
-$ sudo -H npm install -g meteorite
-~~~
-
-You can read more about this issue in the [Meteorite documentation](https://github.com/oortcloud/meteorite/blob/master/README.md#permission-woes).
-
-<% end %>
-
-That's it! Meteorite will handle things from here.
-
-Note: there is no Windows support for Meteorite yet, but you can take a look at [our windows tutorial](https://www.discovermeteor.com/blog/using-meteor-and-atmopshere-on-windows/) instead.
-
-<% note do %>
-
-  ### `mrt` vs `meteor`
-  
-  Meteorite installs the `mrt` executable, which we'll use to install packages into our application. When we want to run our server, however, we use the `meteor` executable.
-  
 <% end %>
 
 ### Creating a Simple App
 
-Now that we have installed Meteorite, let's create an app. To do this, we use Meteorite's command line tool `mrt`:
+Now that we have installed Meteor, let's create an app. To do this, we use Meteor's command line tool `meteor`:
 
 ~~~bash
-$ mrt create microscope
+$ meteor create microscope
 ~~~
 
 This command will download Meteor, and set up a basic, ready to use Meteor project for you. When it's done, you should see a directory, `microscope/`, containing the following:
@@ -113,12 +68,22 @@ Congratulations! You've got your first Meteor app running. By the way, to stop t
 
 Also note that if you're using Git, this is a good time to initialize your repo with `git init`. 
 
+<% note do %>
+
+### Bye Bye Meteorite
+
+There was a time where Meteor relied on an external package manager called Meteorite. Since Meteor version 0.9.0, Meteorite is not needed anymore since its features have been assimilated into Meteor itself.
+
+So if you encounter any references to Meteorite's `mrt` command line utility throughout this book or while browsing Meteor-related material, you can safely replace them by the usual `meteor`. 
+
+<% end %>
+
 ### Adding a Package
 
-We will now use Meteorite to add a smart package that will let us include [Bootstrap](http://getbootstrap.com/) in our project:
+We will now use Meteor to add a smart package that will let us include [Bootstrap](http://getbootstrap.com/) in our project:
 
 ~~~bash
-$ mrt add bootstrap
+$ meteor add bootstrap
 ~~~
 
 <%= commit "2-2", "Added bootstrap package." %>
@@ -130,9 +95,9 @@ $ mrt add bootstrap
 When speaking about packages in the context of Meteor, it pays to be specific. Meteor uses five basic types of packages:
 
 - The Meteor core itself is split into different **core packages**. They are included with every Meteor app, and you will pretty much never need to worry about these.
-- Meteor **smart packages** are a group of [about 37 packages](http://docs.meteor.com/#packages) (you can get the full list with `meteor list`) that come bundled with Meteor and that you can optionally import into your own app. You can add them even when you're not using Meteorite, with `meteor add packagename`. 
-- **Local packages** are custom packages you can create yourself and put in the `/packages` directory. You don't need Meteorite to use them either.
-- **Atmosphere smart packages** are third-party Meteor packages listed on [Atmosphere](http://atmosphere.meteor.com). Meteorite is needed to import and use them. 
+- Meteor **smart packages** are a group of [about 37 packages](http://docs.meteor.com/#packages) (you can get the full list with `meteor list`) that come bundled with Meteor and that you can optionally import into your own app with `meteor add packagename`. 
+- **Local packages** are custom packages you can create yourself and put in the `/packages` directory. 
+- **Atmosphere smart packages** are third-party Meteor packages. They're all listed on [Atmosphere](http://atmosphere.meteor.com).
 - **NPM packages** (Node.js Packaged Modules) are Node.js packages. Although they don't work out of the box with Meteor, they *can* be used by the previous types of packages. 
 
 <% end %>
@@ -296,6 +261,8 @@ body {
 
 In this book we'll be writing in pure JavaScript. But if you prefer CoffeeScript, Meteor has you covered. Simply add the CoffeeScript package and you'll be good to go:
 
-`mrt add coffeescript`
+`meteor add coffeescript`
 
 <% end %>
+
+<% note do %>
