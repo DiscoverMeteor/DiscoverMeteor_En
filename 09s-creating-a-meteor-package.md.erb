@@ -13,16 +13,21 @@ paragraphs: 22
 
 We've built a re-usable pattern with our errors work, so why not package it up into a smart package and share it with the rest of the Meteor community?
 
-First we need to create some structure for our package to reside in. We put the package in a directory named `packages/errors/`. This creates a custom package that's automatically used. (You might have noticed that Meteor installs packages via symlinks in the `packages/` directory).
+To get started, we need to make sure we have a Meteor Developer account. You can go claim yours at meteor.com, but there's a good chance you already did so when you signed up for the Book! In either case, you should figure out what your username as we'll make heavy use of it in this chapter. 
 
-Second, we'll create `package.js` in that folder, the file that informs Meteor of how the package should be used, and the symbols that it exports.
+We'll use the username `tmeasday` in this chapter--you can substitute your own in for it.
+
+First we need to create some structure for our package to reside in. We can use the `meteor create --package tmeasday:errors` command to do so. Note that Meteor has created a folder `packages/tmeasday:errors/`, with some files inside. We'll start by editing `package.js`, the file that informs Meteor of how the package should be used, and the symbols that it exports.
 
 ~~~js
 Package.describe({
-  summary: "A pattern to display application errors to the user"
+  summary: "A pattern to display application errors to the user",
+  version: "1.0.0"
 });
 
-Package.on_use(function (api, where) {
+Package.onUse(function (api, where) {
+  api.versionsFrom('METEOR@0.9.0');
+  
   api.use(['minimongo', 'mongo-livedata', 'templating'], 'client');
 
   api.add_files(['errors.js', 'errors_list.html', 'errors_list.js'], 'client');
@@ -31,9 +36,11 @@ Package.on_use(function (api, where) {
     api.export('Errors');
 });
 ~~~
-<%= caption "packages/errors/package.js" %>
+<%= caption "packages/tmeasday:errors/package.js" %>
 
-Let's add three files to the package. We can pull these files from Microscope without much change except for some proper namespacing and a slightly cleaner API:
+When developing a package for real, you should add a `git` section to the `Package.describe` (assuming you are hosting the package on a git server). That way users can read the source code, and if you are using GitHub, READMEs will display on Atmosphere.
+
+Let's add three files to the package. (We can remove the boilerplate that Meteor put down) We can pull these files from Microscope without much change except for some proper namespacing and a slightly cleaner API:
 
 ~~~js
 Errors = {
@@ -49,7 +56,7 @@ Errors = {
 };
 
 ~~~
-<%= caption "packages/errors/errors.js" %>
+<%= caption "packages/tmeasday:errors/errors.js" %>
 
 ~~~html
 <template name="meteorErrors">
@@ -65,7 +72,7 @@ Errors = {
   </div>
 </template>
 ~~~
-<%= caption "packages/errors/errors_list.html" %>
+<%= caption "packages/tmeasday:errors/errors_list.html" %>
 
 ~~~js
 Template.meteorErrors.helpers({
@@ -81,11 +88,11 @@ Template.meteorError.rendered = function() {
   });
 };
 ~~~
-<%= caption "packages/errors/errors_list.js" %>
+<%= caption "packages/tmeasday:errors/errors_list.js" %>
 
 ### Testing the package out with Microscope
 
-We will now test things locally with Microscope to ensure our changed code works. To link the package into our project, we run `meteor add errors`. Then, we need to delete the existing files that have been made redundant by the new package:
+We will now test things locally with Microscope to ensure our changed code works. To link the package into our project, we run `meteor add tmeasday:errors`. Then, we need to delete the existing files that have been made redundant by the new package:
 
 ~~~bash
 $ rm client/helpers/errors.js
@@ -162,7 +169,7 @@ Tinytest.addAsync("Errors template works", function(test, done) {
   }, 500);
 });
 ~~~
-<%= caption "packages/errors/errors_tests.js" %>
+<%= caption "packages/tmeasday:errors/errors_tests.js" %>
 
 In these tests we're checking the basic `Meteor.Errors` functions work, as well as double checking that the `rendered` code in the template is still functioning.
 
@@ -171,14 +178,14 @@ We won't cover the specifics of writing Meteor package tests here (as the API is
 To tell Meteor how to run the tests in `package.js`, use the following code:
 
 ~~~js
-Package.on_test(function(api) {
+Package.onTest(function(api) {
   api.use('errors', 'client');
   api.use(['tinytest', 'test-helpers'], 'client');  
   
   api.add_files('errors_tests.js', 'client');
 });
 ~~~
-<%= caption "packages/errors/package.js" %>
+<%= caption "packages/tmeasday:errors/package.js" %>
 
 <%= scommit "9-5-2", "Added tests to the package." %>
 
@@ -193,51 +200,21 @@ $ meteor test-packages errors
 
 ### Releasing the package
 
-Now, we want to release the package and make it available to the world. We do this by putting it on Atmosphere.
+Now, we want to release the package and make it available to the world. We do this by pushing it to Meteor's package server, and getting it onto Atmopshere.
 
-First, we need to add a `smart.json`, to tell Meteor and Atmosphere the important details about the package:
-
-~~~json
-{
-  "name": "errors",
-  "description": "A pattern to display application errors to the user",
-  "homepage": "https://github.com/tmeasday/meteor-errors",
-  "author": "Tom Coleman <tom@thesnail.org>",
-  "version": "0.1.0",
-  "git": "https://github.com/tmeasday/meteor-errors.git",
-  "packages": {
-  }
-}
-~~~
-<%= caption "packages/errors/smart.json" %>
-
-<%= scommit "9-5-3", "Added a smart.json" %>
-
-We put in some basic metadata to provide information about the package, including what it does, the git location where we're going to host it, and an initial version number. If our package was relying on other Atmosphere packages, we could also use a `"packages"` section to outline its dependencies.
-
-Once all this is in place, releasing is easy. We'll need to create a git repository, push to a remote git server somewhere, and link to that location in our `smart.json`.
-
-The process for doing this for [GitHub](http://github.com) is to first create a new repository, then follow the standard practice to get the package's code within that repository. Then, we use the `meteor release` command to publish it:
+Luckily, it's very easy. We just change directory into the package, and run `meteor publish --create`:
 
 ~~~bash
-$ git init
-$ git add -A
-$ git commit -m "Created Errors Package"
-$ git remote add origin https://github.com/tmeasday/meteor-errors.git
-$ git push origin master
-$ meteor release .
-Done!
+cd packages/tmeasday:errors
+meteor publish --create
 ~~~
-<%= caption "Terminal (run from within `packages/errors`)" %>
-
-Note: package names have to be unique. If you are following along word-for-word and use the same package name, there will be a conflict and it won't work. In the future though Atmosphere will be name-spaced by author, so you can expect this to change.
-
-Second Note: You'll need to login at http://atmosphere.meteor.com/accounts and create a username and password which you'll enter on the command line when you call `meteor release .`.
+<%= caption "Terminal" %>
 
 Now that the package is released, we can now delete it from the project and then add it back in directly:
+
 ~~~bash
 $ rm -r packages/errors
-$ meteor add errors
+$ meteor add tmeasday:errors
 ~~~
 <%= caption "Terminal (run from the top level of the app)" %>
 
