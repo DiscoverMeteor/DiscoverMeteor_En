@@ -10,7 +10,7 @@ contents: Add a form for editing your posts.|Set up edit permissions.|Restrict w
 paragraphs: 29
 ---
 
-Now that we can create posts, the next step is being able to edit and delete them. While the UI code to do so is fairly simple, this is a good time to talk about how Meteor manages user permissions. 
+Now that we can create posts, the next step is being able to edit and delete them. While the UI code to do so is fairly simple, this is a good time to talk about how Meteor manages user permissions.
 
 Let's first hook up our router. We'll add a route to access the post edit page and set its data context:
 
@@ -45,7 +45,7 @@ var requireLogin = function(pause) {
       this.render('loading')
     else
       this.render('accessDenied');
-  
+
     pause();
   }
 }
@@ -98,14 +98,14 @@ And here's the `post_edit.js` manager that goes with it:
 Template.postEdit.events({
   'submit form': function(e) {
     e.preventDefault();
-    
+
     var currentPostId = this._id;
-    
+
     var postProperties = {
       url: $(e.target).find('[name=url]').val(),
       title: $(e.target).find('[name=title]').val()
     }
-    
+
     Posts.update(currentPostId, {$set: postProperties}, function(error) {
       if (error) {
         // display the error to the user
@@ -115,10 +115,10 @@ Template.postEdit.events({
       }
     });
   },
-  
+
   'click .delete': function(e) {
     e.preventDefault();
-    
+
     if (confirm("Delete this post?")) {
       var currentPostId = this._id;
       Posts.remove(currentPostId);
@@ -131,13 +131,13 @@ Template.postEdit.events({
 
 By now most of that code should be familiar to you.
 
-We have two template event callbacks: one for the form's `submit` event, and one for the delete link's `click` event. 
+We have two template event callbacks: one for the form's `submit` event, and one for the delete link's `click` event.
 
-The delete callback is extremely simple: suppress the default click event, then ask for confirmation. If you get it, obtain the current post ID from the Template's data context, delete it, and finally redirect the user to the homepage. 
+The delete callback is extremely simple: suppress the default click event, then ask for confirmation. If you get it, obtain the current post ID from the Template's data context, delete it, and finally redirect the user to the homepage.
 
-The update callback is a little longer, but not much more complicated. After suppressing the default event and getting the current post, we get the new form field values from the page and store them in a `postProperties` object. 
+The update callback is a little longer, but not much more complicated. After suppressing the default event and getting the current post, we get the new form field values from the page and store them in a `postProperties` object.
 
-We then pass this object to Meteor's `Collection.update()` Method, and use a callback that either displays an error if the update failed, or sends the user back to the post's page if the update succeeded. 
+We then pass this object to Meteor's `Collection.update()` Method, and use a callback that either displays an error if the update failed, or sends the user back to the post's page if the update succeeded.
 
 ### Adding Links
 
@@ -165,7 +165,7 @@ Of course, we don't want to show you an edit link to somebody else's form. This 
 ~~~js
 Template.postItem.helpers({
   ownPost: function() {
-    return this.userId == Meteor.userId();
+    return this.userId === Meteor.userId();
   },
   domain: function() {
     var a = document.createElement('a');
@@ -185,7 +185,7 @@ Our post edit form is looking good, but you won't be able to actually edit anyth
 
 ### Setting Up Permissions
 
-Since we've previously removed the `insecure` package, all client-side modifications are currently being denied. 
+Since we've previously removed the `insecure` package, all client-side modifications are currently being denied.
 
 To fix this, we'll set up some permission rules. First, create a new `permissions.js` file inside `lib`. This loads our permissions logic first (and is available in both environments):
 
@@ -197,7 +197,7 @@ ownsDocument = function(userId, doc) {
 ~~~
 <%= caption "lib/permissions.js" %>
 
-In the [Creating Posts](/chapter/creating-posts) chapter, we got rid of the `allow()` Methods because we were only inserting new posts via a server Method (which bypasses `allow()` anyway). 
+In the [Creating Posts](/chapter/creating-posts) chapter, we got rid of the `allow()` Methods because we were only inserting new posts via a server Method (which bypasses `allow()` anyway).
 
 But now that we're editing and deleting posts from the client, let's go back to `posts.js` and add this `allow()` block:
 
@@ -219,9 +219,9 @@ Meteor.methods({
 
 ### Limiting Edits
 
-Just because you can edit your own posts, doesn't mean you should be able to edit *every* property. For example, we don't want users to be able to create a post and then assign it to somebody else. 
+Just because you can edit your own posts, doesn't mean you should be able to edit *every* property. For example, we don't want users to be able to create a post and then assign it to somebody else.
 
-We use Meteor's `deny()` callback to ensure users can only edit specific fields: 
+We use Meteor's `deny()` callback to ensure users can only edit specific fields:
 
 ~~~js
 Posts = new Meteor.Collection('posts');
@@ -243,7 +243,7 @@ Posts.deny({
 
 <%= commit "8-3", "Only allow changing certain fields of posts." %>
 
-We're taking the `fieldNames` array that contains a list of the fields being modified, and using [Underscore](http://underscorejs.org/)'s `without()` Method to return a sub-array containing the fields that are *not* `url` or `title`. 
+We're taking the `fieldNames` array that contains a list of the fields being modified, and using [Underscore](http://underscorejs.org/)'s `without()` Method to return a sub-array containing the fields that are *not* `url` or `title`.
 
 If everything's normal, that array should be empty and its length should be 0. If someone is trying anything funky, that array's length will be 1 or more, and the callback will return `true` (thus denying the update).
 
@@ -251,11 +251,11 @@ If everything's normal, that array should be empty and its length should be 0. I
 
 ### Method Calls vs Client-side Data Manipulation
 
-To create posts, we are using a `post` Method, whereas to edit and delete them, we are calling `update` and `remove` directly on the client and limiting access via `allow` and `deny`. 
+To create posts, we are using a `post` Method, whereas to edit and delete them, we are calling `update` and `remove` directly on the client and limiting access via `allow` and `deny`.
 
 When is it appropriate to do one and not the other?
 
-When things are relatively straightforward and you can adequately express your rules via `allow` and `deny`, it's usually simpler to do things directly from the client. 
+When things are relatively straightforward and you can adequately express your rules via `allow` and `deny`, it's usually simpler to do things directly from the client.
 
 Directly manipulating the database from the client creates the perception of immediacy, and can make for a better user experience as long as you remember to handle failure cases gracefully (i.e. when the server comes back saying the change didn't succeed after all).
 
@@ -263,9 +263,8 @@ However, as soon as you start needing to do things that should be outside the us
 
 Method calls are also more appropriate in a few other scenarios:
 
-- When you need to know or return values via callback rather than waiting for the reactivity and synchronization to propagate. 
-- For heavy database functions that would be too expensive to ship a large collection over. 
-- To summarize or aggregate data (e.g. count, average, sum). 
+- When you need to know or return values via callback rather than waiting for the reactivity and synchronization to propagate.
+- For heavy database functions that would be too expensive to ship a large collection over.
+- To summarize or aggregate data (e.g. count, average, sum).
 
 <% end %>
-
