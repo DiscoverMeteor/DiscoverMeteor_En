@@ -7,7 +7,7 @@ points: 10
 sidebar: true
 photoUrl: http://www.flickr.com/photos/ikewinski/8676146109/
 photoAuthor: Mike Lewinski
-contents: Learn about how to create reactive data sources in Meteor.|Create a simple example of a reactive data source.|See how Deps compares to AngularJS.
+contents: Learn about how to create reactive data sources in Meteor.|Create a simple example of a reactive data source.|See how Tracker compares to AngularJS.
 paragraphs: 29
 ---
 
@@ -57,7 +57,7 @@ To turn our `currentLikeCount` variable into a reactive data source, we need to 
 
 ~~~js
 var _currentLikeCount = 0;
-var _currentLikeCountListeners = new Deps.Dependency();
+var _currentLikeCountListeners = new Tracker.Dependency();
 
 currentLikeCount = function() {
   _currentLikeCountListeners.depend();
@@ -83,7 +83,7 @@ What we've done is setup a `_currentLikeCountListeners` dependency, which tracks
 
 These computations can then go ahead and deal with the change on a case-by-case basis. 
 
-### Comparing Deps to Angular
+### Comparing Tracker to Angular
 
 [Angular](http://angularjs.org/) is a client-side only reactive rendering library, developed by the good folks at Google. It's illustrative to compare Meteor's approach to dependency tracking to Angular's, as the approaches are quite different.
 

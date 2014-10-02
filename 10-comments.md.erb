@@ -21,10 +21,10 @@ Comments = new Meteor.Collection('comments');
 <%= caption "collections/comments.js" %>
 
 ~~~js
-// Fixture data 
+// Fixture data
 if (Posts.find().count() === 0) {
   var now = new Date().getTime();
-  
+
   // create two users
   var tomId = Meteor.users.insert({
     profile: { name: 'Tom Coleman' }
@@ -34,7 +34,7 @@ if (Posts.find().count() === 0) {
     profile: { name: 'Sacha Greif' }
   });
   var sacha = Meteor.users.findOne(sachaId);
-  
+
   var telescopeId = Posts.insert({
     title: 'Introducing Telescope',
     userId: sacha._id,
@@ -42,7 +42,7 @@ if (Posts.find().count() === 0) {
     url: 'http://sachagreif.com/introducing-telescope/',
     submitted: now - 7 * 3600 * 1000
   });
-  
+
   Comments.insert({
     postId: telescopeId,
     userId: tom._id,
@@ -50,7 +50,7 @@ if (Posts.find().count() === 0) {
     submitted: now - 5 * 3600 * 1000,
     body: 'Interesting project Sacha, can I get involved?'
   });
-  
+
   Comments.insert({
     postId: telescopeId,
     userId: sacha._id,
@@ -58,7 +58,7 @@ if (Posts.find().count() === 0) {
     submitted: now - 3 * 3600 * 1000,
     body: 'You sure can Tom!'
   });
-  
+
   Posts.insert({
     title: 'Meteor',
     userId: tom._id,
@@ -66,7 +66,7 @@ if (Posts.find().count() === 0) {
     url: 'http://meteor.com',
     submitted: now - 10 * 3600 * 1000
   });
-  
+
   Posts.insert({
     title: 'The Meteor Book',
     userId: tom._id,
@@ -96,7 +96,7 @@ Meteor.publish('comments', function() {
 Router.configure({
   layoutTemplate: 'layout',
   loadingTemplate: 'loading',
-  waitOn: function() { 
+  waitOn: function() {
     return [Meteor.subscribe('posts'), Meteor.subscribe('comments')];
   }
 });
@@ -193,7 +193,7 @@ And add the `commentsCount` helper to our `postItem` manager:
 ~~~js
 Template.postItem.helpers({
   ownPost: function() {
-    return this.userId == Meteor.userId();
+    return this.userId === Meteor.userId();
   },
   domain: function() {
     var a = document.createElement('a');
@@ -223,13 +223,13 @@ We'll start by adding a submit box at the bottom of each post:
 ~~~html
 <template name="postPage">
   {{> postItem}}
-  
+
   <ul class="comments">
     {{#each comments}}
       {{> comment}}
     {{/each}}
   </ul>
-  
+
   {{#if currentUser}}
     {{> commentSubmit}}
   {{else}}
@@ -269,13 +269,13 @@ To submit our comments, we call a `comment` Method in the `commentSubmit` manage
 Template.commentSubmit.events({
   'submit form': function(e, template) {
     e.preventDefault();
-    
+
     var $body = $(e.target).find('[name=body]');
     var comment = {
       body: $body.val(),
       postId: template.data._id
     };
-    
+
     Meteor.call('comment', comment, function(error, commentId) {
       if (error){
         throwError(error.reason);
@@ -300,19 +300,19 @@ Meteor.methods({
     // ensure the user is logged in
     if (!user)
       throw new Meteor.Error(401, "You need to login to make comments");
-      
+
     if (!commentAttributes.body)
       throw new Meteor.Error(422, 'Please write some content');
-      
+
     if (!post)
       throw new Meteor.Error(422, 'You must comment on a post');
-    
+
     comment = _.extend(_.pick(commentAttributes, 'postId', 'body'), {
       userId: user._id,
       author: user.username,
       submitted: new Date().getTime()
     });
-    
+
     return Comments.insert(comment);
   }
 });
@@ -322,19 +322,19 @@ Meteor.methods({
 
 <%= commit "10-3", "Created a form to submit comments." %>
 
-This is not doing anything too fancy, just checking that the user is logged in, that the comment has a body, and that it's linked to a post. 
+This is not doing anything too fancy, just checking that the user is logged in, that the comment has a body, and that it's linked to a post.
 
 ### Controlling the Comments Subscription
 
-As things stand, we are publishing all comments across all posts to all connected clients. That seems a little wasteful. After all, we're only actually using a small subset of this data at any given time. So let's improve our publication and subscription to control exactly which comments are published. 
+As things stand, we are publishing all comments across all posts to all connected clients. That seems a little wasteful. After all, we're only actually using a small subset of this data at any given time. So let's improve our publication and subscription to control exactly which comments are published.
 
-If we think about it, the only time we need to subscribe to our `comments` publication is when a user accesses a post's individual page, and we only need to load the subset of comments related to that particular post. 
+If we think about it, the only time we need to subscribe to our `comments` publication is when a user accesses a post's individual page, and we only need to load the subset of comments related to that particular post.
 
-The first step will be changing the way we subscribe to comments. Up to now, we've been subscribing at the *router* level, which means we load all our data once when the router is initialized. 
+The first step will be changing the way we subscribe to comments. Up to now, we've been subscribing at the *router* level, which means we load all our data once when the router is initialized.
 
-But we now want our subscription to depend on a path parameter, and that parameter can obviously change at any point. So we'll need to move our subscription code from the *router* level to the *route* level. 
+But we now want our subscription to depend on a path parameter, and that parameter can obviously change at any point. So we'll need to move our subscription code from the *router* level to the *route* level.
 
-This has another consequence: instead of loading our data when we initialize our app, we'll now be loading it whenever we hit our *route*. This means that you'll now get loading times while browsing within the app, but it's an unavoidable downside unless you intend to front-load the entirety of your data set forever. 
+This has another consequence: instead of loading our data when we initialize our app, we'll now be loading it whenever we hit our *route*. This means that you'll now get loading times while browsing within the app, but it's an unavoidable downside unless you intend to front-load the entirety of your data set forever.
 
 First, we'll stop preloading all comments in the `configure` block by removing `Meteor.subscribe('comments')`:
 
@@ -342,7 +342,7 @@ First, we'll stop preloading all comments in the `configure` block by removing `
 Router.configure({
   layoutTemplate: 'layout',
   loadingTemplate: 'loading',
-  waitOn: function() { 
+  waitOn: function() {
     return Meteor.subscribe('posts');
   }
 });
@@ -394,7 +394,7 @@ There's only one problem: when we return to the homepage, it claims that all our
 
 ### Counting Comments
 
-The reason for this will quickly become clear: we only ever have at most *one* of our post's comments loaded, so when we call `Comments.find({postId: this._id})` in the `commentsCount` helper in the `post_item` manager, Meteor can't find the necessary client-side data to provide us with a result. 
+The reason for this will quickly become clear: we only ever have at most *one* of our post's comments loaded, so when we call `Comments.find({postId: this._id})` in the `commentsCount` helper in the `post_item` manager, Meteor can't find the necessary client-side data to provide us with a result.
 
 The best way to deal with this is to *denormalize* the number of comments onto the post (if you're not sure what that means don't worry, the next sidebar has got you covered!). Although as we'll see, there's a minor addition of complexity in our code, the performance benefit we gain from not having to publish _all_ the comments to display the post list is worth it.
 
@@ -426,8 +426,8 @@ Then, we make sure that all new posts start with 0 comments:
 ~~~js
 // pick out the whitelisted keys
 var post = _.extend(_.pick(postAttributes, 'url', 'title', 'message'), {
-  userId: user._id, 
-  author: user.username, 
+  userId: user._id,
+  author: user.username,
   submitted: new Date().getTime(),
   commentsCount: 0
 });

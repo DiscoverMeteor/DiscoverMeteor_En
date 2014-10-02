@@ -149,7 +149,7 @@ We'll also wrap the whole thing into an `if` statement to check that the is logg
 Finally, we'll use Intercom's `boot` method to manually trigger Intercom's initialization. Most third-party services offer such methods, as their regular code snippets generally don't play nice with single-page apps. But you sometimes have to dig a little deeper in [their documentation](http://docs.intercom.io/#IntercomJS) to find them.
 
 ~~~js
-Deps.autorun(function(){
+Tracker.autorun(function(){
   if (Meteor.user() && !Meteor.loggingIn()) {
     var intercomSettings = {
       email: Meteor.user().emails[0].address,
@@ -238,7 +238,7 @@ Meteor.publish('currentUser', function() {
 Finally, we send it up to intercom:
 
 ~~~js
-Deps.autorun(function(){
+Tracker.autorun(function(){
   if (Meteor.user() && !Meteor.loggingIn()) {
     var intercomSettings = {
       email: Meteor.user().emails[0].address,
