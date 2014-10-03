@@ -35,7 +35,7 @@ Let's create a new file named `main.html` inside our `/client` directory, and fi
 ~~~
 <%= caption "client/main.html" %>
 
-This will be our main app template. As you can see it's all HTML except for a single `{{> postsList}}` tag, which is an insertion point for the `postsList` template as we'll soon see. For now, let's create a couple more templates. 
+This will be our main app template. As you can see it's all HTML except for a single `{{> postsList}}` template inclusion tag, which is an insertion point for the `postsList` template as we'll soon see. For now, let's create a couple more templates. 
 
 ### Meteor Templates
 
@@ -81,9 +81,9 @@ And `post_item.html`:
 
 Note the `name="postsList"` attribute of the template element. This is the name that will be used by Meteor to keep track of what template goes where. 
 
-It's time to introduce Meteor's templating system, Spacebars. Spacebars is simply HTML, with the addition of three things: *partials*, *expressions* and *block helpers*.
+It's time to introduce Meteor's templating system, Spacebars. Spacebars is simply HTML, with the addition of three things: *inclusions* (also sometimes known as “partials”), *expressions* and *block helpers*.
 
-*Partials* use the `{{> templateName}}` syntax, and simply tell Meteor to replace the partial with the template of the same name (in our case `postItem`).
+*Inclusions* use the `{{> templateName}}` syntax, and simply tell Meteor to replace the inclusion with the template of the same name (in our case `postItem`).
 
 *Expressions* such as `{{title}}` either call a property of the current object, or the return value of a template helper as defined in the current template's manager (more on this later). 
 

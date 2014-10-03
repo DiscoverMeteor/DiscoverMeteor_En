@@ -27,7 +27,7 @@ The Session is a global reactive data store. It's global in the sense of a globa
 
 ### Changing the Session
 
-The Session is available everywhere as `Session`. To set a session value, you can call:
+The Session is available anywhere on the client as the `Session` object. To set a session value, you can call:
 
 ~~~js
 ❯ Session.set('pageTitle', 'A different title');
@@ -158,3 +158,5 @@ The important lessons in all this are:
 
 1. Always store user state in the Session or the URL so that users are minimally disrupted when a hot code reload happens.
 2. Store any state that you want to be shareable between users *within the URL itself*.
+
+By the way, remember that sidebar chapters like this one are not part of the main flow of the book. So before we move on to the next chapter, make sure you reverse this chapter's changes. 

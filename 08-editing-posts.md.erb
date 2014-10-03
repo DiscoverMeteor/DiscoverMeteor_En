@@ -257,8 +257,6 @@ When is it appropriate to do one and not the other?
 
 When things are relatively straightforward and you can adequately express your rules via `allow` and `deny`, it's usually simpler to do things directly from the client.
 
-Directly manipulating the database from the client creates the perception of immediacy, and can make for a better user experience as long as you remember to handle failure cases gracefully (i.e. when the server comes back saying the change didn't succeed after all).
-
 However, as soon as you start needing to do things that should be outside the user's control (such as timestamping a new post or assigning it to the correct user), it's probably better to use a Method.
 
 Method calls are also more appropriate in a few other scenarios:
@@ -266,5 +264,7 @@ Method calls are also more appropriate in a few other scenarios:
 - When you need to know or return values via callback rather than waiting for the reactivity and synchronization to propagate.
 - For heavy database functions that would be too expensive to ship a large collection over.
 - To summarize or aggregate data (e.g. count, average, sum).
+
+[Check out our blog](https://www.discovermeteor.com/blog/meteor-methods-client-side-operations/) for a more in-depth exploration of this topic. 
 
 <% end %>
