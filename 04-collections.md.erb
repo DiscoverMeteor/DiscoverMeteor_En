@@ -24,10 +24,12 @@ This data is stored in Meteor in the **Collection**. A collection is a special d
 
 We want our posts to be permanent and shared between users, so we'll start by creating a collection called `Posts` to store them in. If you haven't done so already create a `collections/` folder at the root of your app, and then a `posts.js` file inside it. Then add:
 
+// FIXME DIFFERENT DIR (CHECK FILE STRUCTURE IN GETTING STARTED)
+
 ~~~js
 Posts = new Meteor.Collection('posts');
 ~~~
-<%= caption "collections/posts.js" %>
+<%= caption "lib/collections/posts.js" %>
 
 <%= commit "4-1", "Added a posts collection" %>
 
