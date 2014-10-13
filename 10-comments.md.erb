@@ -18,7 +18,7 @@ We'll begin by creating a new collection to store comments in, and adding some b
 ~~~js
 Comments = new Meteor.Collection('comments');
 ~~~
-<%= caption "collections/comments.js" %>
+<%= caption "lib/collections/comments.js" %>
 
 ~~~js
 // Fixture data
@@ -40,14 +40,14 @@ if (Posts.find().count() === 0) {
     userId: sacha._id,
     author: sacha.profile.name,
     url: 'http://sachagreif.com/introducing-telescope/',
-    submitted: now - 7 * 3600 * 1000
+    submitted: new Date(now - 7 * 3600 * 1000)
   });
 
   Comments.insert({
     postId: telescopeId,
     userId: tom._id,
     author: tom.profile.name,
-    submitted: now - 5 * 3600 * 1000,
+    submitted: new Date(now - 5 * 3600 * 1000),
     body: 'Interesting project Sacha, can I get involved?'
   });
 
@@ -55,7 +55,7 @@ if (Posts.find().count() === 0) {
     postId: telescopeId,
     userId: sacha._id,
     author: sacha.profile.name,
-    submitted: now - 3 * 3600 * 1000,
+    submitted: new Date(now - 3 * 3600 * 1000),
     body: 'You sure can Tom!'
   });
 
@@ -64,7 +64,7 @@ if (Posts.find().count() === 0) {
     userId: tom._id,
     author: tom.profile.name,
     url: 'http://meteor.com',
-    submitted: now - 10 * 3600 * 1000
+    submitted: new Date(now - 10 * 3600 * 1000)
   });
 
   Posts.insert({
@@ -72,7 +72,7 @@ if (Posts.find().count() === 0) {
     userId: tom._id,
     author: tom.profile.name,
     url: 'http://themeteorbook.com',
-    submitted: now - 12 * 3600 * 1000
+    submitted: new Date(now - 12 * 3600 * 1000)
   });
 }
 ~~~
@@ -159,10 +159,12 @@ Given what we've learnt about helpers and Spacebars, rendering a comment is fair
 
 Let's set up a quick template helper to format our `submitted` date in a human-readable format (unless you're one of those people who can understand UNIX timestamps and hexadecimal color codes fluently?)
 
+// FIXME: joke wrong :)
+
 ~~~js
 Template.comment.helpers({
   submittedText: function() {
-    return new Date(this.submitted).toString();
+    return this.submitted.toString();
   }
 });
 ~~~
@@ -244,18 +246,15 @@ And then create the comment form template:
 
 ~~~html
 <template name="commentSubmit">
-  <form name="comment" class="comment-form">
-    <div class="control-group">
+  <form name="comment" class="comment-form form">
+    <div class="form-group {{errorClass 'body'}}">
         <div class="controls">
             <label for="body">Comment on this post</label>
-            <textarea name="body"></textarea>
+            <textarea name="body" id="body" class="form-control" rows="3"></textarea>
+            <span class="help-block">{{errorMessage 'body'}}</span>
         </div>
     </div>
-    <div class="control-group">
-        <div class="controls">
-            <button type="submit" class="btn">Add Comment</button>
-        </div>
-    </div>
+    <button type="submit" class="btn btn-primary">Add Comment</button>
   </form>
 </template>
 ~~~
@@ -266,17 +265,36 @@ And then create the comment form template:
 To submit our comments, we call a `comment` Method in the `commentSubmit` manager that operates in a similar way to the `postSubmit` manager:
 
 ~~~js
+Template.commentSubmit.created = function() {
+  Session.set('commentSubmitErrors', {});
+}
+
+Template.commentSubmit.helpers({
+  errorMessage: function(field) {
+    return Session.get('commentSubmitErrors')[field];
+  },
+  errorClass: function (field) {
+    return !!Session.get('commentSubmitErrors')[field] ? 'has-error' : '';
+  }
+});
+
 Template.commentSubmit.events({
   'submit form': function(e, template) {
     e.preventDefault();
-
+    
     var $body = $(e.target).find('[name=body]');
     var comment = {
       body: $body.val(),
       postId: template.data._id
     };
-
-    Meteor.call('comment', comment, function(error, commentId) {
+    
+    var errors = {};
+    if (! comment.body) {
+      errors.body = "Please write some content";
+      return Session.set('commentSubmitErrors', errors);
+    }
+    
+    Meteor.call('commentInsert', comment, function(error, commentId) {
       if (error){
         throwError(error.reason);
       } else {
@@ -294,25 +312,25 @@ Just like we previously set up a `post` server-side Meteor Method, we'll set up 
 Comments = new Meteor.Collection('comments');
 
 Meteor.methods({
-  comment: function(commentAttributes) {
+  commentInsert: function(commentAttributes) {
+    check(this.userId, String);
+    check(commentAttributes, {
+      postId: String,
+      body: String
+    });
+    
     var user = Meteor.user();
     var post = Posts.findOne(commentAttributes.postId);
-    // ensure the user is logged in
-    if (!user)
-      throw new Meteor.Error(401, "You need to login to make comments");
-
-    if (!commentAttributes.body)
-      throw new Meteor.Error(422, "Please write some content");
 
     if (!post)
-      throw new Meteor.Error(422, "You must comment on a post");
-
-    comment = _.extend(_.pick(commentAttributes, 'postId', 'body'), {
+      throw new Meteor.Error(422, 'You must comment on a post');
+    
+    comment = _.extend(commentAttributes, {
       userId: user._id,
       author: user.username,
-      submitted: new Date().getTime()
+      submitted: new Date()
     });
-
+    
     return Comments.insert(comment);
   }
 });
@@ -380,6 +398,7 @@ Meteor.publish('posts', function() {
 });
 
 Meteor.publish('comments', function(postId) {
+  check(postId, String);
   return Comments.find({postId: postId});
 });
 ~~~
@@ -424,11 +443,10 @@ Posts.insert({
 Then, we make sure that all new posts start with 0 comments:
 
 ~~~js
-// pick out the whitelisted keys
-var post = _.extend(_.pick(postAttributes, 'url', 'title', 'message'), {
+var post = _.extend(postAttributes, {
   userId: user._id,
   author: user.username,
-  submitted: new Date().getTime(),
+  submitted: new Date(),
   commentsCount: 0
 });
 
