@@ -76,9 +76,9 @@ While the newly created `layout.html` will now contain the app's outer layout:
 ~~~html
 <template name="layout">
   <div class="container">
-    <header class="navbar">
-      <div class="navbar-inner">
-        <a class="brand" href="/">Microscope</a>
+    <header class="navbar navbar-default" role="navigation"> 
+      <div class="navbar-header">
+        <a class="navbar-brand" href="/">Microscope</a>
       </div>
     </header>
     <div id="main" class="row-fluid">
@@ -106,6 +106,7 @@ Router.map(function() {
 
 We've done two important things. First, we've told the router to use the layout we just created as the default layout for all routes. Second, we've defined a new route called `postsList` and mapped it to the `/` path. 
 
+// FIXME this is out of place
 <% note do %>
 
 ### The `/lib` folder
@@ -127,8 +128,8 @@ You may be wondering why we even need to name our routes in the first place. Nam
 We want our main home link to point us back to the posts list, so instead of specifying a static `/` URL, we can also use the Spacebars helper. The end result will be the same, but this gives us more flexibility since the helper will always output the right URL even if we change the route's path in the router. 
 
 ~~~html
-<header class="navbar">
-  <div class="navbar-inner">
+<header class="navbar navbar-default" role="navigation"> 
+  <div class="navbar-header">
     <a class="brand" href="{{pathFor 'postsList'}}">Microscope</a>
   </div>
 </header>
