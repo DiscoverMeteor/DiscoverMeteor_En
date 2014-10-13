@@ -63,7 +63,7 @@ Let's now create the `errors` and `error` templates in `errors.html`:
 
 ~~~html
 <template name="errors">
-  <div class="errors row-fluid">
+  <div class="errors">
     {{#each errors}}
       {{> error}}
     {{/each}}
@@ -71,7 +71,7 @@ Let's now create the `errors` and `error` templates in `errors.html`:
 </template>
 
 <template name="error">
-  <div class="alert alert-error">
+  <div class="alert alert-danger" role="alert">
     <button type="button" class="close" data-dismiss="alert">&times;</button>
     {{message}}
   </div>
@@ -144,6 +144,8 @@ Give it a try: try creating a post and entering the URL `http://meteor.com`. As 
 
 ### Clearing Errors
 
+// FIXME: this text is wrong.
+
 If you click the error's close button at this point, you'll see the error disappear, because that close button triggers Twitter Bootstrap's embedded JavaScript. 
 
 But while Bootstrap is removing the error `<div>` from the DOM, it's not removing the error object from the Meteor collection. So let's add a way to clean up our local collection once an error has done its job. 
@@ -152,31 +154,6 @@ First, we'll modify the `throwError` function to include a `seen` property. This
 
 Once that's done, we can code up a simple `clearErrors` function that clears those "seen" errors:
 
-~~~js
-// Local (client-only) collection
-Errors = new Meteor.Collection(null);
-
-throwError = function(message) {
-  Errors.insert({message: message, seen: false})
-}
-
-clearErrors = function() {
-  Errors.remove({seen: true});
-}
-~~~
-<%= caption "client/helpers/errors.js" %>
-<%= highlight "5,8~10" %>
-
-Next, we'll clear errors in the router so that navigating to another page will make these errors vanish forever:
-
-~~~js
-// ...
-
-Router.onBeforeAction(requireLogin, {only: 'postSubmit'})
-Router.onBeforeAction(function() { clearErrors() });
-~~~
-<%= caption "lib/router.js" %>
-<%= highlight "4" %>
 
 In order for our `clearErrors()` function to do its job, errors need to be marked as `seen`. To do this properly, there's one edge case we need to take care of: when we throw up an error and then redirect the user somewhere else (as we do when they try to post a duplicate link), the redirection happens instantly. This means that the user never has the chance to actually see the error before it's cleared. 
 
@@ -197,9 +174,9 @@ Template.errors.helpers({
 
 Template.error.rendered = function() {
   var error = this.data;
-  Meteor.defer(function() {
-    Errors.update(error._id, {$set: {seen: true}});
-  });
+  Meteor.setTimeout(function () {
+    Errors.remove(error._id);
+  }, 3000);
 };
 ~~~
 <%= caption "client/views/includes/errors.js" %>
