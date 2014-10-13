@@ -26,7 +26,9 @@ Let's create our `Notifications` collection, as well as a `createCommentNotifica
 Notifications = new Meteor.Collection('notifications');
 
 Notifications.allow({
-  update: ownsDocument
+  update: function(userId, notification) {
+    return ownsDocument(userId, notification);
+  },
 });
 
 createCommentNotification = function(comment) {
@@ -42,7 +44,7 @@ createCommentNotification = function(comment) {
   }
 };
 ~~~
-<%= caption "collections/notifications.js" %>
+<%= caption "lib/collections/notifications.js" %>
 
 Just like posts or comments, this `Notifications` collection will be shared by both client and server. As we need to update notifications once a user has seen them, we also enable updates, ensuring as usual that we restrict update permissions to a user's own data.
 
@@ -224,7 +226,7 @@ Doing so is straightforward enough, as a `publish` function has the current user
 
 ~~~js
 Meteor.publish('notifications', function() {
-  return Notifications.find({userId: this.userId});
+  return Notifications.find({userId: this.userId, read: false});
 });
 ~~~
 <%= caption "server/publications.js" %>
