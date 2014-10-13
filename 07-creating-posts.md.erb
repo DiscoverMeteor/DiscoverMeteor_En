@@ -293,6 +293,7 @@ var requireLogin = function(pause) {
 }
 
 Router.onBeforeAction('loading');
+Router.onBeforeAction('dataNotFound');
 Router.onBeforeAction(requireLogin, {only: 'postSubmit'});
 ~~~
 <%= caption "lib/router.js" %>
@@ -350,6 +351,7 @@ var requireLogin = function(pause) {
 }
 
 Router.onBeforeAction('loading');
+Router.onBeforeAction('dataNotFound');
 Router.onBeforeAction(requireLogin, {only: 'postSubmit'});
 ~~~
 <%= caption "lib/router.js" %>
@@ -488,6 +490,8 @@ Template.postsList.helpers({
 ~~~
 <%= caption "client/views/posts/posts_list.js" %>
 <%= highlight "3" %>
+
+// FIXME: added audit-argument-checks
 
 <%= commit "7-7", "Sort posts by submitted timestamp." %>
 

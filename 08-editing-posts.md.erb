@@ -50,6 +50,7 @@ var requireLogin = function(pause) {
   }
 }
 
+Router.onBeforeAction('dataNotFound');
 Router.onBeforeAction(requireLogin, {only: 'postSubmit'});
 ~~~
 <%= caption "lib/router.js" %>

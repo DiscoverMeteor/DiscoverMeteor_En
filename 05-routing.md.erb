@@ -204,6 +204,11 @@ For now, let's just say that this is exactly where reactivity comes in, and leav
 
 ### Routing To A Specific Post
 
+// FIXME added not found.
+
+
+<%= commit "5-4", "Added not found template." %>
+
 Now that we've seen how to route to the `postsList` template, let's set up a route to display the details of a single post. 
 
 There's just one catch: we can't go ahead and define one route per post, since there might be hundreds of them. So we'll need to set up a single *dynamic* route, and make that route display any post we want. 
