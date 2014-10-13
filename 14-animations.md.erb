@@ -128,7 +128,6 @@ So instead, we'll insert `rank` at the last possible step, the `postList` templa
 ~~~js
 Template.postsList.helpers({
   postsWithRank: function() {
-    this.posts.rewind();
     return this.posts.map(function(post, index, cursor) {
       post._rank = index;
       return post;
@@ -159,18 +158,6 @@ Don't forget to update the `postsList` template as well:
 <%= caption "/client/views/posts/posts_list.html" %>
 
 <%= highlight "3" %>
-
-<% note do %>
-
-### Be Kind, Rewind
-
-Meteor is one of the most forward-thinking and cutting-edge web frameworks around. But one of its features feels like a throwback to the days of VCRs and video cassette recording, namely the `rewind()` function. 
-
-Whenever you use a cursor with `forEach()`, `map()`, or `fetch()`, you'll need to rewind the cursor afterwards before it's ready to be used again. 
-
-So in some cases, it's better to be on the safe side and `rewind()` the cursor preventively rather than risk a bug. 
-
-<% end %>
 
 ### Putting It Together
 
