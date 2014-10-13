@@ -33,7 +33,7 @@ if (Posts.find().count() === 0) {
     userId: tom._id,
     author: tom.profile.name,
     url: 'http://themeteorbook.com',
-    submitted: now - 12 * 3600 * 1000,
+    submitted: new Date(now - 12 * 3600 * 1000),
     commentsCount: 0
   });
   
@@ -43,7 +43,7 @@ if (Posts.find().count() === 0) {
       author: sacha.profile.name,
       userId: sacha._id,
       url: 'http://google.com/?q=test-' + i,
-      submitted: now - i * 3600 * 1000,
+      submitted: new Date(now - i * 3600 * 1000),
       commentsCount: 0
     });
   }
@@ -76,6 +76,7 @@ First, we'll stop subscribing to the `posts` publication in the `Router.configur
 Router.configure({
   layoutTemplate: 'layout',
   loadingTemplate: 'loading',
+  notFoundTemplate: 'notFound',
   waitOn: function() { 
     return [Meteor.subscribe('notifications')]
   }
@@ -124,10 +125,15 @@ You'll notice we're now passing a JavaScript object ({limit: postsLimit}) along 
 
 ~~~js
 Meteor.publish('posts', function(options) {
+  check(options, {
+    sort: Object,
+    limit: Number
+  });
   return Posts.find({}, options);
 });
 
 Meteor.publish('comments', function(postId) {
+  check(postId, String);
   return Comments.find({postId: postId});
 });
 
@@ -192,6 +198,7 @@ Let's recap. Here's what our new and improved `router.js` code should look like:
 Router.configure({
   layoutTemplate: 'layout',
   loadingTemplate: 'loading',
+  notFoundTemplate: 'notFound',
   waitOn: function() { 
     return [Meteor.subscribe('notifications')]
   }
@@ -258,11 +265,11 @@ We'll introduce a new aspect of Iron Router, *Route Controllers*. A route contro
 PostsListController = RouteController.extend({
   template: 'postsList',
   increment: 5, 
-  limit: function() { 
+  postsLimit: function() { 
     return parseInt(this.params.postsLimit) || this.increment; 
   },
   findOptions: function() {
-    return {sort: {submitted: -1}, limit: this.limit()};
+    return {sort: {submitted: -1}, limit: this.postsLimit()};
   },
   waitOn: function() {
     return Meteor.subscribe('posts', this.findOptions());
@@ -305,11 +312,11 @@ As before, we'll add our pagination logic in our route. Remember when we explici
 PostsListController = RouteController.extend({
   template: 'postsList',
   increment: 5, 
-  limit: function() { 
+  postsLimit: function() { 
     return parseInt(this.params.postsLimit) || this.increment; 
   },
   findOptions: function() {
-    return {sort: {submitted: -1}, limit: this.limit()};
+    return {sort: {submitted: -1}, limit: this.postsLimit()};
   },
   waitOn: function() {
     return Meteor.subscribe('posts', this.findOptions());
@@ -318,8 +325,8 @@ PostsListController = RouteController.extend({
     return Posts.find({}, this.findOptions());
   },
   data: function() {
-    var hasMore = this.posts().count() === this.limit();
-    var nextPath = this.route.path({postsLimit: this.limit() + this.increment});
+    var hasMore = this.posts().count() === this.postsLimit();
+    var nextPath = this.route.path({postsLimit: this.postsLimit() + this.increment});
     return {
       posts: this.posts(),
       nextPath: hasMore ? nextPath : null
@@ -400,7 +407,7 @@ PostsListController = RouteController.extend({
     return Posts.find({}, this.findOptions());
   },
   data: function() {
-    var hasMore = this.posts().count() === this.limit();
+    var hasMore = this.posts().count() === this.postsLimit();
     return {
       posts: this.posts(),
       ready: this.postsSub.ready,
