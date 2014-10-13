@@ -54,7 +54,7 @@ if (Posts.find().count() === 0) {
     userId: sacha._id,
     author: sacha.profile.name,
     url: 'http://sachagreif.com/introducing-telescope/',
-    submitted: now - 7 * 3600 * 1000,
+    submitted: new Date(now - 7 * 3600 * 1000),
     commentsCount: 2,
     upvoters: [], votes: 0
   });
@@ -63,7 +63,7 @@ if (Posts.find().count() === 0) {
     postId: telescopeId,
     userId: tom._id,
     author: tom.profile.name,
-    submitted: now - 5 * 3600 * 1000,
+    submitted: new Date(now - 5 * 3600 * 1000),
     body: 'Interesting project Sacha, can I get involved?'
   });
   
@@ -71,7 +71,7 @@ if (Posts.find().count() === 0) {
     postId: telescopeId,
     userId: sacha._id,
     author: sacha.profile.name,
-    submitted: now - 3 * 3600 * 1000,
+    submitted: new Date(now - 3 * 3600 * 1000),
     body: 'You sure can Tom!'
   });
   
@@ -80,7 +80,7 @@ if (Posts.find().count() === 0) {
     userId: tom._id,
     author: tom.profile.name,
     url: 'http://meteor.com',
-    submitted: now - 10 * 3600 * 1000,
+    submitted: new Date(now - 10 * 3600 * 1000),
     commentsCount: 0,
     upvoters: [], votes: 0
   });
@@ -90,7 +90,7 @@ if (Posts.find().count() === 0) {
     userId: tom._id,
     author: tom.profile.name,
     url: 'http://themeteorbook.com',
-    submitted: now - 12 * 3600 * 1000,
+    submitted: new Date(now - 12 * 3600 * 1000),
     commentsCount: 0,
     upvoters: [], votes: 0
   });
@@ -101,7 +101,7 @@ if (Posts.find().count() === 0) {
       author: sacha.profile.name,
       userId: sacha._id,
       url: 'http://google.com/?q=test-' + i,
-      submitted: now - i * 3600 * 1000,
+      submitted: new Date(now - i * 3600 * 1000 + 1),
       commentsCount: 0,
       upvoters: [], votes: 0
     });
@@ -192,20 +192,18 @@ Meteor.methods({
   },
   
   upvote: function(postId) {
-    var user = Meteor.user();
-    // ensure the user is logged in
-    if (!user)
-      throw new Meteor.Error(401, "You need to login to upvote");
+    check(this.userId, String);
+    check(postId, String);
     
     var post = Posts.findOne(postId);
     if (!post)
       throw new Meteor.Error(422, 'Post not found');
     
-    if (_.include(post.upvoters, user._id))
+    if (_.include(post.upvoters, this.userId))
       throw new Meteor.Error(422, 'Already upvoted this post');
     
     Posts.update(post._id, {
-      $addToSet: {upvoters: user._id},
+      $addToSet: {upvoters: this.userId},
       $inc: {votes: 1}
     });
   }
@@ -227,7 +225,7 @@ If the user is not logged in, or has already upvoted a post, they won't be able 
 ~~~html
 <template name="postItem">
   <div class="post">
-    <a href="#" class="upvote btn {{upvotedClass}}">⬆</a>
+    <a href="#" class="upvote btn btn-default {{upvotedClass}}">⬆</a>
     <div class="post-content">
       //...
   </div>
@@ -326,18 +324,19 @@ Meteor.methods({
   },
   
   upvote: function(postId) {
-    var user = Meteor.user();
-    // ensure the user is logged in
-    if (!user)
-      throw new Meteor.Error(401, "You need to login to upvote");
+    check(this.userId, String);
+    check(postId, String);
     
-    Posts.update({
+    var affected = Posts.update({
       _id: postId, 
-      upvoters: {$ne: user._id}
+      upvoters: {$ne: this.userId}
     }, {
-      $addToSet: {upvoters: user._id},
+      $addToSet: {upvoters: this.userId},
       $inc: {votes: 1}
     });
+    
+    if (! affected)
+      throw new Meteor.Error(422, "You weren't able to upvote that post");
   }
 });
 ~~~
@@ -387,22 +386,23 @@ To do this, we'll *extend* our `PostsListController` into two distinct `NewPosts
 PostsListController = RouteController.extend({
   template: 'postsList',
   increment: 5, 
-  limit: function() { 
+  postsLimit: function() { 
     return parseInt(this.params.postsLimit) || this.increment; 
   },
   findOptions: function() {
-    return {sort: this.sort, limit: this.limit()};
+    return {sort: this.sort, limit: this.postsLimit()};
   },
-  waitOn: function() {
-    return Meteor.subscribe('posts', this.findOptions());
+  onBeforeAction: function() {
+    this.postsSub = Meteor.subscribe('posts', this.findOptions());
   },
   posts: function() {
     return Posts.find({}, this.findOptions());
   },
   data: function() {
-    var hasMore = this.posts().count() === this.limit();
+    var hasMore = this.posts().count() === this.postsLimit();
     return {
       posts: this.posts(),
+      ready: this.postsSub.ready,
       nextPath: hasMore ? this.nextPath() : null
     };
   }
@@ -411,14 +411,14 @@ PostsListController = RouteController.extend({
 NewPostsListController = PostsListController.extend({
   sort: {submitted: -1, _id: -1},
   nextPath: function() {
-    return Router.routes.newPosts.path({postsLimit: this.limit() + this.increment})
+    return Router.routes.newPosts.path({postsLimit: this.postsLimit() + this.increment})
   }
 });
 
 BestPostsListController = PostsListController.extend({
   sort: {votes: -1, submitted: -1, _id: -1},
   nextPath: function() {
-    return Router.routes.bestPosts.path({postsLimit: this.limit() + this.increment})
+    return Router.routes.bestPosts.path({postsLimit: this.postsLimit() + this.increment})
   }
 });
 
@@ -461,16 +461,19 @@ We'll also add links in the header:
 
 ~~~html
 <template name="header">
-  <header class="navbar">
-    <div class="navbar-inner">
-      <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </a>
-      <a class="brand" href="{{pathFor 'home'}}">Microscope</a>
-      <div class="nav-collapse collapse">
-        <ul class="nav">
+  <nav class="navbar navbar-default" role="navigation">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navigation">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="{{pathFor 'home'}}">Microscope</a>
+      </div>
+      <div class="collapse navbar-collapse" id="navigation">
+        <ul class="nav navbar-nav">
           <li>
             <a href="{{pathFor 'newPosts'}}">New</a>
           </li>
@@ -486,16 +489,17 @@ We'll also add links in the header:
             </li>
           {{/if}}
         </ul>
-        <ul class="nav pull-right">
-          <li>{{> loginButtons}}</li>
+        <ul class="nav navbar-nav navbar-right">
+          {{> loginButtons}}
         </ul>
       </div>
     </div>
-  </header>
+  </nav>
 </template>
 ~~~
 <%= caption "client/views/includes/header.html" %>
 <%= highlight "9, 12~17" %>
+//FIXME highlight
 
 We also need to update our post deleting event handler:
 
@@ -528,20 +532,23 @@ The reason why we want to support multiple named routes is that both our `home` 
 
 ~~~html
 <template name="header">
-  <header class="navbar">
-    <div class="navbar-inner">
-      <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </a>
-      <a class="brand" href="{{pathFor 'home'}}">Microscope</a>
-      <div class="nav-collapse collapse">
-        <ul class="nav">
+  <nav class="navbar navbar-default" role="navigation">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navigation">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="{{pathFor 'home'}}">Microscope</a>
+      </div>
+      <div class="collapse navbar-collapse" id="navigation">
+        <ul class="nav navbar-nav">
           <li class="{{activeRouteClass 'home' 'newPosts'}}">
             <a href="{{pathFor 'newPosts'}}">New</a>
           </li>
-          <li class="{{activeRouteClass 'bestPosts'}}">
+          <li class="{{activeRouteClass  'bestPosts'}}">
             <a href="{{pathFor 'bestPosts'}}">Best</a>
           </li>
           {{#if currentUser}}
@@ -553,12 +560,12 @@ The reason why we want to support multiple named routes is that both our `home` 
             </li>
           {{/if}}
         </ul>
-        <ul class="nav pull-right">
-          <li>{{> loginButtons}}</li>
+        <ul class="nav navbar-nav navbar-right">
+          {{> loginButtons}}
         </ul>
       </div>
     </div>
-  </header>
+  </nav>
 </template>
 ~~~
 <%= caption "client/views/includes/header.html" %>
