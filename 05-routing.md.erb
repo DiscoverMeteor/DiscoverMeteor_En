@@ -345,26 +345,26 @@ Thankfully, Iron Router takes care of this for us through the `notFoundTemplate`
 
 First, we'll set up a new template to show a simple 404 error message:
 
-```html
+~~~html
 <template name="notFound">
   <div class="not-found jumbotron">
     <h2>404</h2>
     <p>Sorry, we couldn't find a page at this address.</p>
   </div>
 </template>
-```
+~~~
 <%= caption "client/views/application/not_found.html"%>
 
 Then, we'll simply point Iron Router to this template:
 
-```js
+~~~js
 Router.configure({
   layoutTemplate: 'layout',
   loadingTemplate: 'loading',
   notFoundTemplate: 'notFound',
   waitOn: function() { return Meteor.subscribe('posts'); }
 });
- ```
+ ~~~
 <%= caption "lib/router.js"%>
 <%= highlight "4" %>
 
@@ -374,12 +374,12 @@ But wait, what if someone enters a URL of the form `http://localhost:3000/posts/
 
 Thankfully, Iron Router is smart enough to figure this out if we just add a special `dataNotFound` hook at the end of `router.js`:
 
-```js
+~~~js
 //...
 
 Router.onBeforeAction('loading');
-Router.onBeforeAction('dataNotFound', {only: 'postPage'});```
-```
+Router.onBeforeAction('dataNotFound', {only: 'postPage'});
+~~~
 <%= caption "lib/router.js"%>
 <%= highlight "4" %>
 

@@ -316,7 +316,7 @@ You may be thinking we can do all of that in our `submit` event handler. Realist
 
 For all these reasons, it's better to keep our event handlers simple and, if we are doing more than the most basic inserts or updates to collections, use a **Method**.
 
-A Meteor Method is a server-side function that is called client-side. We aren't totally unfamiliar with them -- in fact, behind the scenes, the `Collection`'s `insert`, `update` and `remove` functions are all Methods. Let's see how to create our own.
+A Meteor Method is a server-side function that is *called* client-side. We aren't totally unfamiliar with them -- in fact, behind the scenes, the `Collection`'s `insert`, `update` and `remove` functions are all Methods. Let's see how to create our own.
 
 Let's go back to `post_submit.js`. Rather than inserting directly into the `Posts` collection, we'll call a Method named `post`:
 
@@ -327,18 +327,13 @@ Template.postSubmit.events({
     
     var post = {
       url: $(e.target).find('[name=url]').val(),
-      title: $(e.target).find('[name=title]').val(),
-      message: $(e.target).find('[name=message]').val()
+      title: $(e.target).find('[name=title]').val()
     }
     
     Meteor.call('postInsert', post, function(error, result) {
       // display the error to the user and abort
       if (error)
         return alert(error.reason);
-      
-      // show this result but route anyway
-      if (result.postExists)
-        alert('This link has already been posted');
     
       Router.go('postPage', {_id: result._id});  
     });
@@ -346,14 +341,56 @@ Template.postSubmit.events({
 });
 ~~~
 <%= caption "client/views/posts/post_submit.js" %>
+<%= highlight "10~16" %>
 
 The `Meteor.call` function calls a Method named by its first argument. You can provide arguments to the call (in this case, the `post` object we constructed from the form), and finally attach a callback, which will execute when the server-side Method is done. Here we simply alert the user if there's a problem, or redirect the user to the freshly created post's discussion page if not.
 
 We then define the Method in our `collections/posts.js` file. We'll remove the `allow()` block from `posts.js` since Meteor Methods bypass them anyway. Remember that Methods are executed on the server, so Meteor assumes they can be trusted. 
 
+### Security Check
+
+We'll also take advantage of this opportunity to add a little more security to our method by using the [`audit-argument-checks`](http://docs.meteor.com/#auditargumentchecks) package.
+
+This package lets you check any JavaScript object against a predefined pattern. In our case, we'll use it to check that the user calling the method is properly logged in (by making sure that `Meteor.userId()` is a `String`), and that the `postAttributes` object being passed as argument to the method contains `title` and `url` strings. 
+
+We'll then `extend` the `postAttributes` object with three more properties: the user's `_id` and `username`, as well as the post's `submitted` timestamp, before inserting the whole thing in our database and returning the resulting `_id` to the client (in other words, the original caller of this method) in a JavaScript object. 
+
 ~~~js
 Posts = new Meteor.Collection('posts');
 
+Meteor.methods({
+  postInsert: function(postAttributes) {
+    check(Meteor.userId(), String);
+    check(postAttributes, {
+      title: String,
+      url: String
+    });
+    
+    var user = Meteor.user();
+    var post = _.extend(postAttributes, {
+      userId: user._id, 
+      author: user.username, 
+      submitted: new Date()
+    });
+    
+    var postId = Posts.insert(post);
+    
+    return {
+      _id: postId
+    };
+  }
+});
+~~~
+<%= caption "collections/posts.js" %>
+<%= highlight "3~24" %>
+
+Note that the `_.extend()` method is part of the [Underscore](http://underscorejs.org) library, and simply lets you “extend” one object with the properties of another. 
+
+### Preventing Duplicates
+
+We'll make one more check before wrapping up our method. If a post with the same URL has already been created previously, we won't add the link a second time but instead redirect the user to this existing post.
+
+~~~js
 Meteor.methods({
   postInsert: function(postAttributes) {
     check(this.userId, String);
@@ -386,22 +423,42 @@ Meteor.methods({
 });
 ~~~
 <%= caption "collections/posts.js" %>
+<%= highlight "9~15" %>
+
+We're searching our database for any posts with the same URL. If any are found, we `return` that post's `_id` along with a `postExists: true` flag to let the client know about this special situation.
+
+And since we're triggering a `return` call, the method stops at that point without executing the `insert` statement, thus elegantly preventing any duplicates. 
+
+All that's left is to use this new `postExists` information in our client-side event helper to show a warning message:
+
+~~~js
+Template.postSubmit.events({
+  'submit form': function(e) {
+    e.preventDefault();
+    
+    var post = {
+      url: $(e.target).find('[name=url]').val(),
+      title: $(e.target).find('[name=title]').val()
+    };
+    
+    Meteor.call('postInsert', post, function(error, result) {
+      // display the error to the user and abort
+      if (error)
+        return alert(error.reason);
+      
+      // show this result but route anyway
+      if (result.postExists)
+        alert('This link has already been posted');
+    
+      Router.go('postPage', {_id: result._id});  
+    });
+  }
+});
+~~~
+<%= caption "client/views/posts/post_submit.js" %>
+<%= highlight "15~17" %>
 
 <%= commit "7-6", "Use a method to submit the post." %>
-
-This Method is a little complicated, but hopefully you can follow along.
-
-First, we define our `user` variable and check if a post with the same link already exists. Then, we check to see that the user is logged in, throwing an error (which will eventually be `alert`-ed by the browser) if not. We also do some simple validation of the post object to make sure that our posts have titles. 
-
-Next, if there's another post with the same URL, we throw a `302` error (which means redirect) telling the user that they should just go and look at that previously created post. 
-
-Meteor's `Error` class takes three arguments. The first one (`error`) is an error code of your choice (in this case we're picking `302`), the second one (`reason`) is a short human-readable explanation of the error, and the last one (`details`) can be any useful additional information.
-
-In our case, we'll use this third argument to pass the ID of the post that we just found. Spoiler alert: we'll use this later on to redirect the user to the pre-existing post.
-
-If all those checks pass, we grab the fields that we want to insert using [Underscore](http://underscorejs.org/)'s [pick](http://underscorejs.org/#pick) (to ensure a user calling this Method in browser console can't put spurious data into our database), and include some information about the submitting user -- as well as the current time -- into  the post using [extend](http://underscorejs.org/#extend). 
-
-Finally, we insert the post, and return the new post's `id` to the user.
 
 ### Sorting Posts
 
@@ -416,8 +473,6 @@ Template.postsList.helpers({
 ~~~
 <%= caption "client/views/posts/posts_list.js" %>
 <%= highlight "3" %>
-
-// FIXME: added audit-argument-checks
 
 <%= commit "7-7", "Sort posts by submitted timestamp." %>
 
