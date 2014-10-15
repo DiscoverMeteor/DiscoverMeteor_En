@@ -328,13 +328,13 @@ Template.postSubmit.events({
     var post = {
       url: $(e.target).find('[name=url]').val(),
       title: $(e.target).find('[name=title]').val()
-    }
+    };
     
     Meteor.call('postInsert', post, function(error, result) {
       // display the error to the user and abort
       if (error)
         return alert(error.reason);
-    
+      
       Router.go('postPage', {_id: result._id});  
     });
   }
@@ -470,7 +470,7 @@ Template.postSubmit.events({
 <%= caption "client/views/posts/post_submit.js" %>
 <%= highlight "15~17" %>
 
-<%= commit "7-6", "Use a method to submit the post." %>
+<%= commit "7-7", "Enforce post URL uniqueness." %>
 
 ### Sorting Posts
 
@@ -486,7 +486,7 @@ Template.postsList.helpers({
 <%= caption "client/views/posts/posts_list.js" %>
 <%= highlight "3" %>
 
-<%= commit "7-7", "Sort posts by submitted timestamp." %>
+<%= commit "7-8", "Sort posts by submitted timestamp." %>
 
 It took a bit of work, but we finally have a user interface to let users securely enter content in our app! 
 
