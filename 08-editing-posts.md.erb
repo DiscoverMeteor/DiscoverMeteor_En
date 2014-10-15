@@ -257,6 +257,8 @@ We're taking the `fieldNames` array that contains a list of the fields being mod
 
 If everything's normal, that array should be empty and its length should be 0. If someone is trying anything funky, that array's length will be 1 or more, and the callback will return `true` (thus denying the update).
 
+You might have noticed that nowhere in our post editing code do we check for duplicate links. This means a user could submit a link and then edit it to change its URL to bypass that check. The solution to this issue would be to also use a Meteor method for the edit post form, but we'll leave this as an exercise to the reader.
+
 <% note do %>
 
 ### Method Calls vs Client-side Data Manipulation

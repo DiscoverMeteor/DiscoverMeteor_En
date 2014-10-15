@@ -491,15 +491,3 @@ Template.postsList.helpers({
 It took a bit of work, but we finally have a user interface to let users securely enter content in our app! 
 
 But any app that lets users create content also needs to give them a way to edit or delete it. That's what the Editing Posts chapter will be all about.
-
-<% note do %>
-
-### Methods vs Allow/Deny
-
-As you've seen here, Meteor apps can use two different patterns to insert and modify data: you can either call `insert`, `update`, and `remove` from client in conjunction with allow/deny rules, or else call your own custom Meteor method. 
-
-So which approach is best? The short answer is that while the allow/deny pattern is certainly elegant, it's also very easy to get wrong. As such, we tend to recommend using methods instead.
-
-We've written more about this vast topic in [this blog post](https://www.discovermeteor.com/blog/meteor-methods-client-side-operations/).
-
-<% end %>

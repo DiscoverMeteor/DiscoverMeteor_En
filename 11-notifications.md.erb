@@ -28,18 +28,6 @@ Since we'll be updating notifications from the client, we need to make sure our 
 - The user is only trying to update a single field.
 - That single field is the `read` property of our notifications.
 
-<% note do %>
-
-### No Trespassers Allowed
-
-Why are we checking all three things and not just, say, that the user owns the current notification? After all, who cares what a user does with their own data?
-
-Only checking that a user owns a document, and not which *property* of that document they're trying to modify is a classic security mistake, and it opens the door to users modifying metadata such as a document's `userId`. 
-
-This would in turn let users assign their own posts or notifications to *other* users, creating chaos and mayhem in your community. You wouldn't want that, would you?
-
-<% end %>
-
 ~~~js
 Notifications = new Meteor.Collection('notifications');
 

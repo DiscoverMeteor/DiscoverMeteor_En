@@ -45,7 +45,7 @@ Remember that the permission system only applies to database mutations initiated
 
 This means that if you were to write a server-side `deletePost` Meteor Method that could be called from the client, anybody would be able to delete any post. So you probably don't want to do that unless you checked user permissions within that Method as well.
 
-### Using deny as a callback
+### Using Deny as a Callback
 
 Finally, one trick you can do with `deny` is to use it as an "onX" callback. For instance, you could achieve a `lastModified` timestamp with the following code:
 
