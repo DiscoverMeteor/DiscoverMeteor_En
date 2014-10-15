@@ -351,7 +351,7 @@ Meteor method callbacks always have two arguments, `error` and `result`. If for 
 
 We'll take advantage of this opportunity to add a little more security to our method by using the [`audit-argument-checks`](http://docs.meteor.com/#auditargumentchecks) package.
 
-This package lets you check any JavaScript object against a predefined pattern. In our case, we'll use it to check that the user calling the method is properly logged in (by making sure that `Meteor.userId()` is a `String`), and that the `postAttributes` object being passed as argument to the method contains `title` and `url` strings. 
+This package lets you check any JavaScript object against a predefined pattern. In our case, we'll use it to check that the user calling the method is properly logged in (by making sure that `Meteor.userId()` is a `String`), and that the `postAttributes` object being passed as argument to the method contains `title` and `url` strings, so we don't end up entering any random piece of data into our database.  
 
 So let's define the `postInsert` method in our `collections/posts.js` file. We'll remove the `allow()` block from `posts.js` since Meteor Methods bypass them anyway. 
 
