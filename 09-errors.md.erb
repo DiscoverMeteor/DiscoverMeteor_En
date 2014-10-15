@@ -411,7 +411,7 @@ Again, users should normally never have to see this “You must set a title and 
 
 ### Edition Validation
 
-To round things up, we'll also apply the same validation to our post *edit* form. The code will look pretty similar:
+To round things up, we'll also apply the same validation to our post *edit* form. The code will look pretty similar. First, the template:
 
 ~~~html
 <template name="postEdit">
@@ -438,6 +438,8 @@ To round things up, we'll also apply the same validation to our post *edit* form
 ~~~
 <%= caption "client/views/posts/post_edit.html" %>
 <%= highlight "3,7,10,14" %>
+
+Then the template helpers:
 
 ~~~js
 Template.postEdit.created = function() {
@@ -491,6 +493,22 @@ Template.postEdit.events({
 ~~~
 <%= caption "client/views/posts/post_edit.html" %>
 <%= highlight "1~12,25~27,32" %>
+
+Just like we did for the post submit form, we'll also want to validate our posts on the server. Except that you'll remember we're not using a method to edit posts, but an `update` call directly from the client. 
+
+This means we can add a new `deny` callback instead:
+
+~~~js
+Posts.deny({
+  update: function(userId, post, fieldNames) {
+    var errors = validatePost(post);
+    return errors.title || errors.url;
+  }
+});
+~~~
+<%= caption "lib/collections/posts.js" %>
+
+When adding multiple `deny` callbacks, the operation will fail if any one of them returns `true`. In this case, this means the `update` will only succeed if it's only targeting the `title` and `url` fields, as well as if neither one of these fields are empty. 
 
 <%= commit "9-4", "Validate post contents when editing." %>
 
