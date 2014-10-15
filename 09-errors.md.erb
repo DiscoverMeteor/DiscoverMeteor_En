@@ -341,8 +341,17 @@ Template.postSubmit.events({
     if (errors.title || errors.url)
       return Session.set('postSubmitErrors', errors);
     
-    post._id = Posts.insert(post);
-    Router.go('postPage', post);
+    Meteor.call('postInsert', post, function(error, result) {
+      // display the error to the user and abort
+      if (error)
+        return throwError(error.reason);
+      
+      // show this result but route anyway
+      if (result.postExists)
+        throwError('This link has already been posted');
+    
+      Router.go('postPage', {_id: result._id});  
+    });
   }
 });
 ~~~
@@ -433,3 +442,17 @@ Template.postEdit.events({
 ~~~
 <%= caption "client/views/posts/post_edit.html" %>
 <%= highlight "1~12,25~27,32" %>
+
+<% note do %>
+
+### What About `Meteor.Error`?
+
+You might be wondering why we didn't make sure of Meteor's own error triggering feature in this chapter.
+
+There are two ways of communicating data from a method being executed on the server back to the client. One way is through the return value, and the other is through `Meteor.Error`.
+
+The problem with `Meteor.Error` is that although it's easy to use on the client (in fact this is exactly what we're doing when we do `alert(error.reason)`), it also triggers a very ugly error trace in the browser console.
+
+So in order avoid that scary error trace (which can make it seem like something went very wrong with our code itself), we're instead reporting our warning (in this case, the presence of a duplicate post signaled by `postExists`) through the return value.
+
+<% end %>

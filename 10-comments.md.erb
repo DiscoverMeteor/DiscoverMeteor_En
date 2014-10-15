@@ -157,9 +157,7 @@ Given what we've learnt about helpers and Spacebars, rendering a comment is fair
 ~~~
 <%= caption "client/views/comments/comment.html" %>
 
-Let's set up a quick template helper to format our `submitted` date in a human-readable format (unless you're one of those people who can understand UNIX timestamps and hexadecimal color codes fluently?)
-
-// FIXME: joke wrong :)
+Let's set up a quick template helper to format our `submitted` date to a more user-friendly format:
 
 ~~~js
 Template.comment.helpers({
