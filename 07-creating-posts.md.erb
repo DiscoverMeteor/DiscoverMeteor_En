@@ -343,15 +343,17 @@ Template.postSubmit.events({
 <%= caption "client/views/posts/post_submit.js" %>
 <%= highlight "10~16" %>
 
-The `Meteor.call` function calls a Method named by its first argument. You can provide arguments to the call (in this case, the `post` object we constructed from the form), and finally attach a callback, which will execute when the server-side Method is done. Here we simply alert the user if there's a problem, or redirect the user to the freshly created post's discussion page if not.
+The `Meteor.call` function calls a Method named by its first argument. You can provide arguments to the call (in this case, the `post` object we constructed from the form), and finally attach a callback, which will execute when the server-side Method is done. 
 
-We then define the Method in our `collections/posts.js` file. We'll remove the `allow()` block from `posts.js` since Meteor Methods bypass them anyway. Remember that Methods are executed on the server, so Meteor assumes they can be trusted. 
+Meteor method callbacks always have two arguments, `error` and `result`. If for whatever reason the `error` argument exists, we'll alert the user (using `return` to abort the callback). If everything's working as it should, we'll redirect the user to the freshly created post's discussion page.
 
 ### Security Check
 
-We'll also take advantage of this opportunity to add a little more security to our method by using the [`audit-argument-checks`](http://docs.meteor.com/#auditargumentchecks) package.
+We'll take advantage of this opportunity to add a little more security to our method by using the [`audit-argument-checks`](http://docs.meteor.com/#auditargumentchecks) package.
 
 This package lets you check any JavaScript object against a predefined pattern. In our case, we'll use it to check that the user calling the method is properly logged in (by making sure that `Meteor.userId()` is a `String`), and that the `postAttributes` object being passed as argument to the method contains `title` and `url` strings. 
+
+So let's define the `postInsert` method in our `collections/posts.js` file. We'll remove the `allow()` block from `posts.js` since Meteor Methods bypass them anyway. 
 
 We'll then `extend` the `postAttributes` object with three more properties: the user's `_id` and `username`, as well as the post's `submitted` timestamp, before inserting the whole thing in our database and returning the resulting `_id` to the client (in other words, the original caller of this method) in a JavaScript object. 
 
@@ -385,6 +387,16 @@ Meteor.methods({
 <%= highlight "3~24" %>
 
 Note that the `_.extend()` method is part of the [Underscore](http://underscorejs.org) library, and simply lets you “extend” one object with the properties of another. 
+
+<% note do %>
+
+### Bye Bye Allow/Deny
+
+Meteor Methods are executed on the server, so Meteor assumes they can be trusted. As such, Meteor methods bypass any allow/deny callbacks.
+
+If you want to run some code before every `insert`, `update`, or `remove` *even on the server*, we suggest checking out the [collection-hooks](https://github.com/matb33/meteor-collection-hooks) package.
+
+<% end %>
 
 ### Preventing Duplicates
 
@@ -479,3 +491,15 @@ Template.postsList.helpers({
 It took a bit of work, but we finally have a user interface to let users securely enter content in our app! 
 
 But any app that lets users create content also needs to give them a way to edit or delete it. That's what the Editing Posts chapter will be all about.
+
+<% note do %>
+
+### Methods vs Allow/Deny
+
+As you've seen here, Meteor apps can use two different patterns to insert and modify data: you can either call `insert`, `update`, and `remove` from client in conjunction with allow/deny rules, or else call your own custom Meteor method. 
+
+So which approach is best? The short answer is that while the allow/deny pattern is certainly elegant, it's also very easy to get wrong. As such, we tend to recommend using methods instead.
+
+We've written more about this vast topic in [this blog post](https://www.discovermeteor.com/blog/meteor-methods-client-side-operations/).
+
+<% end %>

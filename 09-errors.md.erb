@@ -12,17 +12,15 @@ paragraphs: 31
 
 Merely using the browser's standard `alert()` dialog to warn the user when there's problem with their submission is a bit dissatisfying, and it certainly doesn't make for great UX. We can do better. 
 
-Instead, let's build a more versatile error reporting mechanism that will do a better job of telling the user what's going on without breaking up their flow.
+Instead, let's build a more versatile error reporting mechanism that will do a better job of telling the user what's going on without breaking up the flow.
 
 ### Introducing Local Collections
 
-We are going to implement a simple system which keeps track of which errors a user has seen and displays the new ones in a "flash" area of the site. This UX pattern is useful when we want to inform a user that something has happened without disrupting their workflow too much.
+We are going to implement a simple system which displays new errors in the upper-right corner of the window, similar to popular Mac OS app [Growl](http://growl.info/). 
 
-What we will create is similar to the flash messages often found in Ruby on Rails apps, but is more subtle in that it's implemented client side and knows when a user has seen a message.
+To start off with, we create a collection to store our errors in. Given that the errors are only relevant to the current session and don't need to be persistent in any way, we are going to do something new, and create a *local collection*. What this means is that the `Errors` collection will only exist *in the browser*, and will make no attempt to synchronize back to the server.
 
-To start off with, we create a collection to store our errors in. Given that the errors are only relevant to the current session and don't need to be persistent in any way, we are going to do something new, and create a _local collection_. What this means is that the `Errors` collection will only exist in the browser, and will make no attempt to synchronize with the server.
-
-To achieve this, we simply create the error in a client-only file, with the collection name set to `null`. We create a `throwError` function that simply inserts an error into our new local collection:
+To achieve this, we create the error inside the `client` directory (to make the collection client-only), with its MongoDB collection name set to `null` (since this collection's data will never be saved into the server-side database):
 
 ~~~js
 // Local (client-only) collection
@@ -30,7 +28,7 @@ Errors = new Meteor.Collection(null);
 ~~~
 <%= caption "client/helpers/errors.js" %>
 
-Now that the collection has been created, we can add a `throwError` function which we'll call to add errors to it. We don't need to worry about `allow` or `deny` or anything like that, as this is a local collection and will not be saved to the Mongo database.
+Now that the collection has been created, we can add a `throwError` function which we'll call to add errors to it. We don't need to worry about `allow` or `deny` or any other security concerns, as this collection is “local” to the current user. 
 
 ~~~js
 throwError = function(message) {
@@ -39,11 +37,11 @@ throwError = function(message) {
 ~~~
 <%= caption "client/helpers/errors.js" %>
 
-The advantage of using a local collection to store the errors is that, like all collections, it's reactive -- meaning we can declaratively display the errors in the same way we display any other collection data.
+The advantage of using a local collection to store the errors is that, like all collections, it's reactive -- meaning we can reactively display errors in the same way we display any other collection data.
 
-### Displaying errors
+### Displaying Errors
 
-We are going to display the errors at the top of our main layout:
+We are going to insert errors at the top of our main layout:
 
 ~~~html
 <template name="layout">
@@ -89,7 +87,7 @@ In this case, since both error templates are fairly short, we'll make an excepti
 
 <% end %>
 
-We just need to integrate our template helper, and we'll be good to go!
+We just need to implement our template helper and we'll be good to go!
 
 ~~~js
 Template.errors.helpers({
@@ -102,11 +100,23 @@ Template.errors.helpers({
 
 <%= commit "9-1", "Basic error reporting." %>
 
+<% note do %>
+
+### Two Kinds of Errors
+
+At this point it's important to make a distinction between expected “app-level” errors and unexpected “code-level” errors. 
+
+**App-level** errors are generally user-triggered, and users are in turn able to act upon them. These include things like validation errors, permission errors, “not found” errors, and so on. These are the kind of errors you want to show to the user in order to help them fix whatever problem they've just encountered.
+
+**Code-level** errors, on the other kind, are triggered by actual bugs in your code, and you probably *don't* want to surface them to users directly, but instead track them with some kind of third-party error-tracking service (such as [Kadira](http://kadira.io)).
+
+In this chapter, we'll focus on dealing with the first type of error, not on catching bugs. 
+
+<% end %>
+
 ### Creating errors
 
-We now know how to display errors, but we still need to create some before we'll see anything. Errors are most commonly triggered by users entering new content, so we'll check for errors in our post creation callback, and display a message for any errors that get raised.
-
-In addition, if we get the `302` error (which indicates that a post with the same URL already exists), we'll redirect the user to the existing post. We obtain the existing post's `_id` from `error.details` (remember we passed that post's `_id` as the third `details` argument of our `Error` class in chapter 7). 
+We now know how to display errors, but we still need to trigger one before we'll see anything. We've actually already implemented a good error scenario: our duplicate post warning. We'll simply replace the `alert` calls in the `postSubmit` event helper with the new `throwError` function we just set up:
 
 ~~~js
 Template.postSubmit.events({
@@ -115,26 +125,54 @@ Template.postSubmit.events({
     
     var post = {
       url: $(e.target).find('[name=url]').val(),
-      title: $(e.target).find('[name=title]').val(),
-      message: $(e.target).find('[name=message]').val()
-    }
+      title: $(e.target).find('[name=title]').val()
+    };
     
-    Meteor.call('post', post, function(error, id) {
-      if (error) {
-        // display the error to the user
-        throwError(error.reason);
-        
-        if (error.error === 302)
-          Router.go('postPage', {_id: error.details})
-      } else {
-        Router.go('postPage', {_id: id});
-      }
+    Meteor.call('postInsert', post, function(error, result) {
+      // display the error to the user and abort
+      if (error)
+        return throwError(error.reason);
+      
+      // show this result but route anyway
+      if (result.postExists)
+        throwError('This link has already been posted');
+    
+      Router.go('postPage', {_id: result._id});  
     });
   }
 });
 ~~~
 <%= caption "client/views/posts/post_submit.js" %>
-<%= highlight "12~14, 16~21" %>
+<%= highlight "13,17" %>
+
+While we're at it, we'll do the same thing for the `postEdit` event helper:
+
+~~~js
+Template.postEdit.events({
+  'submit form': function(e) {
+    e.preventDefault();
+    
+    var currentPostId = this._id;
+    
+    var postProperties = {
+      url: $(e.target).find('[name=url]').val(),
+      title: $(e.target).find('[name=title]').val()
+    }
+    
+    Posts.update(currentPostId, {$set: postProperties}, function(error) {
+      if (error) {
+        // display the error to the user
+        throwError(error.reason);
+      } else {
+        Router.go('postPage', {_id: currentPostId});
+      }
+    });
+  },
+  //...
+});
+~~~
+<%= caption "client/views/posts/post_edit.js" %>
+<%= highlight "15" %>
 
 <%= commit "9-2", "Actually use the error reporting." %>
 
@@ -142,28 +180,38 @@ Give it a try: try creating a post and entering the URL `http://meteor.com`. As 
 
 <%= screenshot "9-1", "Triggering an error" %>
 
+// FIXME: change screenshot
+
 ### Clearing Errors
 
-// FIXME: this text is wrong.
+You'll notice the error messages are disappearing by themselves after a few seconds. This is actually due to a bit of CSS magic included in the stylesheet we added all the way back at the beginning of this book:
 
-If you click the error's close button at this point, you'll see the error disappear, because that close button triggers Twitter Bootstrap's embedded JavaScript. 
+~~~css
+@keyframes fadeOut {
+  0% {opacity: 0;}
+  10% {opacity: 1;}
+  90% {opacity: 1;}
+  100% {opacity: 0;}
+}
 
-But while Bootstrap is removing the error `<div>` from the DOM, it's not removing the error object from the Meteor collection. So let's add a way to clean up our local collection once an error has done its job. 
+//...
 
-First, we'll modify the `throwError` function to include a `seen` property. This will be useful later on to keep track of whether an error has been actually seen by the user. 
+.alert {
+  animation: fadeOut 2700ms ease-in 0s 1 forwards;
+  //...
+}
+~~~
+<%= caption "client/stylesheets/style.css" %>
 
-Once that's done, we can code up a simple `clearErrors` function that clears those "seen" errors:
+We're defining a `fadeOut` CSS animation that specifies four keyframes for the opacity property (at 0%, 10%, 90%, and 100% of the total animation duration), and applying this animation to the `.alert` class.
 
+The animation will run for 2700 milliseconds total, use the `ease-in` timing equation, run with a delay of 0 seconds, run only once, and finally stay at the last keyframe once it's done running.
 
-In order for our `clearErrors()` function to do its job, errors need to be marked as `seen`. To do this properly, there's one edge case we need to take care of: when we throw up an error and then redirect the user somewhere else (as we do when they try to post a duplicate link), the redirection happens instantly. This means that the user never has the chance to actually see the error before it's cleared. 
+This works, but if you trigger multiple errors you'll notice that they're getting stacked one on top of the other. This is because while the `.alert` elements are disappearing *visually*, they're still present in the DOM. We need to fix this.
 
-This is where our `seen` property will come in handy. We need to ensure that it's only set to `true` if the user has actually seen the error. 
+This is exactly the kind of situation where Meteor shines. Since the `Errors` collection is reactive, all we need to do to get rid of these old errors is remove them from the collection!
 
-To achieve this, we'll use `Meteor.defer()`. This function tells Meteor to execute its callback "just after" whatever's going on now. If it helps, you can consider that `defer()` is like telling the browser to wait 1 millisecond before proceeding. 
-
-What we're doing is telling Meteor to set `seen` to `true` 1 millisecond after the `errors` template has been rendered. But remember how we said that redirection happens instantly? This means that the redirection will kick in before the `defer` callback, which will never have a chance to be executed.
-
-This is exactly what we want: if it's not executed our error will not be marked as `seen`, which means it won't be cleared, which means it'll appear on the page our user is redirected to just like we wanted!
+We'll use `Meteor.setTimeout` to specify a callback function to be executed after the timeout (in this case, 3000 milliseconds) expires.
 
 ~~~js
 Template.errors.helpers({
@@ -185,9 +233,6 @@ Template.error.rendered = function() {
 <%= commit "9-3", "Monitor which errors have been seen, and clear on routing." %>
 
 The `rendered` callback triggers once our template has been rendered in the browser. Inside the callback, `this` refers to the current template instance, and `this.data` lets us access the data of the object that is currently being rendered (in our case, an error).
-
-Whew! That was a lot of work for something users will hopefully never see!
-
 
 ### Seeking Validation
 
@@ -227,6 +272,12 @@ Now for the fun part: making these helpers actually do something.
 
 We'll use the **Session** to store a `postSubmitErrors` object containing any potential error message. As the user interacts with the form, this object will change, which in turn will reactively update the form's markup and contents.
 
+First, we'll initialize the object whenever the `postSubmit` template is created. This ensures that the user won't see old error messages left over from a previous visit to this page.
+
+We then define our two template helpers. They both look at the `field` property of `Session.get('postSubmitErrors')` (where `field` is either `url` or `title` depending on where we're calling the helper from). 
+
+While `errorMessage` simply returns the message itself, `errorClass` checks for the *presence* of a message and returns `has-error` if such a message exists.
+
 ~~~js
 Template.postSubmit.created = function() {
   Session.set('postSubmitErrors', {});
@@ -240,6 +291,22 @@ Template.postSubmit.helpers({
     return !!Session.get('postSubmitErrors')[field] ? 'has-error' : '';
   }
 });
+~~~
+<%= caption "client/views/posts/post_submit.js" %>
+
+You can test that our heplers are working properly by opening the browser console and typing the following line of code:
+
+~~~js
+Session.set('postSubmitErrors', {title: 'Warning! Intruder detected. Now releasing robo-dogs.'});
+~~~
+<%= caption "Browser console" %>
+
+The next step is hooking up that `postSubmitErrors` Session object to the form. 
+
+Before doing so, we'll create a new `validatePost` function in `posts.js` that looks at a `post` object, and returns an `errors` object containing any relevant errors:
+
+~~~js
+//...
 
 validatePost = function (post) {
   var errors = {};
@@ -253,6 +320,14 @@ validatePost = function (post) {
   return errors;
 }
 
+//...
+~~~
+<%= caption "lib/collections/posts.js" %>
+<%= highlight "3~13" %>
+
+Finally, we'll call this function from the `postSubmit` event helper:
+
+~~~js
 Template.postSubmit.events({
   'submit form': function(e) {
     e.preventDefault();
@@ -272,6 +347,89 @@ Template.postSubmit.events({
 });
 ~~~
 <%= caption "client/views/posts/post_submit.js" %>
-//and highlight
+<%= highlight "10~12" %>
 
-[SACHA - I put the validate post function in here to begin with as it doesn't yet make sense to generalize it -- does it?]
+Notice that we're using `return` to abort the execution of the helper if any errors are present, not because we want to actually return this value anywhere. 
+
+### Edition Validation
+
+To round things up, we'll also apply the same validation to our post *edit* form. The code will look pretty similar:
+
+~~~html
+<template name="postEdit">
+  <form class="main form">
+    <div class="form-group {{errorClass 'url'}}">
+      <label class="control-label" for="url">URL</label>
+      <div class="controls">
+          <input name="url" id="url" type="text" value="{{url}}" placeholder="Your URL" class="form-control"/>
+          <span class="help-block">{{errorMessage 'url'}}</span>
+      </div>
+    </div>
+    <div class="form-group {{errorClass 'title'}}">
+      <label class="control-label" for="title">Title</label>
+      <div class="controls">
+          <input name="title" id="title" type="text" value="{{title}}" placeholder="Name your post" class="form-control"/>
+          <span class="help-block">{{errorMessage 'title'}}</span>
+      </div>
+    </div>
+    <input type="submit" value="Submit" class="btn btn-primary submit"/>
+    <hr/>
+    <a class="btn btn-danger delete" href="#">Delete post</a>
+  </form>
+</template>
+~~~
+<%= caption "client/views/posts/post_edit.html" %>
+<%= highlight "3,7,10,14" %>
+
+~~~js
+Template.postEdit.created = function() {
+  Session.set('postEditErrors', {});
+}
+
+Template.postEdit.helpers({
+  errorMessage: function(field) {
+    return Session.get('postEditErrors')[field];
+  },
+  errorClass: function (field) {
+    return !!Session.get('postEditErrors')[field] ? 'has-error' : '';
+  }
+});
+
+Template.postEdit.events({
+  'submit form': function(e) {
+    e.preventDefault();
+    
+    var currentPostId = this._id;
+    
+    var postProperties = {
+      url: $(e.target).find('[name=url]').val(),
+      title: $(e.target).find('[name=title]').val()
+    }
+    
+    var errors = validatePost(postProperties);
+    if (errors.title || errors.url)
+      return Session.set('postEditErrors', errors);
+    
+    Posts.update(currentPostId, {$set: postProperties}, function(error) {
+      if (error) {
+        // display the error to the user
+        alert(error.reason);
+      } else {
+        Router.go('postPage', {_id: currentPostId});
+      }
+    });
+  },
+  
+  'click .delete': function(e) {
+    e.preventDefault();
+    
+    if (confirm("Delete this post?")) {
+      var currentPostId = this._id;
+      Posts.remove(currentPostId);
+      Router.go('postsList');
+    }
+  }
+});
+~~~
+<%= caption "client/views/posts/post_edit.html" %>
+<%= highlight "1~12,25~27,32" %>
