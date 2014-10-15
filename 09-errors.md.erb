@@ -230,7 +230,7 @@ Template.error.rendered = function() {
 <%= caption "client/views/includes/errors.js" %>
 <%= highlight "7~12" %>
 
-<%= commit "9-3", "Monitor which errors have been seen, and clear on routing." %>
+<%= commit "9-3", "Clear errors after 3 seconds." %>
 
 The `rendered` callback triggers once our template has been rendered in the browser. Inside the callback, `this` refers to the current template instance, and `this.data` lets us access the data of the object that is currently being rendered (in our case, an error).
 
@@ -360,6 +360,10 @@ Template.postSubmit.events({
 
 Notice that we're using `return` to abort the execution of the helper if any errors are present, not because we want to actually return this value anywhere. 
 
+// FIXME add server side validation too
+
+<%= commit "9-4", "Validate post contents on submission." %>
+
 ### Edition Validation
 
 To round things up, we'll also apply the same validation to our post *edit* form. The code will look pretty similar:
@@ -442,6 +446,8 @@ Template.postEdit.events({
 ~~~
 <%= caption "client/views/posts/post_edit.html" %>
 <%= highlight "1~12,25~27,32" %>
+
+<%= commit "9-4", "Validate post contents when editing." %>
 
 <% note do %>
 

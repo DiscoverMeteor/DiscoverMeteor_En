@@ -321,7 +321,7 @@ Meteor.methods({
     var post = Posts.findOne(commentAttributes.postId);
 
     if (!post)
-      throw new Meteor.Error(422, 'You must comment on a post');
+      throw new Meteor.Error('invalid-comment', 'You must comment on a post');
     
     comment = _.extend(commentAttributes, {
       userId: user._id,

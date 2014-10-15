@@ -197,10 +197,10 @@ Meteor.methods({
     
     var post = Posts.findOne(postId);
     if (!post)
-      throw new Meteor.Error(422, 'Post not found');
+      throw new Meteor.Error('invalid', 'Post not found');
     
     if (_.include(post.upvoters, this.userId))
-      throw new Meteor.Error(422, 'Already upvoted this post');
+      throw new Meteor.Error('invalid', 'Already upvoted this post');
     
     Posts.update(post._id, {
       $addToSet: {upvoters: this.userId},
@@ -336,7 +336,7 @@ Meteor.methods({
     });
     
     if (! affected)
-      throw new Meteor.Error(422, "You weren't able to upvote that post");
+      throw new Meteor.Error('invalid', "You weren't able to upvote that post");
   }
 });
 ~~~
