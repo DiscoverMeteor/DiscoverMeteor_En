@@ -22,9 +22,9 @@ So, although a user's browser may contain some kind of state (for instance which
 
 This data is stored in Meteor in the **Collection**. A collection is a special data structure that, through publications and subscriptions, takes care of synchronising real-time data to and from each connected user's browser and into the Mongo database. Let's see how.
 
-We want our posts to be permanent and shared between users, so we'll start by creating a collection called `Posts` to store them in. If you haven't done so already create a `collections/` folder at the root of your app, and then a `posts.js` file inside it. Then add:
+We want our posts to be permanent and shared between users, so we'll start by creating a collection called `Posts` to store them in. 
 
-// FIXME DIFFERENT DIR (CHECK FILE STRUCTURE IN GETTING STARTED)
+Collections are pretty central to any app, so to make sure they are always defined first we'll put them inside the `lib` directory. So if you haven't done so already, create a `collections/` folder inside `lib`, and then a `posts.js` file inside it. Then add:
 
 ~~~js
 Posts = new Meteor.Collection('posts');

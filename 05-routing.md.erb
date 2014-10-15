@@ -106,7 +106,6 @@ Router.map(function() {
 
 We've done two important things. First, we've told the router to use the layout we just created as the default layout for all routes. Second, we've defined a new route called `postsList` and mapped it to the `/` path. 
 
-// FIXME this is out of place
 <% note do %>
 
 ### The `/lib` folder
@@ -203,11 +202,6 @@ For now, let's just say that this is exactly where reactivity comes in, and leav
 <% end %>
 
 ### Routing To A Specific Post
-
-// FIXME added not found.
-
-
-<%= commit "5-4", "Added not found template." %>
 
 Now that we've seen how to route to the `postsList` template, let's set up a route to display the details of a single post. 
 
@@ -342,3 +336,53 @@ The Router picks up clicks on URLs that are internal to the site, and prevents t
 If everything is working correctly the page should change instantaneously. In fact, sometimes things change so fast that some kind of page transition might be needed. This is outside of the scope of this chapter, but an interesting topic nonetheless.
 
 <% end %>
+
+### Post Not Found
+
+Let's not forget that routing works both way: it can change the URL when we visit a page, but it can also display a new page when we change *the URL*. So we need to figure out what happens if somebody enters the *wrong* URL.
+
+Thankfully, Iron Router takes care of this for us through the `notFoundTemplate` option.
+
+First, we'll set up a new template to show a simple 404 error message:
+
+```html
+<template name="notFound">
+  <div class="not-found jumbotron">
+    <h2>404</h2>
+    <p>Sorry, we couldn't find a page at this address.</p>
+  </div>
+</template>
+```
+<%= caption "client/views/application/not_found.html"%>
+
+Then, we'll simply point Iron Router to this template:
+
+```js
+Router.configure({
+  layoutTemplate: 'layout',
+  loadingTemplate: 'loading',
+  notFoundTemplate: 'notFound',
+  waitOn: function() { return Meteor.subscribe('posts'); }
+});
+ ```
+<%= caption "lib/router.js"%>
+<%= highlight "4" %>
+
+To test out your new error page, you can try accessing a random URL like `http://localhost:3000/nothing-here`. 
+
+But wait, what if someone enters a URL of the form `http://localhost:3000/posts/xyz`, where `xyz` is *not* a valid post `_id`? This is still a valid route, just not one that points to any data.
+
+Thankfully, Iron Router is smart enough to figure this out if we just add a special `dataNotFound` hook at the end of `router.js`:
+
+```js
+//...
+
+Router.onBeforeAction('loading');
+Router.onBeforeAction('dataNotFound', {only: 'postPage'});```
+```
+<%= caption "lib/router.js"%>
+<%= highlight "4" %>
+
+This tell Iron Router to show the “not found” page not just for invalid routes but also for the `postPage` route,  whenever the `data` function returns an empty object.
+
+<%= commit "5-4", "Added not found template." %>

@@ -79,13 +79,17 @@ So if you encounter any references to Meteorite's `mrt` command line utility thr
 
 ### Adding a Package
 
-We will now use Meteor to add a smart package that will let us include [Bootstrap](http://getbootstrap.com/) in our project:
+We will now use Meteor's package system to add the [Bootstrap](http://getbootstrap.com/) framework to our project.
 
-// FIXME -- add underscore too
+This is no different from adding Bootstrap the usual way by manually including its CSS and JavaScript files, except that we rely on Meteor community member [Andrew Mao](https://github.com/mizzao) (the “mizzao” in `mizzao:bootstrap-3` is the package author's username) to keep everything up to date for us.
+
+While we're at it, we'll also add the [Underscore](http://underscorejs.org/) package. Underscore is a JavaScript utility library, and it's very useful when it comes to manipulating JavaScript data structures.
+
+As of this writing, the `underscore` package is still part of the “official” Meteor packages, which is why it doesn't have an author:
 
 ~~~bash
-$ meteor add underscore
 $ meteor add mizzao:bootstrap-3
+$ meteor add underscore
 ~~~
 
 <%= commit "2-2", "Added bootstrap and underscore packages." %>
