@@ -187,3 +187,91 @@ Template.error.rendered = function() {
 The `rendered` callback triggers once our template has been rendered in the browser. Inside the callback, `this` refers to the current template instance, and `this.data` lets us access the data of the object that is currently being rendered (in our case, an error).
 
 Whew! That was a lot of work for something users will hopefully never see!
+
+
+### Seeking Validation
+
+We need to enforce some kind of validation on our form. At the minimum, we'll want users to provide both a URL and a title for their new post. 
+
+We'll do two things to point out any missing fields: first, we'll give a special `has-error` CSS class to the parent `div` of any problematic form field. Second, we'll display a helpful error message just below the field.
+
+To get started, let's prep our `postSubmit` template to accept these new helpers:
+
+~~~html
+<template name="postSubmit">
+  <form class="main form">
+    <div class="form-group {{errorClass 'url'}}">
+      <label class="control-label" for="url">URL</label>
+      <div class="controls">
+          <input name="url" id="url" type="text" value="" placeholder="Your URL" class="form-control"/>
+          <span class="help-block">{{errorMessage 'url'}}</span>
+      </div>
+    </div>
+    <div class="form-group {{errorClass 'title'}}">
+      <label class="control-label" for="title">Title</label>
+      <div class="controls">
+          <input name="title" id="title" type="text" value="" placeholder="Name your post" class="form-control"/>
+          <span class="help-block">{{errorMessage 'title'}}</span>
+      </div>
+    </div>
+    <input type="submit" value="Submit" class="btn btn-primary"/>
+  </form>
+</template>
+~~~
+<%= caption "client/views/posts/post_submit.html" %>
+<%= highlight "3,7,10,14" %>
+
+Note that we're passing parameters (`url` and `title` respectively) to each helper. This lets us reuse the same helper both time, modifying its behavior based on the parameter.
+
+Now for the fun part: making these helpers actually do something.
+
+We'll use the **Session** to store a `postSubmitErrors` object containing any potential error message. As the user interacts with the form, this object will change, which in turn will reactively update the form's markup and contents.
+
+~~~js
+Template.postSubmit.created = function() {
+  Session.set('postSubmitErrors', {});
+}
+
+Template.postSubmit.helpers({
+  errorMessage: function(field) {
+    return Session.get('postSubmitErrors')[field];
+  },
+  errorClass: function (field) {
+    return !!Session.get('postSubmitErrors')[field] ? 'has-error' : '';
+  }
+});
+
+validatePost = function (post) {
+  var errors = {};
+
+  if (!post.title)
+    errors.title = "Please fill in a headline";
+  
+  if (!post.url)
+    errors.url =  "Please fill in a URL";
+
+  return errors;
+}
+
+Template.postSubmit.events({
+  'submit form': function(e) {
+    e.preventDefault();
+    
+    var post = {
+      url: $(e.target).find('[name=url]').val(),
+      title: $(e.target).find('[name=title]').val()
+    };
+    
+    var errors = validatePost(post);
+    if (errors.title || errors.url)
+      return Session.set('postSubmitErrors', errors);
+    
+    post._id = Posts.insert(post);
+    Router.go('postPage', post);
+  }
+});
+~~~
+<%= caption "client/views/posts/post_submit.js" %>
+//and highlight
+
+[SACHA - I put the validate post function in here to begin with as it doesn't yet make sense to generalize it -- does it?]
