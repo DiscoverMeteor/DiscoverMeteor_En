@@ -501,14 +501,18 @@ This means we can add a new `deny` callback instead:
 ~~~js
 Posts.deny({
   update: function(userId, post, fieldNames) {
-    var errors = validatePost(post);
+    var errors = validatePost(modifier.$set);
     return errors.title || errors.url;
   }
 });
 ~~~
 <%= caption "lib/collections/posts.js" %>
 
-When adding multiple `deny` callbacks, the operation will fail if any one of them returns `true`. In this case, this means the `update` will only succeed if it's only targeting the `title` and `url` fields, as well as if neither one of these fields are empty. 
+Note that in this case, the `post` argument refers to the *existing* post. In this case, we want to validate the *update*, which is why we're calling `validatePost` on the contents of the `modifier`'s `$set` property (as in `Posts.update({$set: {title: ..., url: ...}})`).
+
+This works because `modifier.$set` contains the same two `title` and `url` property as the whole `post` object would. Of course, it does mean that any partial update affecting only `title` or only `url` will fail, but in practice that shouldn't be an issue. 
+
+You might notice this is our second `deny` callback. When adding multiple `deny` callbacks, the operation will fail if any one of them returns `true`. In this case, this means the `update` will only succeed if it's only targeting the `title` and `url` fields, as well as if neither one of these fields are empty. 
 
 <%= commit "9-4", "Validate post contents when editing." %>
 
