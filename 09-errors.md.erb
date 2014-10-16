@@ -514,7 +514,7 @@ This works because `modifier.$set` contains the same two `title` and `url` prope
 
 You might notice this is our second `deny` callback. When adding multiple `deny` callbacks, the operation will fail if any one of them returns `true`. In this case, this means the `update` will only succeed if it's only targeting the `title` and `url` fields, as well as if neither one of these fields are empty. 
 
-<%= commit "9-4", "Validate post contents when editing." %>
+<%= commit "9-5", "Validate post contents when editing." %>
 
 <% note do %>
 
@@ -526,6 +526,6 @@ There are two ways of communicating data from a method being executed on the ser
 
 The problem with `Meteor.Error` is that although it's easy to use on the client (in fact this is exactly what we're doing when we do `alert(error.reason)`), it also triggers a very ugly error trace in the browser console.
 
-So in order avoid that scary error trace (which can make it seem like something went very wrong with our code itself), we're instead reporting our warning (in this case, the presence of a duplicate post signaled by `postExists`) through the return value.
+So in order avoid that scary error trace (which can make it seem like something went wrong with our code itself), we're instead reporting our warning (in this case, the presence of a duplicate post signaled by `postExists`) through the return value.
 
 <% end %>
