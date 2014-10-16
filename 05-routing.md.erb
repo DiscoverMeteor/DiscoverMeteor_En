@@ -43,8 +43,8 @@ We'll be touching on a lot of different features of the router in this chapter. 
 - **Hooks**: Hooks are actions that you'd like to perform before, after, or even during the routing process. A typical example would be checking if the user has the proper rights before displaying a page. 
 - **Filters**: Filters are simply hooks that you define globally for one or more routes. 
 - **Route Templates**: Each route needs to point to a template. If you don't specify one, the router will look for a template with the same name as the route by default.
-- **Layouts**: You can think of layouts as one of those digital photo frames. They contain all the HTML code that wraps the current template, and will remain the same even if the template changes.
-- **Controllers**: Sometimes, you'll realize that a lot of your templates are reusing the same parameters. Rather than duplicate your code, you can let all these routes inherit from a single *routing controller* which will contain all the routing logic. 
+- **Layouts**: You can think of layouts as a “frame” for your content. They contain all the HTML code that wraps the current template, and will remain the same even if the template itself changes.
+- **Controllers**: Sometimes, you'll realize that a lot of your templates are reusing the same parameters. Rather than duplicate your code, you can let all these routes inherit from a single *routing controller* which will contain all the common routing logic. 
 
 For more information about Iron Router, check out [the full documentation on GitHub](https://github.com/EventedMind/iron-router). 
 
@@ -54,15 +54,15 @@ For more information about Iron Router, check out [the full documentation on Git
 
 So far, we've built our layout using hard-coded template includes (such as `{{>postsList}}`).  So although the content of our app can change, the page's basic structure is always the same: a header, with a list of posts below it.
 
-The Iron Router lets us break out of this mold by taking over what renders inside the HTML `<body>` tag. So we won't define that tag's content ourselves, as we would with a regular HTML page. Instead, we will point the router to a special layout template that contains a `{{> yield}}` template helper. 
+Iron Router lets us break out of this mold by taking over what renders inside the HTML `<body>` tag. So we won't define that tag's content ourselves, as we would with a regular HTML page. Instead, we will point the router to a special layout template that contains a `{{> yield}}` template helper. 
 
 This `{{> yield}}` helper will define a special dynamic zone that will automatically render whichever template corresponds to the current route (as a convention, we'll designate this special template as the “route template” from now on):
 
 <%= diagram "router-diagram", "Layouts and templates.", "pull-center" %>
 
-We'll start by creating our layout and adding the `{{> yield}}` helper. First, we'll remove our HTML `<body>` tag from `main.html`, and move its contents to their own template, `layout.html`.
+We'll start by creating our layout and adding the `{{> yield}}` helper. First, we'll remove our HTML `<body>` tag from `main.html`, and move its contents to their own template, `layout.html` (which we'll place inside a new `client/views/application` directory). 
 
-So our slimmed down `main.html` now looks like this:
+Iron Router will take care of embedding our layout into the stripped-down `main.html` template for us, which now looks like this:
 
 ~~~html
 <head>
@@ -89,9 +89,11 @@ While the newly created `layout.html` will now contain the app's outer layout:
 ~~~
 <%= caption "client/views/application/layout.html" %>
 
-You'll notice we've replaced the inclusion of the `postsList` template with a call to `yield` helper. You'll notice that after this change, we see nothing on the screen. This is because we haven't told the router what to do with the `/` URL yet, so it simply serves up an empty template.
+You'll notice we've replaced the inclusion of the `postsList` template with a call to `yield` helper. 
 
-To begin, we can regain our old behavior by mapping the root `/` URL to the `postsList` template. We'll create a `/lib` directory at our project's root, and inside it create `router.js` :
+After this change, our browser tab will go blank and an error will show up in the browser console. This is because we haven't told the router what to do with the `/` URL yet, so it simply serves up an empty template.
+
+To begin, we can regain our old behavior by mapping the root `/` URL to the `postsList` template. We'll create a new `router.js` file inside the `/lib` directory at our project's root:
 
 ~~~js
 Router.configure({
@@ -104,7 +106,9 @@ Router.map(function() {
 ~~~
 <%= caption "lib/router.js"%>
 
-We've done two important things. First, we've told the router to use the layout we just created as the default layout for all routes. Second, we've defined a new route called `postsList` and mapped it to the `/` path. 
+We've done two important things. First, we've told the router to use the `layout` template we just created as the default layout for all routes. 
+
+Second, we've defined a new route called `postsList` and mapped it to the root `/` path. 
 
 <% note do %>
 
@@ -124,12 +128,12 @@ By default, Iron Router will look for a template with the same name as the route
 
 You may be wondering why we even need to name our routes in the first place. Naming routes lets us use a few Iron Router features that make it easier to build links inside our app. The most useful one is the `{{pathFor}}` Spacebars helper,  which returns the URL path component of any route.
 
-We want our main home link to point us back to the posts list, so instead of specifying a static `/` URL, we can also use the Spacebars helper. The end result will be the same, but this gives us more flexibility since the helper will always output the right URL even if we change the route's path in the router. 
+We want our main home link to point us back to the posts list, so instead of specifying a static `/` URL, we can also use the Spacebars helper. The end result will be the same, but this gives us more flexibility since the helper will always output the right URL even if we later change the route's path in the router. 
 
 ~~~html
 <header class="navbar navbar-default" role="navigation"> 
   <div class="navbar-header">
-    <a class="brand" href="{{pathFor 'postsList'}}">Microscope</a>
+    <a class="navbar-brand" href="{{pathFor 'postsList'}}">Microscope</a>
   </div>
 </header>
 
@@ -142,7 +146,7 @@ We want our main home link to point us back to the posts list, so instead of spe
 
 ### Waiting on Data
 
-If you deploy the current version of the app (or launch the instance using the link above), you'll notice that the list appears empty for a few moments before the posts appear. This is because when the page first loads, there are no posts to display until the `posts` subscription is done grabbing the post data from the server.
+If you deploy the current version of the app (or launch the web instance using the link above), you'll notice that the list appears empty for a few moments before the posts appear. This is because when the page first loads, there are no posts to display until the `posts` subscription is done grabbing the post data from the server.
 
 It would be a much better user experience to provide some visual feedback that something is happening, and that the user should wait a moment.
 
@@ -166,17 +170,17 @@ Router.onBeforeAction('loading');
 
 Let's break things down. First, we've modified the `Router.configure()` block to provide the router with the name of a loading template (which we'll create soon) to redirect to while our app is waiting for data. 
 
-Second, we've also added a `waitOn` function, which returns our `posts` subscription. Finally, we enabled a built in `loading` hook. What this means is that the router will ensure that the `posts` subscription is loaded before sending the user through to the route they requested.
+Second, we've also added a `waitOn` function, which returns our `posts` subscription. 
+
+Finally, we enabled the built-in `loading` hook. What this means is that the router will ensure that the `posts` subscription is loaded before sending the user through to the route they requested.
 
 Note that since we're defining our `waitOn` function globally at the router level, this sequence will only happen once when a user first accesses your app. After that, the data will already be loaded in the browser's memory and the router won't need to wait for it again. 
 
-And since we are now letting the router handle our subscription, you can now safely remove it from `main.js` (which should now be empty). 
+Moreover since we are now letting the router handle our subscription, you can now safely remove it from `main.js` (which should now be empty). 
 
 It's usually a good idea to wait on your subscriptions, not just for the user experience, but also because it means you can safely assume that data will always be available from within a template. This eliminates the need to deal with templates being rendered before their underlying data is available, which often requires tricky workarounds. 
 
-We'll also add an `onBeforeAction` filter to trigger Iron Router's built-in `loading` hook and make sure we're showing the loading template while we wait. 
-
-The final piece of the puzzle is the actual loading template. We'll use the `spin` package to create a nice animated loading spinner. Add it with `meteor add sacha:spin`, and then create the `loading` template as follows:
+The final piece of the puzzle is the actual loading template. We'll use the `spin` package to create a nice animated loading spinner. Add it with `meteor add sacha:spin`, and then create the `loading` template as follows in the `client/views/includes` directory:
 
 ~~~html
 <template name="loading">
@@ -221,6 +225,8 @@ We'll add more elements to this template later on (such as comments), but for no
 We are going to create another named route, this time mapping URL paths of the form `/posts/<ID>` to the `postPage` template:
 
 ~~~js
+//...
+
 Router.map(function() {
   this.route('postsList', {path: '/'});
   
@@ -229,9 +235,10 @@ Router.map(function() {
   });
 });
 
+//...
 ~~~
 <%= caption "lib/router.js" %>
-<%= highlight "4~6" %>
+<%= highlight "6~8" %>
 
 The special `:_id` syntax tells the router two things: first, to match any route of the form `/posts/xyz/`, where “xyz” can be anything at all. Second, to put whatever it finds in this “xyz” spot inside an `_id` property in the router's `params` array. 
 
@@ -246,6 +253,8 @@ Thankfully, the router has a clever built-in solution: it lets you specify a tem
 In our case, we can get the proper data context by looking for our post based on the `_id` we got from the URL: 
 
 ~~~js
+//...
+
 Router.map(function() {
   this.route('postsList', {path: '/'});
   
@@ -255,9 +264,10 @@ Router.map(function() {
   });
 });
 
+//...
 ~~~
 <%= caption "lib/router.js" %>
-<%= highlight "4~7" %>
+<%= highlight "8" %>
 
 So every time a user accesses this route, we'll find the appropriate post and pass it to the template. Remember that `findOne` returns a single post that matches a query, and that providing just an `id` as an argument is a shorthand for `{_id: id}`. 
 
@@ -291,11 +301,13 @@ It turns out you can achieve the same result by passing the context as an *argum
 {{> widgetPage myWidget}}
 ~~~
 
+For an in-depth exploration of data contexts we suggest [reading our blog post](https://www.discovermeteor.com/blog/a-guide-to-meteor-templates-data-contexts/) on the topic. 
+
 <% end %>
 
 ### Using a Dynamic Named Route Helper
 
-Finally, we need to make sure that we're pointing to the right place whenever we want to link to an individual post. Again, we could do something like `<a href="/posts/{{_id}}">`, but using a route helper is just more reliable. 
+Finally, we'll create a new “Discuss” button that will link to our individual post page. Again, we could do something like `<a href="/posts/{{_id}}">`, but using a route helper is just more reliable. 
 
 We've named the post route `postPage`, so we can use a `{{pathFor 'postPage'}}` helper:
 
@@ -319,7 +331,7 @@ It turns out that Iron Router is smart enough to figure it out by itself. We're 
 
 So the router will look for this `_id` in the most logical place available: the data context of the `{{pathFor 'postPage'}}` helper, in other words `this`. And it so happens that our `this` corresponds to a post, which (surprise!) does possess an `_id` property. 
 
-Alternatively, you can also explicitely tell the router where you'd like it to look for the `_id` property, by passing a second argument to the helper (i.e. `{{pathFor 'postPage' someOtherPost}}`). A practical use of this pattern would be getting the link to the previous or next posts in a list, for example. 
+Alternatively, you can also explicitly tell the router where you'd like it to look for the `_id` property, by passing a second argument to the helper (i.e. `{{pathFor 'postPage' someOtherPost}}`). A practical use of this pattern would be getting the link to the previous or next posts in a list, for example. 
 
 To see if it works correctly, browse to the post list and click on one of the 'Discuss' links. You should see something like this:
 
@@ -364,6 +376,8 @@ Router.configure({
   notFoundTemplate: 'notFound',
   waitOn: function() { return Meteor.subscribe('posts'); }
 });
+
+//...
  ~~~
 <%= caption "lib/router.js"%>
 <%= highlight "4" %>
@@ -386,3 +400,11 @@ Router.onBeforeAction('dataNotFound', {only: 'postPage'});
 This tell Iron Router to show the “not found” page not just for invalid routes but also for the `postPage` route,  whenever the `data` function returns an empty object.
 
 <%= commit "5-4", "Added not found template." %>
+
+<% note do %>
+
+### Why “Iron”?
+
+You might be wondering about the story behind the name “Iron Router”. According to Iron Router author Chris Mather, it comes from the fact that meteors are composed primarily of iron.
+
+<% end %>
