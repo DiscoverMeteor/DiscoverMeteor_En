@@ -43,6 +43,7 @@ $ meteor create microscope
 This command will download Meteor, and set up a basic, ready to use Meteor project for you. When it's done, you should see a directory, `microscope/`, containing the following:
 
 ~~~bash
+.meteor
 microscope.css  
 microscope.html 
 microscope.js   
@@ -96,6 +97,12 @@ Note that we're adding Bootstrap **3**. Some of the screenshots in this book wer
 
 <%= commit "2-2", "Added bootstrap and underscore packages." %>
 
+As soon as you've added the Bootstrap package you should notice a change in our bare-bones app:
+
+<%= screenshot "2-1b", "With Boostrap." %>
+
+Unlike the “traditional” way of including external assets, we haven't had to link up any CSS or JavaScript files, because Meteor takes care of all that for us! That's just one of the many advantages of Meteor packages. 
+
 <% note do %>
 
 ### A Note on Packages
@@ -114,16 +121,22 @@ When speaking about packages in the context of Meteor, it pays to be specific. M
 
 Before we begin coding, we must set up our project properly. To ensure we have a clean build, open up the `microscope` directory and delete `microscope.html`, `microscope.js`, and `microscope.css`. 
 
-Next, create five root directories inside `/microscope`: `/client`, `/server`, `/public`, `/lib`, and `/collections`, and we'll also create empty `main.html` and `main.js` files inside `/client`. Don't worry if this breaks the app for now, we'll start filling in these files in the next chapter. 
+Next, create four root directories inside `/microscope`: `/client`, `/server`, `/public`, and `/lib`. 
 
-We should mention that some of these directories are special. When it comes to files, Meteor has a few rules:
+Next, we'll also create empty `main.html` and `main.js` files inside `/client`. Don't worry if this breaks the app for now, we'll start filling in these files in the next chapter. 
+
+We should mention that some of these directories are special. When it comes to running code, Meteor has a few rules:
 
 - Code in the `/server` directory only runs on the server.
 - Code in the `/client` directory only runs on the client.
 - Everything else runs on both the client and server.
-- Files in `/lib` are loaded before anything else.
-- Any `main.*` file is loaded after everything else.
 - Your static assets (fonts, images, etc.) go in the `/public` directory. 
+
+And it's also useful to know how Meteor decides in which order to load your files:
+
+- Files in `/lib` are loaded *before* anything else.
+- Any `main.*` file is loaded *after* everything else.
+- Everything else loads in alphabetical order based on the file name. 
 
 Note that although Meteor has these rules, it doesn't really force you to use any predefined file structure for your app if you don't want to. So the structure we suggest is just our way of doing things, not a rule set in stone. 
 
