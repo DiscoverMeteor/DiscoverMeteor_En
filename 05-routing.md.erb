@@ -317,7 +317,7 @@ We've named the post route `postPage`, so we can use a `{{pathFor 'postPage'}}` 
     <div class="post-content">
       <h3><a href="{{url}}">{{title}}</a><span>{{domain}}</span></h3>
     </div>
-    <a href="{{pathFor 'postPage'}}" class="discuss btn">Discuss</a>
+    <a href="{{pathFor 'postPage'}}" class="discuss btn btn-default">Discuss</a>
   </div>
 </template>
 ~~~
@@ -397,7 +397,7 @@ Router.onBeforeAction('dataNotFound', {only: 'postPage'});
 <%= caption "lib/router.js"%>
 <%= highlight "4" %>
 
-This tell Iron Router to show the “not found” page not just for invalid routes but also for the `postPage` route,  whenever the `data` function returns an empty object.
+This tell Iron Router to show the “not found” page not just for invalid routes but also for the `postPage` route,  whenever the `data` function returns a “falsy” (i.e. `null`, `false`, `undefined`, or empty) object.
 
 <%= commit "5-4", "Added not found template." %>
 

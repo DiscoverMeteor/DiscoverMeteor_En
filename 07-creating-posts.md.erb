@@ -22,6 +22,7 @@ We begin by defining a route for our new page:
 Router.configure({
   layoutTemplate: 'layout',
   loadingTemplate: 'loading',
+  notFoundTemplate: 'notFound',
   waitOn: function() { return Meteor.subscribe('posts'); }
 });
 
@@ -39,9 +40,10 @@ Router.map(function() {
 });
 
 Router.onBeforeAction('loading');
+Router.onBeforeAction('dataNotFound', {only: 'postPage'});
 ~~~
 <%= caption "lib/router.js" %>
-<%= highlight "15~17" %>
+<%= highlight "16~18" %>
 
 ### Adding A Link To The Header
 
@@ -58,8 +60,8 @@ With that route defined, we can now add a link to our submit page in our header:
       </a>
       <a class="brand" href="{{pathFor 'postsList'}}">Microscope</a>
       <div class="nav-collapse collapse">
-        <ul class="nav">
-          <li><a href="{{pathFor 'postSubmit'}}">New</a></li>
+        <ul class="nav navbar-nav">
+          <li><a href="{{pathFor 'postSubmit'}}">Submit Post</a></li>
         </ul>
         <ul class="nav pull-right">
           <li>{{> loginButtons}}</li>
@@ -103,7 +105,7 @@ This is a simple form. We don't need to worry about an action for it, as we'll b
 
 ### Creating Posts
 
-Let's bind an event handler to the form `submit` event. It's best to use the `submit` event (rather than say a `click` event on the button), as that will cover all possible ways of submitting (such as hitting enter in URL field for instance).
+Let's bind an event handler to the form `submit` event. It's best to use the `submit` event (rather than say a `click` event on the button), as that will cover all possible ways of submitting (such as hitting enter for instance).
 
 ~~~js
 Template.postSubmit.events({
@@ -130,8 +132,6 @@ Finally, we can route to our new post's page. The `insert()` function on a colle
 
 The net result is the user hits submit, a post is created, and the user is instantly taken to the discussion page for that new post.
 
-// FIXME: moved validation to errors chapter, check commit numbers
-
 ### Adding Some Security
 
 Creating posts is all very well, but we don't want to let any random visitor do it: we want them to have to be logged in to do so. Of course, we can start by hiding the new post form from logged out users. Still, a user could conceivably create a post in the browser console without being logged in, and we can't have that.
@@ -141,11 +141,13 @@ Thankfully data security is baked right into Meteor collections; it's just that 
 Our app no longer needs these training wheels, so let's take them off! We'll remove the `insecure` package:
 
 ~~~bash
-$ meteor remove insecure
+meteor remove insecure
 ~~~
 <%= caption "Terminal" %>
 
-After doing so, you'll notice that the post form no longer works. This is because without the `insecure` package, client-side inserts into the posts collection _are no longer allowed_. We need to either give some explicit rules telling Meteor when it's OK for a client to insert posts, or else do our post insertions server-side.
+After doing so, you'll notice that the post form no longer works properly. This is because without the `insecure` package, client-side inserts into the posts collection *are no longer allowed*. 
+
+We need to either set some explicit rules telling Meteor when it's OK for a client to insert posts, or else do our post insertions server-side.
 
 ### Allowing Post Inserts
 
@@ -161,7 +163,7 @@ Posts.allow({
   }
 });
 ~~~
-<%= caption "collections/posts.js" %>
+<%= caption "lib/collections/posts.js" %>
 <%= highlight "3~8" %>
 
 <%= commit "7-2", "Removed insecure, and allowed certain writes to posts." %>
@@ -176,9 +178,9 @@ We've managed to ensure that you need to be logged in to create a post. Try logg
 
 However, we still have to deal with a couple of issues:
 
- - Logged out users can still reach the create post form.
- - The post is not tied to the user in any way (and there's no code on the server to enforce this).
- - Multiple posts can be created that point to the same URL.
+- Logged out users can still reach the create post form.
+- The post is not tied to the user in any way (and there's no code on the server to enforce this).
+- Multiple posts can be created that point to the same URL.
 
 Let's fix these problems.
 
@@ -194,6 +196,7 @@ What we need to do is check if the user is logged in, and if they're not render 
 Router.configure({
   layoutTemplate: 'layout',
   loadingTemplate: 'loading',
+  notFoundTemplate: 'notFound',
   waitOn: function() { return Meteor.subscribe('posts'); }
 });
 
@@ -210,7 +213,6 @@ Router.map(function() {
   });
 });
 
-
 var requireLogin = function(pause) {
   if (! Meteor.user()) {
     this.render('accessDenied');
@@ -219,17 +221,20 @@ var requireLogin = function(pause) {
 }
 
 Router.onBeforeAction('loading');
-Router.onBeforeAction('dataNotFound');
+Router.onBeforeAction('dataNotFound', {only: 'postPage'});
 Router.onBeforeAction(requireLogin, {only: 'postSubmit'});
 ~~~
 <%= caption "lib/router.js" %>
-<%= highlight "19~26,29" %>
+<%= highlight "21~26,30" %>
 
 We also create the template for the access denied page:
 
 ~~~html
 <template name="accessDenied">
-  <div class="alert alert-error">You can't get here! Please log in.</div>
+  <div class="access-denied jumbotron">
+    <h2>Access Denied</h2>
+    <p>You can't get here! Please log in.</p>
+  </div>
 </template>
 ~~~
 <%= caption "client/views/includes/access_denied.html" %>
@@ -240,38 +245,26 @@ If you now head to http://localhost:3000/submit/ without being logged in, you sh
 
 <%= screenshot "7-3", "The access denied template" %>
 
-The nice thing about routing hooks is that they are _reactive_. This means we can be declarative and we don't need to think about callbacks, or similar, when the user logs in. When the log-in state of the user changes, the Router's page template instantly changes from `accessDenied` to `postSubmit` without us having to write any explicit code to handle it.
+The nice thing about routing hooks is that they too are *reactive*. This means we don't need to think about setting up callbacks when the user logs in: when the log-in state of the user changes, the Router's page template instantly changes from `accessDenied` to `postSubmit` without us having to write any explicit code to handle it (and by the way, this even works across browser tabs).
 
-Log in, then try refreshing the page. You might sometimes see the access denied template flash up for a brief moment before the post submission page appears. The reason for this is that Meteor begins rendering templates as soon as possible, before it has talked to the server and checked if the user currently (stored in the browser's local storage) even exists.
+Log in, then try refreshing the page. You might sometimes see the access denied template flash up for a brief moment before the post submission page appears. The reason for this is that Meteor begins rendering templates as soon as possible, before it has talked to the server and checked if the current user (stored in the browser's local storage) even exists.
 
 To avoid this problem (which is a common class of problem that you'll see more of as you deal with the intricacies of latency between client and server), we'll just display a loading screen for the brief moment that we are waiting to see if the user has access or not. 
 
 After all at this stage we don't know if the user has the correct log-in credentials, and we can't show either the `accessDenied` or the `postSubmit` template until we do.
 
-So we modify our hook to use our loading template whilst `Meteor.loggingIn()` is true:
+So we modify our hook to use our loading template while `Meteor.loggingIn()` is true:
 
 ~~~js
-Router.map(function() {
-  this.route('postsList', {path: '/'});
-  
-  this.route('postPage', {
-    path: '/posts/:_id',
-    data: function() { return Posts.findOne(this.params._id); }
-  });
-  
-  this.route('postSubmit', {
-    path: '/submit'
-  });
-});
-
+//...
 
 var requireLogin = function(pause) {
   if (! Meteor.user()) {
-    if (Meteor.loggingIn())
+    if (Meteor.loggingIn()){
       this.render(this.loadingTemplate);
-    else
+    } else {
       this.render('accessDenied');
-    
+    }
     pause();
   }
 }
@@ -281,7 +274,7 @@ Router.onBeforeAction('dataNotFound');
 Router.onBeforeAction(requireLogin, {only: 'postSubmit'});
 ~~~
 <%= caption "lib/router.js" %>
-<%= highlight "16~19" %>
+<%= highlight "5~10" %>
 
 <%= commit "7-4", "Show a loading screen while waiting to login." %>
 
@@ -290,7 +283,7 @@ Router.onBeforeAction(requireLogin, {only: 'postSubmit'});
 The easiest way to prevent users from trying to reach this page by mistake when they are logged out is to hide the link from them. We can do this pretty easily:
 
 ~~~html
-<ul class="nav">
+<ul class="nav navbar-nav">
   {{#if currentUser}}<li><a href="{{pathFor 'postSubmit'}}">Submit Post</a></li>{{/if}}
 </ul>
 ~~~

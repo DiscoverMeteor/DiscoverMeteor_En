@@ -21,7 +21,7 @@ We want our posts to be permanent and shared between users, so we'll start by cr
 Collections are pretty central to any app, so to make sure they are always defined first we'll put them inside the `lib` directory. So if you haven't done so already, create a `collections/` folder inside `lib`, and then a `posts.js` file inside it. Then add:
 
 ~~~js
-Posts = new Meteor.Collection('posts');
+Posts = new Mongo.Collection('posts');
 ~~~
 <%= caption "lib/collections/posts.js" %>
 
@@ -37,13 +37,13 @@ In Meteor, the `var` keyword limits the scope of an object to the current file. 
 
 ### Storing Data
 
-There are three basic ways of storing data in a web app, each filling a different role:
+Web apps have three basic ways of storing data at their disposal, each filling a different role:
 
-- **In the browser's memory:** things like JavaScript variables are stored in the browser's memory, which means they're not *permanent*: they'll disappears as soon as you close your browser tab. 
-- **In the browser's storage:** browsers can also store data more permanently using cookies or [Local Storage](http://diveintohtml5.info/storage.html). Although this data will persist from session to session, it's *local* to the current user and can't be easily shared. 
-- **In the server-side database**: the best place for permanent data that you also want to make available to more than one user is in a good old database (MongoDB being the default solution for Meteor apps).
+- **The browser's memory:** things like JavaScript variables are stored in the browser's memory, which means they're not *permanent*: they'll local to the current browser tab, and will disappear as soon as you close it. 
+- **The browser's storage:** browsers can also store data more permanently using cookies or [Local Storage](http://diveintohtml5.info/storage.html). Although this data will persist from session to session, it's *local* to the current user (but available across tabs) and can't be easily shared with other users. 
+- **The server-side database**: the best place for permanent data that you also want to make available to more than one user is in a good old database (MongoDB being the default solution for Meteor apps).
 
-Note that even though Meteor will sometimes copy data from one place to another (as we'll soon see), the database remains the “canonical“ data source that contains the master copy of your data. 
+Meeteor makes use of all three, and will sometimes synchronize data from one place to another (as we'll soon see). That being said, the database remains the “canonical“ data source that contains the master copy of your data. 
 
 ### Client & Server
 

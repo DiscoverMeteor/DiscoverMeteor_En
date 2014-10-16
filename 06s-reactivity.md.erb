@@ -11,7 +11,7 @@ contents: Learn about Meteor's reactive code dependency system.|Understand the m
 paragraphs: 20
 ---
 
-If collections are Meteor's core feature, then *reactivity* is the shell that makes that core useful.
+If collections are Meteor's core feature, then **reactivity** is the shell that makes that core useful.
 
 Collections radically transform the way your application deals with data changes. Rather than having to check for data changes manually (e.g. through an AJAX call) and then patch those changes into your HTML, data changes can instead come in at any time and get applied to your user interface seamlessly by Meteor.
 
@@ -92,7 +92,7 @@ Computations are generally set up to simply re-evaluate their contents on invali
 
 ### Setting Up a Computation
 
-Now that we understand the theory behind computations, actually setting one up will seem disproportionately easy. We simply use the `Tracker.autorun` function to enclose a block of code in a computation and make it reactive:
+Now that we understand the theory behind computations, actually setting one up will make a lot more sense. We can use the `Tracker.autorun` function to enclose a block of code in a computation and make it reactive:
 
 ~~~js
 Meteor.startup(function() {
