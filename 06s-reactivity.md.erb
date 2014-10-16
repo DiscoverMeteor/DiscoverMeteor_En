@@ -84,7 +84,7 @@ While Meteor is a real-time, reactive framework, not *all* of the code inside a 
 
 In other words, a computation is a block of code that runs every time one of the reactive data sources it depends on changes. If you have a reactive data source (for example, a Session variable) and would like to respond reactively to it, you'll need to set up a computation for it. 
 
-Note that you usually don't need to do this explicitly because Meteor already gives each template it renders its own special computation (meaning that code in template helpers and callbacks is reactive by default).
+Note that you usually don't need to do this explicitly because Meteor already gives each template and helper it renders its own special computation (meaning that you can be sure your templates will reactively reflect their source data).
 
 Every reactive data source tracks all the computations that are using it so that it can let them know when its own value changes. To do so, it calls the `invalidate()` function on the computation.
 
