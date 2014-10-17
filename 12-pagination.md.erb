@@ -52,7 +52,7 @@ if (Posts.find().count() === 0) {
 <%= caption "server/fixtures.js" %>
 <%= highlight "15~24" %>
 
-After running `meteor reset`, you should now get something like this: 
+After running `meteor reset` and starting your app again, you should now get something like this: 
 
 <%= screenshot "12-1", "Displaying dummy data. " %>
 
@@ -88,24 +88,31 @@ Router.configure({
 We'll then add a `postsLimit` parameter to the route's path. Adding a `?` after the parameter name means that it's optional. So our route will not only match `http://localhost:3000/50`, but also plain old `http://localhost:3000`. 
 
 ~~~js
+//...
+
 Router.map(function() {
   //...
   
   this.route('postsList', {
     path: '/:postsLimit?'
   });
+
 });
+
+//...
 ~~~
 <%= caption "lib/router.js" %>
-<%= highlight "5" %>
+<%= highlight "7" %>
 
 It's important to note that a path of the form `/:parameter?` will match every possible path. Since each route will be parsed successively to see if it matches the current path, we need to make sure we organize our routes in order of decreasing specificity.
 
-In other words, routes that target more specific routes like `/posts/:_id` should come first, and our `postsList` route should be moved to the bottom of the file since it pretty much matches everything,
+In other words, routes that target more specific routes like `/posts/:_id` should come first, and our `postsList` route should be moved **to the bottom** of the `Router.map()` block since it pretty much matches everything,
 
 It's now time to tackle the tough problem of subscribing and finding the right data. We need to deal with the case where the `postsLimit` parameter isn't present, so we'll assign it a default value. We'll use “5” to really give us enough room to play around with pagination.
 
 ~~~js
+//...
+
 Router.map(function() {
   //..
   
@@ -117,11 +124,13 @@ Router.map(function() {
     }
   });
 });
+
+//...
 ~~~
 <%= caption "lib/router.js" %>
 <%= highlight "6~9" %>
 
-You'll notice we're now passing a JavaScript object ({limit: postsLimit}) along with the name of our `posts` publication. This object will serve as the `options` parameter for the server side `Posts.find()` statement. Let's switch over to our server-side code to implement this:
+You'll notice we're now passing a JavaScript object ({sort: {submitted: -1}, limit: postsLimit}) along with the name of our `posts` publication. This object will serve as the `options` parameter for the server side `Posts.find()` statement. Let's switch over to our server-side code to implement this:
 
 ~~~js
 Meteor.publish('posts', function(options) {
@@ -142,7 +151,7 @@ Meteor.publish('notifications', function() {
 });
 ~~~
 <%= caption "server/publications.js" %>
-<%= highlight "1~3" %>
+<%= highlight "1~7" %>
 
 <% note do %>
 
@@ -166,11 +175,13 @@ Meteor.publish('posts', function(sort, limit) {
 
 Now that we're subscribing at the route level, it would also make sense to set the data context in the same place. We'll deviate a bit from our previous pattern and make the `data` function return a JavaScript object instead of simply returning a cursor. This lets us create a *named* data context, which we'll call `posts`. 
 
-What this means is simply that instead of being implicitely available as `this` inside the template, our data context will be available at `posts`. Apart from this small element, the code should feel familiar:
+What this means is simply that instead of being implicitly available as `this` inside the template, our data context will be available at `posts`. Apart from this small element, the code should feel familiar:
 
 ~~~js
+//...
+
 Router.map(function() {
-  //..
+  //...
 
   this.route('postsList', {
     path: '/:postsLimit?',
@@ -186,9 +197,11 @@ Router.map(function() {
     }
   });
 });
+
+//...
 ~~~
 <%= caption "lib/router.js" %>
-<%= highlight "10~15" %>
+<%= highlight "12~17" %>
 
 Now that we're setting the data context at the router level we can safely get rid of the `posts` template helper inside the `posts_list.js` file. And since we named our data context `posts` (the same name as the helper), we don't even need to touch our `postsList` template!
 
@@ -221,6 +234,8 @@ Router.map(function() {
     }
   });
 });
+
+//...
 ~~~
 <%= caption "lib/router.js" %>
 <%= highlight "5, 11~21" %>
@@ -262,6 +277,8 @@ You might have noticed that we're repeating the `var limit = parseInt(this.param
 We'll introduce a new aspect of Iron Router, *Route Controllers*. A route controller is simply a way to group routing features together in a nifty reusable package that any route can inherit from. Right now we'll only use it for a single route, but you'll see in the next chapter how this feature will come in handy. 
 
 ~~~js
+//...
+
 PostsListController = RouteController.extend({
   template: 'postsList',
   increment: 5, 
@@ -289,6 +306,7 @@ Router.map(function() {
 });
 ~~~
 <%= caption "lib/router.js" %>
+<%= highlight "3~18, 25" %>
 
 Let's go through this step by step. First, we're creating our controller by extending `RouteController`. We then set the `template` property just like we did before, and then a new `increment` property. 
 
@@ -296,7 +314,7 @@ We then define a new `limit` function which will return the current limit, and a
 
 Next, we define our `waitOn` and `data` functions just like before, except they're now making use of our new `findOptions` function. 
 
-The last thing to do is to tell the `postsList` route to route to our brand new controller, with the `controller` property. 
+The last thing to do is to tell the `postsList` route to route to our brand new controller, with the `controller` property (removing the route's `data` and `waitOn` in the process).
 
 <%= commit "12-3", "Refactored postsLists route into a RouteController." %>
 
@@ -309,6 +327,8 @@ What we want to do is simple enough. We'll add a “load more” button at the b
 As before, we'll add our pagination logic in our route. Remember when we explicitely named our data context rather than just use an anonymous cursor? Well, there's no rule that says the `data` function can only pass cursors, so we'll use the same technique to generate the URL of our “load more” button.
 
 ~~~js
+//...
+
 PostsListController = RouteController.extend({
   template: 'postsList',
   increment: 5, 
@@ -333,9 +353,11 @@ PostsListController = RouteController.extend({
     };
   }
 });
+
+//...
 ~~~
 <%= caption "lib/router.js" %>
-<%= highlight "13~15,17~22" %>
+<%= highlight "15~25" %>
 
 Let's take a deeper look at this bit of router magic. Remember that the `postsList` route (which will inherit from the `PostsListController` controller we're currently working on) takes a `postsLimit` parameter.
 
@@ -381,25 +403,24 @@ Here's what your post list should now look like:
 
 ### A Better Progress Bar
 
-Our pagination is now working properly, but it suffers from an annoying quirk: every time we click “load more” and the router asks for more posts, we're sent to the `loading` template while we wait for the new data to come in. The result is that we're sent back to the top of the page every time and need to scroll all the way back down to resume our browsing. 
+Our pagination is now working properly, but it suffers from an annoying quirk: every time we click “load more” and the router asks for more posts, the Iron Router's `waitOn` feature sends us to the `loading` template while we wait for the new data to come in. The result is that we're sent back to the top of the page every time, and need to scroll all the way back down to resume our browsing. 
 
-It would be much, much better if we could stay on the same page all throughout the operation, while still providing some kind of indication that new data is currently being loaded. Thankfully, that's precisely what the `iron-router-progress` package is for. 
+So first, we'll have to tell Iron Router not to `waitOn` the subscription after all. Instead, we'll subscribe in an `onBeforeAction` hook.
 
-Similar to iOS's Safari or sites like Medium and YouTube, `iron-router-progress` adds a thin loading bar at the top of the screen. Implementing it is as easy as adding the package to your app:
-
-~~~bash
-meteor add mrt:iron-router-progress
-~~~
-<%= caption "bash console" %>
-
-Through the magic of smart packages, our new progress indicator will work perfectly right out of the box! The progress bar will activate for each route, and automatically complete once the route's required data is done loading.
-
-Because we want to show the post list even as we browse between pages, we don't want the loading hook to run for our `PostListController` pages -- we can do this by no longer waiting on the subscription:
+We're also passing a `ready` variable referring to `this.postsSub.ready` as part of our data context. This will let us tell the template when the post subscription is done loading.
 
 ~~~js
+//...
+
 PostsListController = RouteController.extend({
-  // ...
-  
+  template: 'postsList',
+  increment: 5, 
+  postsLimit: function() { 
+    return parseInt(this.params.postsLimit) || this.increment; 
+  },
+  findOptions: function() {
+    return {sort: {submitted: -1}, limit: this.postsLimit()};
+  },
   onBeforeAction: function() {
     this.postsSub = Meteor.subscribe('posts', this.findOptions());
   },
@@ -416,18 +437,18 @@ PostsListController = RouteController.extend({
     };
   }
 });
+
+//...
 ~~~
 <%= caption "lib/router.js" %>
-<%= highlight "3~5,13" %>
+<%= highlight "12~14, 23" %>
 
-Instead of subscribing in a `waitOn`, we subscribe in a `onBeforeAction` hook, keeping a reference to the subscription handle in `this.postsSub`, so we can pass the "readiness" into the template.
-
-Then, the template, we can show a spinner at the bottom of the post list when we are loading a new set of posts by checking that ready state:
+We'll then check this `ready` variable in the template to show a spinner at the bottom of the post list while we are loading a new set of posts:
 
 ~~~html
 <template name="postsList">
   <div class="posts">
-    {{#each postsWithRank}}
+    {{#each posts}}
       {{> postItem}}
     {{/each}}
     
@@ -444,6 +465,16 @@ Then, the template, we can show a spinner at the bottom of the post list when we
 <%= caption "client/views/posts/posts_list.html" %>
 <%= highlight "10~12" %>
 
+It would be better if we could provide some kind of indication that new data is currently being loaded. Thankfully, that's precisely what the `iron-router-progress` package is for. 
+
+Similar to iOS's Safari or sites like Medium and YouTube, `iron-router-progress` adds a thin loading bar at the top of the screen. Implementing it is as easy as adding the package to your app:
+
+~~~bash
+meteor add mrt:iron-router-progress
+~~~
+<%= caption "bash console" %>
+
+Through the magic of smart packages, our new progress indicator will work perfectly right out of the box! The progress bar will activate for each route, and automatically complete once the route's required data is done loading.
 
 We'll add another simple tweak. Let's disable `iron-router-progress` for the `postSubmit` route since it doesn't need to wait for any subscription data (after all, it's just an empty form):
 
@@ -469,11 +500,11 @@ We're currently loading the five newest post by default, but what happens once s
 
 <%= screenshot "12-4", "An empty template." %>
 
-If you try it, you'll be faced with an empty post template. This makes sense: we've told the router to subscribe to the `posts` publication when loading the `postsList` route, but we haven't told it what to do about the `postPage` route. 
+If you try it, you'll be faced with a “not found” error. This makes sense: we've told the router to subscribe to the `posts` publication when loading the `postsList` route, but we haven't told it what to do about the `postPage` route. 
 
 But so far, all we know how to do is subscribe to a list of the `n` latest posts. How do we ask the server for a single specific post? We'll let you in on a little secret here: you can have more than one publication for each collection! 
 
-So to get our missing posts back, we'll simply make a new, separate `singlePost` publication that only publishes one post, identified by `_id`. 
+So to get our missing posts back, we'll make a new, separate `singlePost` publication that only publishes one post, identified by `_id`. 
 
 ~~~js
 Meteor.publish('posts', function(options) {
@@ -483,6 +514,8 @@ Meteor.publish('posts', function(options) {
 Meteor.publish('singlePost', function(id) {
   return id && Posts.find(id);
 });
+
+//...
 ~~~
 <%= caption "server/publications.js" %>
 <%= highlight "5~7" %>
@@ -490,6 +523,8 @@ Meteor.publish('singlePost', function(id) {
 Now, let's subscribe to the right posts client-side. We were already subscribing to the `comments` publication on the `postPage` route's `waitOn` function, so we can simply add the subscription to `singlePost` in there. And let's not forget to also add our subscription to the `postEdit` route, since it also needs the same data:
 
 ~~~js
+//...
+
 Router.map(function() {
 
   //...
@@ -513,13 +548,15 @@ Router.map(function() {
     data: function() { return Posts.findOne(this.params._id); }    
   });
   
-  /...
+  //...
 
 });
+
+//...
 ~~~
 <%= caption "lib/router.js" %>
-<%= highlight "7~12,18~20" %>
+<%= highlight "9~14,20~22" %>
 
 <%= commit "12-6","Use a single post subscription to ensure that we can always see the right post." %>
 
-With pagination done, our app no longer suffers from scaling problems, and users are sure to contribute even more links than before. So wouldn't it be nice to have a way to somehow rank those links? This is precisely the topic of the next chapter, *Voting*. 
+With pagination done, our app no longer suffers from scaling problems, and users are sure to contribute even more links than before. So wouldn't it be nice to have a way to somehow rank those links? Wouldn't you know it, this is precisely the topic of the next chapter!

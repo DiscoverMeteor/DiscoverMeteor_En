@@ -18,7 +18,7 @@ Let's start by giving users a way to vote on posts.
 
 ### Data Model
 
-We'll store a list of upvoters on each post so we know whether to show the upvote button to users, as well as to prevent people from voting twice. 
+We'll store a list of upvoters on each post so we can know whether to show the upvote button to users, as well as to prevent people from voting twice. 
 
 <% note do %>
 
@@ -35,7 +35,7 @@ Also note that if we *did* want to restrict some of this information, we'd have 
 We'll also denormalize the total number of upvoters on a post to make it easier to retrieve that figure. So we'll be adding two attributes to our posts, `upvoters` and `votes`. Let's start by adding them to our fixtures file:
 
 ~~~js
-// Fixture data 
+// Fixture data
 if (Posts.find().count() === 0) {
   var now = new Date().getTime();
   
@@ -56,7 +56,8 @@ if (Posts.find().count() === 0) {
     url: 'http://sachagreif.com/introducing-telescope/',
     submitted: new Date(now - 7 * 3600 * 1000),
     commentsCount: 2,
-    upvoters: [], votes: 0
+    upvoters: [], 
+    votes: 0
   });
   
   Comments.insert({
@@ -82,7 +83,8 @@ if (Posts.find().count() === 0) {
     url: 'http://meteor.com',
     submitted: new Date(now - 10 * 3600 * 1000),
     commentsCount: 0,
-    upvoters: [], votes: 0
+    upvoters: [], 
+    votes: 0
   });
   
   Posts.insert({
@@ -92,7 +94,8 @@ if (Posts.find().count() === 0) {
     url: 'http://themeteorbook.com',
     submitted: new Date(now - 12 * 3600 * 1000),
     commentsCount: 0,
-    upvoters: [], votes: 0
+    upvoters: [], 
+    votes: 0
   });
   
   for (var i = 0; i < 10; i++) {
@@ -103,31 +106,33 @@ if (Posts.find().count() === 0) {
       url: 'http://google.com/?q=test-' + i,
       submitted: new Date(now - i * 3600 * 1000 + 1),
       commentsCount: 0,
-      upvoters: [], votes: 0
+      upvoters: [], 
+      votes: 0
     });
   }
 }
 ~~~
 <%= caption "server/fixtures.js" %>
-<%= highlight "22, 48, 58, 69" %>
+<%= highlight "22,23,49,50,60,61,72,73" %>
 
 As usual, stop your app, run `meteor reset`, restart your app, and create a new user account. Let's then also make sure these two properties are initialized when posts are created:
 
 ~~~js
 //...
 
-// check that there are no previous posts with the same link
-if (postAttributes.url && postWithSameLink) {
-  throw new Meteor.Error(302, 
-    'This link has already been posted', 
-    postWithSameLink._id);
+var postWithSameLink = Posts.findOne({url: postAttributes.url});
+if (postWithSameLink) {
+  return {
+    postExists: true,
+    _id: postWithSameLink._id
+  }
 }
 
-// pick out the whitelisted keys
-var post = _.extend(_.pick(postAttributes, 'url', 'title', 'message'), {
+var user = Meteor.user();
+var post = _.extend(postAttributes, {
   userId: user._id, 
   author: user.username, 
-  submitted: new Date().getTime(),
+  submitted: new Date(),
   commentsCount: 0,
   upvoters: [], 
   votes: 0
@@ -135,21 +140,23 @@ var post = _.extend(_.pick(postAttributes, 'url', 'title', 'message'), {
 
 var postId = Posts.insert(post);
 
-return postId;
+return {
+  _id: postId
+};
 
 //...
 ~~~
 <%= caption "collections/posts.js" %>
 <%= highlight "16~17" %>
 
-### Building our Voting Templates
+### Voting Templates
 
-First off, we'll add an upvote button to our post partial:
+First off, we'll add an upvote button to our post partial and show the upvote count in the post's metadata:
 
 ~~~html
 <template name="postItem">
   <div class="post">
-    <a href="#" class="upvote btn">⬆</a>
+    <a href="#" class="upvote btn btn-default">⬆</a>
     <div class="post-content">
       <h3><a href="{{url}}">{{title}}</a><span>{{domain}}</span></h3>
       <p>
@@ -159,7 +166,7 @@ First off, we'll add an upvote button to our post partial:
         {{#if ownPost}}<a href="{{pathFor 'postEdit'}}">Edit</a>{{/if}}
       </p>
     </div>
-    <a href="{{pathFor 'postPage'}}" class="discuss btn">Discuss</a>
+    <a href="{{pathFor 'postPage'}}" class="discuss btn btn-default">Discuss</a>
   </div>
 </template>
 ~~~
@@ -183,9 +190,11 @@ Template.postItem.events({
 <%= caption "client/views/posts/post_item.js" %>
 <%= highlight "3~8" %>
 
-Finally, we'll go back to our `collections/posts.js` file and add a Meteor server-side Method that will upvote posts:
+Finally, we'll go back to our `lib/collections/posts.js` file and add a Meteor server-side Method that will upvote posts:
 
 ~~~js
+//...
+
 Meteor.methods({
   post: function(postAttributes) {
     //...
@@ -208,13 +217,15 @@ Meteor.methods({
     });
   }
 });
+
+//...
 ~~~
-<%= caption "collections/posts.js" %>
-<%= highlight "6~23" %>
+<%= caption "lib/collections/posts.js" %>
+<%= highlight "8~25" %>
 
 <%= commit "13-1", "Added basic upvoting algorithm." %>
 
-This Method is fairly straightforward. We do some defensive checks to ensure that the user is logged in and that the post really exists. Then we double check that the user hasn't already voted for the post, and if they haven't we increment the vote's total score and add the user to the set of upvoters.
+This method is fairly straightforward. We do some defensive checks to ensure that the user is logged in and that the post really exists. Then we double check that the user hasn't already voted for the post, and if they haven't we increment the vote's total score and add the user to the set of upvoters.
 
 This final step is interesting, as we've used a couple of special Mongo operators. There are many more to learn, but these two are extremely helpful: `$addToSet` adds an item to an array property as long as it doesn't already exist, and `$inc` simply increments an integer field.
 
@@ -280,24 +291,28 @@ UI.registerHelper('pluralize', function(n, thing) {
   }
 });
 ~~~
-<%= caption "client/helpers/Spacebars.js" %>
+<%= caption "client/helpers/spacebars.js" %>
 
-The helpers we've created before have been tied to the manager and template that they apply to. But by using `UI.registerHelper`, we've created a *global* helper that can be used within any template:
+The helpers we've created before have been tied to the template they apply to. But by using `UI.registerHelper`, we've created a *global* helper that can be used within any template:
 
 ~~~html
 <template name="postItem">
+
 //...
+
 <p>
   {{pluralize votes "Vote"}},
   submitted by {{author}},
   <a href="{{pathFor 'postPage'}}">{{pluralize commentsCount "comment"}}</a>
   {{#if ownPost}}<a href="{{pathFor 'postEdit'}}">Edit</a>{{/if}}
 </p>
+
 //...
+
 </template>
 ~~~
 <%= caption "client/views/posts/post_item.html" %>
-<%= highlight "4, 6" %>
+<%= highlight "6, 8" %>
 
 <%= screenshot "13-3", "Perfecting Proper Pluralization (now say that 10 times)" %>
 
@@ -318,6 +333,8 @@ There are two issues with this. Firstly, it's somewhat inefficient to go to the 
 What if the same user voted for the post again in between steps 1 and 3? Our current code opens the door to the user being able to vote for the same post twice. Thankfully, Mongo allows us to be smarter and combine steps 1-3 into a single Mongo command:
 
 ~~~js
+//...
+
 Meteor.methods({
   post: function(postAttributes) {
     //...
@@ -339,15 +356,17 @@ Meteor.methods({
       throw new Meteor.Error('invalid', "You weren't able to upvote that post");
   }
 });
+
+//...
 ~~~
 <%= caption "collections/posts.js" %>
-<%= highlight "12~15" %>
+<%= highlight "14~17" %>
 
 <%= commit "13-4", "Better upvoting algorithm." %>
 
 What we are saying is "find all the posts with this `id` that this user hasn't yet voted for, and update them in this way". If the user *hasn't* yet voted, it will of course find the post with that `id`. On the other hand if the user *has* voted, then the query will match no documents, and consequently nothing will happen.
 
-The only downside is that now we can't tell the user that they've already voted for the post (since we got rid of the database call that checked this). But they should know that from the "upvote" button being disabled in the user interface anyway.
+The only downside is that now we can't explicitly tell the user that they've already voted for the post (since we got rid of the database call that checked this). But they should know that from the "upvote" button being disabled in the user interface anyway.
 
 <% note do %>
 
@@ -382,7 +401,11 @@ We'll also create two new routes called `newPosts` and `bestPosts`, accessible a
 
 To do this, we'll *extend* our `PostsListController` into two distinct `NewPostsListController` and `BestPostsListController` controllers. This will let us re-use the exact same route options for both the `home` and `newPosts` routes, by giving us a single `NewPostsListController` to inherit from. And additionally, it's just a nice illustration of how flexible Iron Router can be. 
 
+So let's replace the `{submitted: -1}` sort property in `PostsListController` by `this.sort`, which will be provided by `NewPostsListController` and `BestPostsListController`:
+
 ~~~js
+//...
+
 PostsListController = RouteController.extend({
   template: 'postsList',
   increment: 5, 
@@ -441,7 +464,7 @@ Router.map(function() {
 });
 ~~~
 <%= caption "lib/router.js" %>
-<%= highlight "8,20,25~37,40~53" %>
+<%= highlight "10,22,27~39,42~55" %>
 
 Note that now that we have more than one route, we're taking the `nextPath` logic out of `PostsListController` and into `NewPostsListController` and `BestPostsListController`, since the path will be different in either case. 
 
@@ -500,7 +523,7 @@ We'll also add links in the header:
 <%= caption "client/views/includes/header.html" %>
 <%= highlight "11, 15~20" %>
 
-We also need to update our post deleting event handler:
+And finally, we also need to update our post deleting event handler:
 
 ~~~html
   'click .delete': function(e) {
@@ -515,7 +538,6 @@ We also need to update our post deleting event handler:
 ~~~
 <%= caption "client/views/posts_edit.js" %>
 <%= highlight "7" %>
-
 
 With all this done, we now gain a best posts list:
 
