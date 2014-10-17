@@ -24,7 +24,7 @@ To achieve this, we create the error inside the `client` directory (to make the 
 
 ~~~js
 // Local (client-only) collection
-Errors = new Meteor.Collection(null);
+Errors = new Mongo.Collection(null);
 ~~~
 <%= caption "client/helpers/errors.js" %>
 
@@ -54,7 +54,7 @@ We are going to insert errors at the top of our main layout:
   </div>
 </template>
 ~~~
-<%= caption "client/views/application/layout.html" %>
+<%= caption "client/templates/application/layout.html" %>
 <%= highlight "4" %>
 
 Let's now create the `errors` and `error` templates in `errors.html`:
@@ -75,7 +75,7 @@ Let's now create the `errors` and `error` templates in `errors.html`:
   </div>
 </template>
 ~~~
-<%= caption "client/views/includes/errors.html" %>
+<%= caption "client/templates/includes/errors.html" %>
 
 <% note do %>
 
@@ -96,7 +96,7 @@ Template.errors.helpers({
   }
 });
 ~~~
-<%= caption "client/views/includes/errors.js" %>
+<%= caption "client/templates/includes/errors.js" %>
 
 You can already try testing out our new error messages manually. Just open the browser console and type:
 
@@ -150,7 +150,7 @@ Template.postSubmit.events({
   }
 });
 ~~~
-<%= caption "client/views/posts/post_submit.js" %>
+<%= caption "client/templates/posts/post_submit.js" %>
 <%= highlight "13,17" %>
 
 While we're at it, we'll do the same thing for the `postEdit` event helper:
@@ -179,7 +179,7 @@ Template.postEdit.events({
   //...
 });
 ~~~
-<%= caption "client/views/posts/post_edit.js" %>
+<%= caption "client/templates/posts/post_edit.js" %>
 <%= highlight "15" %>
 
 <%= commit "9-2", "Actually use the error reporting." %>
@@ -247,7 +247,7 @@ Template.error.rendered = function() {
   }, 3000);
 };
 ~~~
-<%= caption "client/views/includes/errors.js" %>
+<%= caption "client/templates/includes/errors.js" %>
 <%= highlight "7~12" %>
 
 <%= commit "9-3", "Clear errors after 3 seconds." %>
@@ -283,7 +283,7 @@ To get started, let's prep our `postSubmit` template to accept these new helpers
   </form>
 </template>
 ~~~
-<%= caption "client/views/posts/post_submit.html" %>
+<%= caption "client/templates/posts/post_submit.html" %>
 <%= highlight "3,7,10,14" %>
 
 Note that we're passing parameters (`url` and `title` respectively) to each helper. This lets us reuse the same helper both time, modifying its behavior based on the parameter.
@@ -312,7 +312,7 @@ Template.postSubmit.helpers({
   }
 });
 ~~~
-<%= caption "client/views/posts/post_submit.js" %>
+<%= caption "client/templates/posts/post_submit.js" %>
 
 You can test that our heplers are working properly by opening the browser console and typing the following line of code:
 
@@ -377,7 +377,7 @@ Template.postSubmit.events({
   }
 });
 ~~~
-<%= caption "client/views/posts/post_submit.js" %>
+<%= caption "client/templates/posts/post_submit.js" %>
 <%= highlight "10~12" %>
 
 Notice that we're using `return` to abort the execution of the helper if any errors are present, not because we want to actually return this value anywhere. 
@@ -468,7 +468,7 @@ To round things up, we'll also apply the same validation to our post *edit* form
   </form>
 </template>
 ~~~
-<%= caption "client/views/posts/post_edit.html" %>
+<%= caption "client/templates/posts/post_edit.html" %>
 <%= highlight "3,7,10,14" %>
 
 Then the template helpers:
@@ -523,7 +523,7 @@ Template.postEdit.events({
   }
 });
 ~~~
-<%= caption "client/views/posts/post_edit.html" %>
+<%= caption "client/templates/posts/post_edit.html" %>
 <%= highlight "1~12,25~27,32" %>
 
 Just like we did for the post submit form, we'll also want to validate our posts on the server. Except that you'll remember we're not using a method to edit posts, but an `update` call directly from the client. 

@@ -71,7 +71,7 @@ With that route defined, we can now add a link to our submit page in our header:
   </header>
 </template>
 ~~~
-<%= caption "client/views/includes/header.html" %>
+<%= caption "client/templates/includes/header.html" %>
 <%= highlight "11~13" %>
 
 Setting up our route means that if a user browses to the `/submit` URL, Meteor will display the `postSubmit` template. So let's write that template:
@@ -95,7 +95,7 @@ Setting up our route means that if a user browses to the `/submit` URL, Meteor w
   </form>
 </template>
 ~~~
-<%= caption "client/views/posts/post_submit.html" %>
+<%= caption "client/templates/posts/post_submit.html" %>
 
 Note: that’s a lot of markup, but it simply comes from using Twitter Bootstrap. While only the form elements are essential, the extra markup will help  make our app look a little bit nicer. It should now look similar to this:
 
@@ -122,7 +122,7 @@ Template.postSubmit.events({
   }
 });
 ~~~
-<%= caption "client/views/posts/post_submit.js" %>
+<%= caption "client/templates/posts/post_submit.js" %>
 
 <%= commit "7-1", "Added a submit post page and linked to it in the header." %>
 
@@ -237,7 +237,7 @@ We also create the template for the access denied page:
   </div>
 </template>
 ~~~
-<%= caption "client/views/includes/access_denied.html" %>
+<%= caption "client/templates/includes/access_denied.html" %>
 
 <%= commit "7-3", "Denied access to new posts page when not logged in." %>
 
@@ -287,7 +287,7 @@ The easiest way to prevent users from trying to reach this page by mistake when 
   {{#if currentUser}}<li><a href="{{pathFor 'postSubmit'}}">Submit Post</a></li>{{/if}}
 </ul>
 ~~~
-<%= caption "client/views/includes/header.html" %>
+<%= caption "client/templates/includes/header.html" %>
 
 <%= commit "7-5", "Only show submit post link if logged in." %>
 
@@ -333,7 +333,7 @@ Template.postSubmit.events({
   }
 });
 ~~~
-<%= caption "client/views/posts/post_submit.js" %>
+<%= caption "client/templates/posts/post_submit.js" %>
 <%= highlight "10~16" %>
 
 The `Meteor.call` function calls a Method named by its first argument. You can provide arguments to the call (in this case, the `post` object we constructed from the form), and finally attach a callback, which will execute when the server-side Method is done. 
@@ -462,7 +462,7 @@ Template.postSubmit.events({
   }
 });
 ~~~
-<%= caption "client/views/posts/post_submit.js" %>
+<%= caption "client/templates/posts/post_submit.js" %>
 <%= highlight "15~17" %>
 
 <%= commit "7-7", "Enforce post URL uniqueness." %>
@@ -478,7 +478,7 @@ Template.postsList.helpers({
   }
 });
 ~~~
-<%= caption "client/views/posts/posts_list.js" %>
+<%= caption "client/templates/posts/posts_list.js" %>
 <%= highlight "3" %>
 
 <%= commit "7-8", "Sort posts by submitted timestamp." %>

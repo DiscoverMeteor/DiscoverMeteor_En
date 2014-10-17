@@ -211,7 +211,7 @@ With our shortened URLs working, we can now display shortened links instead of t
   </div>
 </template>
 ~~~
-<%= caption "client/views/posts/post_item.html" %>
+<%= caption "client/templates/posts/post_item.html" %>
 <%= highlight "5" %>
 
 ~~~js
@@ -238,7 +238,7 @@ Template.postItem.helpers({
 });
 //...
 ~~~
-<%= caption "client/views/posts/post_item.js" %>
+<%= caption "client/templates/posts/post_item.js" %>
 <%= highlight "18~20" %>
 
 As an added bonus, using a fallback helper also gives us something to display for those few instants when we're waiting to get the shortened URL back from Bitly.
@@ -381,7 +381,7 @@ And to make sure everything is working properly, we'll also display a click coun
   </div>
 </template>
 ~~~
-<%= caption "client/views/posts/post_item.html" %>
+<%= caption "client/templates/posts/post_item.html" %>
 <%= highlight "9" %>
 
 <%= commit "16-5", "Distributing Bitly API calls." %>
@@ -460,7 +460,7 @@ Finally, we'll add a link to our new `bestPosts` route in the header:
 
 //...
 ~~~
-<%= caption "client/views/includes/header.html" %>
+<%= caption "client/templates/includes/header.html" %>
 <%= highlight "6~8" %>
 
 That's it! Since we did a lot of the heavy lifting in the previous chapters, adding new list views is now pretty easy.

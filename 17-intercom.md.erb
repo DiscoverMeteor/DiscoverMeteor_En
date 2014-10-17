@@ -312,7 +312,7 @@ First, let's add a "Support" link to our global navigation:
   </header>
 </template>
 ~~~
-<%= caption "client/views/includes/header.html" %>
+<%= caption "client/templates/includes/header.html" %>
 <%= highlight "25~27" %>
 
 Then all we need to do is tell the Intercom settings code about our new `#Intercom` element:
@@ -357,7 +357,7 @@ To prevent this all we need to do is wrap our `Support` link in a `{{#constant}}
   </li>
 {{/if}}
 ~~~
-<%= caption "client/views/includes/header.html" %>
+<%= caption "client/templates/includes/header.html" %>
 
 <%= commit "17-4", "Displaying the inbox link." %>
 

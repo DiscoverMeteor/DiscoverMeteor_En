@@ -83,7 +83,7 @@ We can now focus on the template. Our `postEdit` template will be a fairly stand
   </form>
 </template>
 ~~~
-<%= caption "client/views/posts/post_edit.html" %>
+<%= caption "client/templates/posts/post_edit.html" %>
 
 And here's the `post_edit.js` file that goes with it:
 
@@ -120,7 +120,7 @@ Template.postEdit.events({
   }
 });
 ~~~
-<%= caption "client/views/posts/post_edit.js" %>
+<%= caption "client/templates/posts/post_edit.js" %>
 
 By now most of that code should be familiar to you.
 
@@ -150,7 +150,7 @@ We should also add edit links to our posts so that users have a way to access th
   </div>
 </template>
 ~~~
-<%= caption "client/views/posts/post_item.html" %>
+<%= caption "client/templates/posts/post_item.html" %>
 <%= highlight "5~8" %>
 
 Of course, we don't want to show you an edit link to somebody else's form. This is where the `ownPost` helper comes in:
@@ -167,7 +167,7 @@ Template.postItem.helpers({
   }
 });
 ~~~
-<%= caption "client/views/posts/post_item.js" %>
+<%= caption "client/templates/posts/post_item.js" %>
 <%= highlight "2~4" %>
 
 <%= screenshot "8-1", "Post edit form." %>

@@ -119,7 +119,7 @@ Template.postSubmit.events({
   }
 });
 ~~~
-<%= caption "client/views/posts/post_submit.js" %>
+<%= caption "client/templates/posts/post_submit.js" %>
 
 We've placed our `Router.go()` routing call inside the method call's callback. Which means the form is waiting for that method to succeed before redirecting.
 
@@ -152,7 +152,7 @@ Template.postSubmit.events({
   }
 });
 ~~~
-<%= caption "client/views/posts/post_submit.js" %>
+<%= caption "client/templates/posts/post_submit.js" %>
 <%= highlight "20" %>
 
 <%= scommit "7-5-1", "Demonstrate the order that posts appear using a sleep." %>

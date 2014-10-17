@@ -168,7 +168,7 @@ First off, we'll add an upvote button to our post partial and show the upvote co
   </div>
 </template>
 ~~~
-<%= caption "client/views/posts/post_item.html" %>
+<%= caption "client/templates/posts/post_item.html" %>
 <%= highlight "3,7" %>
 
 <%= screenshot "13-1", "The upvote button" %>
@@ -185,7 +185,7 @@ Template.postItem.events({
   }
 });
 ~~~
-<%= caption "client/views/posts/post_item.js" %>
+<%= caption "client/templates/posts/post_item.js" %>
 <%= highlight "3~8" %>
 
 Finally, we'll go back to our `lib/collections/posts.js` file and add a Meteor server-side Method that will upvote posts:
@@ -240,7 +240,7 @@ If the user is not logged in, or has already upvoted a post, they won't be able 
   </div>
 </template>
 ~~~
-<%= caption "client/views/posts/post_item.html" %>
+<%= caption "client/templates/posts/post_item.html" %>
 <%= highlight "3" %>
 
 ~~~js
@@ -268,7 +268,7 @@ Template.postItem.events({
   }
 });
 ~~~
-<%= caption "client/views/posts/post_item.js" %>
+<%= caption "client/templates/posts/post_item.js" %>
 <%= highlight "8~15, 19" %>
 
 We're changing our class from `.upvote` to `.upvotable`, so don't forget to change the click event handler too.
@@ -309,7 +309,7 @@ The helpers we've created before have been tied to the template they apply to. B
 
 </template>
 ~~~
-<%= caption "client/views/posts/post_item.html" %>
+<%= caption "client/templates/posts/post_item.html" %>
 <%= highlight "6, 8" %>
 
 <%= screenshot "13-3", "Perfecting Proper Pluralization (now say that 10 times)" %>
@@ -516,7 +516,7 @@ We'll also add links in the header:
   </nav>
 </template>
 ~~~
-<%= caption "client/views/includes/header.html" %>
+<%= caption "client/templates/includes/header.html" %>
 <%= highlight "11, 15~20" %>
 
 And finally, we also need to update our post deleting event handler:
@@ -532,7 +532,7 @@ And finally, we also need to update our post deleting event handler:
     }
   }
 ~~~
-<%= caption "client/views/posts_edit.js" %>
+<%= caption "client/templates/posts_edit.js" %>
 <%= highlight "7" %>
 
 With all this done, we now gain a best posts list:
@@ -585,7 +585,7 @@ The reason why we want to support multiple named routes is that both our `home` 
   </nav>
 </template>
 ~~~
-<%= caption "client/views/includes/header.html" %>
+<%= caption "client/templates/includes/header.html" %>
 <%= highlight "9,12,15,19" %>
 
 ~~~js
@@ -602,7 +602,7 @@ Template.header.helpers({
   }
 });
 ~~~
-<%= caption "client/views/includes/header.js" %>
+<%= caption "client/templates/includes/header.js" %>
 
 <%= screenshot "13-5", "Showing the active page" %>
 

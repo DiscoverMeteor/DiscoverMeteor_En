@@ -60,7 +60,7 @@ This `{{> yield}}` helper will define a special dynamic zone that will automatic
 
 <%= diagram "router-diagram", "Layouts and templates.", "pull-center" %>
 
-We'll start by creating our layout and adding the `{{> yield}}` helper. First, we'll remove our HTML `<body>` tag from `main.html`, and move its contents to their own template, `layout.html` (which we'll place inside a new `client/views/application` directory). 
+We'll start by creating our layout and adding the `{{> yield}}` helper. First, we'll remove our HTML `<body>` tag from `main.html`, and move its contents to their own template, `layout.html` (which we'll place inside a new `client/templates/application` directory). 
 
 Iron Router will take care of embedding our layout into the stripped-down `main.html` template for us, which now looks like this:
 
@@ -87,7 +87,7 @@ While the newly created `layout.html` will now contain the app's outer layout:
   </div>
 </template>
 ~~~
-<%= caption "client/views/application/layout.html" %>
+<%= caption "client/templates/application/layout.html" %>
 
 You'll notice we've replaced the inclusion of the `postsList` template with a call to `yield` helper. 
 
@@ -139,7 +139,7 @@ We want our main home link to point us back to the posts list, so instead of spe
 
 //...
 ~~~
-<%= caption "client/views/application/layout.html"%>
+<%= caption "client/templates/application/layout.html"%>
 <%= highlight "3" %>
 
 <%= commit "5-1", "Very basic routing." %>
@@ -180,14 +180,14 @@ Moreover since we are now letting the router handle our subscription, you can no
 
 It's usually a good idea to wait on your subscriptions, not just for the user experience, but also because it means you can safely assume that data will always be available from within a template. This eliminates the need to deal with templates being rendered before their underlying data is available, which often requires tricky workarounds. 
 
-The final piece of the puzzle is the actual loading template. We'll use the `spin` package to create a nice animated loading spinner. Add it with `meteor add sacha:spin`, and then create the `loading` template as follows in the `client/views/includes` directory:
+The final piece of the puzzle is the actual loading template. We'll use the `spin` package to create a nice animated loading spinner. Add it with `meteor add sacha:spin`, and then create the `loading` template as follows in the `client/templates/includes` directory:
 
 ~~~html
 <template name="loading">
   {{>spinner}}
 </template>
 ~~~
-<%= caption "client/views/includes/loading.html" %>
+<%= caption "client/templates/includes/loading.html" %>
 
 Note that `{{>spinner}}` is a partial contained in the `spin` package. Even though this partial comes from “outside” our app, we can include it just like any other template. 
 
@@ -218,7 +218,7 @@ To start with, we'll create a new template that simply renders the same post tem
   {{> postItem}}
 </template>
 ~~~
-<%= caption "client/views/posts/post_page.html" %>
+<%= caption "client/templates/posts/post_page.html" %>
 
 We'll add more elements to this template later on (such as comments), but for now it'll simply serve as a shell for our `{{> postItem}}` include. 
 
@@ -321,7 +321,7 @@ We've named the post route `postPage`, so we can use a `{{pathFor 'postPage'}}` 
   </div>
 </template>
 ~~~
-<%= caption "client/views/posts/post_item.html"%>
+<%= caption "client/templates/posts/post_item.html"%>
 <%= highlight "6" %>
 <%= commit "5-3", "Routing to a single post page." %>
 
@@ -365,7 +365,7 @@ First, we'll set up a new template to show a simple 404 error message:
   </div>
 </template>
 ~~~
-<%= caption "client/views/application/not_found.html"%>
+<%= caption "client/templates/application/not_found.html"%>
 
 Then, we'll simply point Iron Router to this template:
 
