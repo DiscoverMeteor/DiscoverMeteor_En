@@ -401,7 +401,7 @@ Here's what your post list should now look like:
 
 <%= commit "12-4", "Added nextPath() to the controller and use it to step through posts." %>
 
-### A Better Progress Bar
+### A Better User Experience
 
 Our pagination is now working properly, but it suffers from an annoying quirk: every time we click “load more” and the router asks for more posts, the Iron Router's `waitOn` feature sends us to the `loading` template while we wait for the new data to come in. The result is that we're sent back to the top of the page every time, and need to scroll all the way back down to resume our browsing. 
 
@@ -465,34 +465,7 @@ We'll then check this `ready` variable in the template to show a spinner at the 
 <%= caption "client/views/posts/posts_list.html" %>
 <%= highlight "10~12" %>
 
-It would be better if we could provide some kind of indication that new data is currently being loaded. Thankfully, that's precisely what the `iron-router-progress` package is for. 
-
-Similar to iOS's Safari or sites like Medium and YouTube, `iron-router-progress` adds a thin loading bar at the top of the screen. Implementing it is as easy as adding the package to your app:
-
-~~~bash
-meteor add mrt:iron-router-progress
-~~~
-<%= caption "bash console" %>
-
-Through the magic of smart packages, our new progress indicator will work perfectly right out of the box! The progress bar will activate for each route, and automatically complete once the route's required data is done loading.
-
-We'll add another simple tweak. Let's disable `iron-router-progress` for the `postSubmit` route since it doesn't need to wait for any subscription data (after all, it's just an empty form):
-
-~~~js
-Router.map(function() {
- 
-  //...
-  
-  this.route('postSubmit', {
-    path: '/submit',
-    disableProgress: true
-  });
-});
-~~~
-<%= caption "lib/router.js" %>
-<%= highlight "7" %>
-
-<%= commit "12-5", "Use the iron-router-progress package to make pagination nicer." %>
+<%= commit "12-5", "Add a spinner to make pagination nicer." %>
 
 ### Accessing Any Post
 
