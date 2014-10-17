@@ -256,7 +256,7 @@ The [`rendered`](http://docs.meteor.com/#template_rendered) callback triggers on
 
 ### Seeking Validation
 
-We need to enforce some kind of validation on our form. At the minimum, we'll want users to provide both a URL and a title for their new post. 
+So far we haven't enforced any kind of validation on our form. At the minimum, we'll want users to provide both a URL and a title for their new post. So let's make sure they do that.
 
 We'll do two things to point out any missing fields: first, we'll give a special `has-error` CSS class to the parent `div` of any problematic form field. Second, we'll display a helpful error message just below the field.
 
@@ -505,7 +505,7 @@ Template.postEdit.events({
     Posts.update(currentPostId, {$set: postProperties}, function(error) {
       if (error) {
         // display the error to the user
-        alert(error.reason);
+        throwError(error.reason);
       } else {
         Router.go('postPage', {_id: currentPostId});
       }
