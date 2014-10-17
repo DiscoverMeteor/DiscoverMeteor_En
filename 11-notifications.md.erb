@@ -65,7 +65,16 @@ Comments = new Meteor.Collection('comments');
 Meteor.methods({
   comment: function(commentAttributes) {
 
-    // [...]
+    //...
+    
+    comment = _.extend(commentAttributes, {
+      userId: user._id,
+      author: user.username,
+      submitted: new Date()
+    });
+    
+    // update the post with the number of comments
+    Posts.update(comment.postId, {$inc: {commentsCount: 1}});
 
     // create the comment, save the id
     comment._id = Comments.insert(comment);
@@ -77,31 +86,42 @@ Meteor.methods({
   }
 });
 ~~~
-<%= caption "collections/comments.js" %>
-<%= highlight "8~14" %>
+<%= caption "lib/collections/comments.js" %>
+<%= highlight "17~123" %>
 
-Let's also publish the notifications, and subscribe on the client:
+Let's also publish the notifications:
 
 ~~~js
-// [...]
+Meteor.publish('posts', function() {
+  return Posts.find();
+});
+
+Meteor.publish('comments', function(postId) {
+  check(postId, String);
+  return Comments.find({postId: postId});
+});
 
 Meteor.publish('notifications', function() {
   return Notifications.find();
 });
 ~~~
 <%= caption "server/publications.js" %>
+<%= highlight "10~12" %>
+
+And subscribe on the client:
 
 ~~~js
 Router.configure({
   layoutTemplate: 'layout',
   loadingTemplate: 'loading',
+  notFoundTemplate: 'notFound',
   waitOn: function() {
     return [Meteor.subscribe('posts'), Meteor.subscribe('notifications')]
   }
 });
 ~~~
 <%= caption "lib/router.js" %>
-<%= highlight "5" %>
+<%= highlight "6" %>
 
 <%= commit "11-1", "Added basic notifications collection." %>
 
@@ -111,16 +131,19 @@ Now we can go ahead and add a list of notifications to the header.
 
 ~~~html
 <template name="header">
-  <header class="navbar">
-    <div class="navbar-inner">
-      <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </a>
-      <a class="brand" href="{{pathFor 'postsList'}}">Microscope</a>
-      <div class="nav-collapse collapse">
-        <ul class="nav">
+  <nav class="navbar navbar-default" role="navigation">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navigation">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="{{pathFor 'postsList'}}">Microscope</a>
+      </div>
+      <div class="collapse navbar-collapse" id="navigation">
+        <ul class="nav navbar-nav">
           {{#if currentUser}}
             <li>
               <a href="{{pathFor 'postSubmit'}}">Submit Post</a>
@@ -130,18 +153,18 @@ Now we can go ahead and add a list of notifications to the header.
             </li>
           {{/if}}
         </ul>
-        <ul class="nav pull-right">
-          <li>{{> loginButtons}}</li>
+        <ul class="nav navbar-nav navbar-right">
+          {{> loginButtons}}
         </ul>
       </div>
     </div>
-  </header>
+  </nav>
 </template>
 ~~~
 <%= caption "client/views/includes/header.html" %>
-<%= highlight "12~19" %>
+<%= highlight "15~22" %>
 
-And create the `notifications` and `notification` templates (they'll share a single `notifications.html` file):
+And create the `notifications` and `notificationItem` templates (they'll share a single `notifications.html` file):
 
 ~~~html
 <template name="notifications">
@@ -155,7 +178,7 @@ And create the `notifications` and `notification` templates (they'll share a sin
   <ul class="notification dropdown-menu">
     {{#if notificationCount}}
       {{#each notifications}}
-        {{> notification}}
+        {{> notificationItem}}
       {{/each}}
     {{else}}
       <li><span>No Notifications</span></li>
@@ -163,7 +186,7 @@ And create the `notifications` and `notification` templates (they'll share a sin
   </ul>
 </template>
 
-<template name="notification">
+<template name="notificationItem">
   <li>
     <a href="{{notificationPostPath}}">
       <strong>{{commenterName}}</strong> commented on your post
@@ -175,7 +198,7 @@ And create the `notifications` and `notification` templates (they'll share a sin
 
 We can see that the plan is for each notification to contain a link to the post that was commented on, and the name of the user that commented on it. 
 
-Next, we need to make sure we select the right list of notifications in our manager, and update the notifications as "read" when the user clicks on the link to which they point. 
+Next, we need to make sure we select the right list of notifications in our helper, and update the notifications as "read" when the user clicks on the link to which they point. 
 
 ~~~js
 Template.notifications.helpers({
