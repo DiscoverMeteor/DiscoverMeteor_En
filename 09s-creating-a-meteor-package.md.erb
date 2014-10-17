@@ -141,7 +141,7 @@ The first step in developing a package is testing it against an application, but
 Let's create a test file that uses Tinytest to run some tests against the errors codebase:
 
 ~~~js
-Tinytest.add("Errors collection works", function(test) {
+Tinytest.add("Errors - collection", function(test) {
   test.equal(Errors.collection.find({}).count(), 0);
   
   Errors.throw('A new error!');
@@ -150,7 +150,7 @@ Tinytest.add("Errors collection works", function(test) {
   Errors.collection.remove({});
 });
 
-Tinytest.addAsync("Errors template works", function(test, done) {  
+Tinytest.addAsync("Errors - template", function(test, done) {  
   Errors.throw('A new error!');
   test.equal(Errors.collection.find({}).count(), 1);
   
