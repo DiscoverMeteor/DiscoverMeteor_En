@@ -39,26 +39,8 @@ Of course this behaviour is not a problem when triggered from the console (after
 
 Thankfully, since you can share permissions code between the client and server (for instance, you could write a library function `canDeletePost(user, post)` and put it in the shared `/lib` directory), doing so usually doesn't require too much extra code.
 
-### Server-side permissions
+### Server-side Permissions
 
 Remember that the permission system only applies to database mutations initiated from the client. On the server, Meteor assumes that _all_ operations are permitted.
 
 This means that if you were to write a server-side `deletePost` Meteor Method that could be called from the client, anybody would be able to delete any post. So you probably don't want to do that unless you checked user permissions within that Method as well.
-
-### Using Deny as a Callback
-
-Finally, one trick you can do with `deny` is to use it as an "onX" callback. For instance, you could achieve a `lastModified` timestamp with the following code:
-
-~~~js
-Posts.deny({
-  update: function(userId, doc, fields, modifier) {
-    doc.lastModified = +(new Date());
-    return false;
-  },
-  transform: null
-});
-~~~
-
-As `deny` callbacks are run for *every* successful `update`, we know this callback will be run and can make changes to the document in a structured way.
-
-Admittedly, this technique is a bit of a hack, so you might want to perform updates using a Method instead. Nevertheless, it is still useful to know, and in the future we can hope that some kind of `beforeUpdate` callback will become available.

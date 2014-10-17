@@ -18,6 +18,7 @@ Let's first hook up our router. We'll add a route to access the post edit page a
 Router.configure({
   layoutTemplate: 'layout',
   loadingTemplate: 'loading',
+  notFoundTemplate: 'notFound',
   waitOn: function() { return Meteor.subscribe('posts'); }
 });
 
@@ -50,11 +51,12 @@ var requireLogin = function(pause) {
   }
 }
 
+Router.onBeforeAction('loading');
 Router.onBeforeAction('dataNotFound');
 Router.onBeforeAction(requireLogin, {only: 'postSubmit'});
 ~~~
 <%= caption "lib/router.js" %>
-<%= highlight "14~17" %>
+<%= highlight "16~19" %>
 
 ### The Post Edit Template
 
@@ -83,7 +85,7 @@ We can now focus on the template. Our `postEdit` template will be a fairly stand
 ~~~
 <%= caption "client/views/posts/post_edit.html" %>
 
-And here's the `post_edit.js` manager that goes with it:
+And here's the `post_edit.js` file that goes with it:
 
 ~~~js
 Template.postEdit.events({
@@ -144,7 +146,7 @@ We should also add edit links to our posts so that users have a way to access th
         {{#if ownPost}}<a href="{{pathFor 'postEdit'}}">Edit</a>{{/if}}
       </p>
     </div>
-    <a href="{{pathFor 'postPage'}}" class="discuss btn">Discuss</a>
+    <a href="{{pathFor 'postPage'}}" class="discuss btn btn-default">Discuss</a>
   </div>
 </template>
 ~~~
@@ -178,7 +180,7 @@ Our post edit form is looking good, but you won't be able to actually edit anyth
 
 Since we've previously removed the `insecure` package, all client-side modifications are currently being denied.
 
-To fix this, we'll set up some permission rules. First, create a new `permissions.js` file inside `lib`. This loads our permissions logic first (and is available in both environments):
+To fix this, we'll set up some permission rules. First, create a new `permissions.js` file inside `lib`. This makes sure our permissions logic loads first (and is available in both environments):
 
 ~~~js
 // check that the userId specified owns the documents
@@ -200,8 +202,7 @@ Posts.allow({
   remove: function(userId, post) { return ownsDocument(userId, post); },
 });
 
-Meteor.methods({
-  ...
+//...
 ~~~
 <%= caption "collections/posts.js" %>
 <%= highlight "3~6" %>
@@ -212,7 +213,7 @@ Meteor.methods({
 
 Just because you can edit your own posts, doesn't mean you should be able to edit *every* property. For example, we don't want users to be able to create a post and then assign it to somebody else.
 
-We use Meteor's `deny()` callback to ensure users can only edit specific fields:
+So we'll use Meteor's `deny()` callback to ensure users can only edit specific fields:
 
 ~~~js
 Posts = new Meteor.Collection('posts');
