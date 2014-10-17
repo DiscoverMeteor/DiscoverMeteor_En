@@ -311,7 +311,7 @@ For all these reasons, it's better to keep our event handlers simple and, if we 
 
 A Meteor Method is a server-side function that is *called* client-side. We aren't totally unfamiliar with them -- in fact, behind the scenes, the `Collection`'s `insert`, `update` and `remove` functions are all Methods. Let's see how to create our own.
 
-Let's go back to `post_submit.js`. Rather than inserting directly into the `Posts` collection, we'll call a Method named `post`:
+Let's go back to `post_submit.js`. Rather than inserting directly into the `Posts` collection, we'll call a Method named `postInsert`:
 
 ~~~js
 Template.postSubmit.events({
@@ -342,7 +342,7 @@ Meteor method callbacks always have two arguments, `error` and `result`. If for 
 
 ### Security Check
 
-We'll take advantage of this opportunity to add a little more security to our method by using the [`audit-argument-checks`](http://docs.meteor.com/#auditargumentchecks) package.
+We'll take advantage of this opportunity to add some security to our method by using the [`audit-argument-checks`](http://docs.meteor.com/#auditargumentchecks) package.
 
 This package lets you check any JavaScript object against a predefined pattern. In our case, we'll use it to check that the user calling the method is properly logged in (by making sure that `Meteor.userId()` is a `String`), and that the `postAttributes` object being passed as argument to the method contains `title` and `url` strings, so we don't end up entering any random piece of data into our database.  
 
@@ -485,4 +485,4 @@ Template.postsList.helpers({
 
 It took a bit of work, but we finally have a user interface to let users securely enter content in our app! 
 
-But any app that lets users create content also needs to give them a way to edit or delete it. That's what the Editing Posts chapter will be all about.
+But any app that lets users create content also needs to give them a way to edit or delete it. That's what the next chapter will be all about.
