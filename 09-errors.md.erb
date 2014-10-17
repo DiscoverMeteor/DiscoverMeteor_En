@@ -6,7 +6,7 @@ number: 9
 points: 10
 photoUrl: http://www.flickr.com/photos/ikewinski/9413892879/
 photoAuthor: Mike Lewinski
-contents: Create a better mechanism for displaying errors and messages.|Learn how to use `Template.rendered` to know when a user has seen an error.|Use a router filter to make sure errors are only seen once.
+contents: Create a better mechanism for displaying errors and messages.|Implement stricter form validation.|Add in-line error reporting to our forms.
 paragraphs: 31
 ---
 
@@ -14,11 +14,11 @@ Merely using the browser's standard `alert()` dialog to warn the user when there
 
 Instead, let's build a more versatile error reporting mechanism that will do a better job of telling the user what's going on without breaking up the flow.
 
-### Introducing Local Collections
-
 We are going to implement a simple system which displays new errors in the upper-right corner of the window, similar to popular Mac OS app [Growl](http://growl.info/). 
 
-To start off with, we create a collection to store our errors in. Given that the errors are only relevant to the current session and don't need to be persistent in any way, we are going to do something new, and create a *local collection*. What this means is that the `Errors` collection will only exist *in the browser*, and will make no attempt to synchronize back to the server.
+### Introducing Local Collections
+
+To start off, we need to create a collection to store our errors in. Given that the errors are only relevant to the current session and don't need to be persistent in any way, we are going to do something new, and create a *local collection*. What this means is that the `Errors` collection will only exist *in the browser*, and will make no attempt to synchronize back to the server.
 
 To achieve this, we create the error inside the `client` directory (to make the collection client-only), with its MongoDB collection name set to `null` (since this collection's data will never be saved into the server-side database):
 
@@ -98,17 +98,25 @@ Template.errors.helpers({
 ~~~
 <%= caption "client/views/includes/errors.js" %>
 
+You can already try testing out our new error messages manually. Just open the browser console and type:
+
+~~~js
+throwError("I'm an error!");
+~~~
+
+<%= screenshot "9-1", "Testing error messages." %>
+
 <%= commit "9-1", "Basic error reporting." %>
 
 <% note do %>
 
 ### Two Kinds of Errors
 
-At this point it's important to make a distinction between expected “app-level” errors and unexpected “code-level” errors. 
+At this point it's important to make a distinction between “app-level” errors and “code-level” errors. 
 
 **App-level** errors are generally user-triggered, and users are in turn able to act upon them. These include things like validation errors, permission errors, “not found” errors, and so on. These are the kind of errors you want to show to the user in order to help them fix whatever problem they've just encountered.
 
-**Code-level** errors, on the other kind, are triggered by actual bugs in your code, and you probably *don't* want to surface them to users directly, but instead track them with some kind of third-party error-tracking service (such as [Kadira](http://kadira.io)).
+**Code-level** errors, on the other kind, are unexpectedly triggered by actual bugs in your code, and you probably *don't* want to surface them to users directly, but instead track them with some kind of third-party error-tracking service (such as [Kadira](http://kadira.io)).
 
 In this chapter, we'll focus on dealing with the first type of error, not on catching bugs. 
 
@@ -178,9 +186,7 @@ Template.postEdit.events({
 
 Give it a try: try creating a post and entering the URL `http://meteor.com`. As this URL is already attached to a post in the fixtures, you should see:
 
-<%= screenshot "9-1", "Triggering an error" %>
-
-// FIXME: change screenshot
+<%= screenshot "9-2", "Triggering an error" %>
 
 ### Clearing Errors
 
@@ -207,7 +213,21 @@ We're defining a `fadeOut` CSS animation that specifies four keyframes for the o
 
 The animation will run for 2700 milliseconds total, use the `ease-in` timing equation, run with a delay of 0 seconds, run only once, and finally stay at the last keyframe once it's done running.
 
-This works, but if you trigger multiple errors you'll notice that they're getting stacked one on top of the other. This is because while the `.alert` elements are disappearing *visually*, they're still present in the DOM. We need to fix this.
+<% note do %>
+
+### Animations vs Animations
+
+You might be wondering why we're using CSS-based animations (which are pre-determined and outside of our app's control), instead of animations controlled by Meteor itself. 
+
+While Meteor does provide support for inserting animations, we wanted this chapter to be focused on errors. So we'll use “dumb” CSS animations for now and we'll leave the fancy stuff for the Animations chapter.
+
+<% end %>
+
+This works, but if you were to trigger multiple errors (by submitting the same link three times, for example) you'd notice that they're getting stacked on top of one another:
+
+<%= screenshot "9-3", "Stack overflow." %>
+
+This is because while the `.alert` elements are disappearing *visually*, they're still present in the DOM. We need to fix this.
 
 This is exactly the kind of situation where Meteor shines. Since the `Errors` collection is reactive, all we need to do to get rid of these old errors is remove them from the collection!
 
@@ -232,7 +252,7 @@ Template.error.rendered = function() {
 
 <%= commit "9-3", "Clear errors after 3 seconds." %>
 
-The `rendered` callback triggers once our template has been rendered in the browser. Inside the callback, `this` refers to the current template instance, and `this.data` lets us access the data of the object that is currently being rendered (in our case, an error).
+The [`rendered`](http://docs.meteor.com/#template_rendered) callback triggers once our template has been rendered in the browser. Inside the callback, `this` refers to the current template instance, and `this.data` lets us access the data of the object that is currently being rendered (in our case, an error).
 
 ### Seeking Validation
 
@@ -301,9 +321,11 @@ Session.set('postSubmitErrors', {title: 'Warning! Intruder detected. Now releasi
 ~~~
 <%= caption "Browser console" %>
 
-The next step is hooking up that `postSubmitErrors` Session object to the form. 
+<%= screenshot "9-4", "Red alert! Red alert!" %>
 
-Before doing so, we'll create a new `validatePost` function in `posts.js` that looks at a `post` object, and returns an `errors` object containing any relevant errors:
+The next step is actually hooking up that `postSubmitErrors` Session object to the form. 
+
+Before doing so, we'll create a new `validatePost` function in `posts.js` that looks at a `post` object, and returns an `errors` object containing any relevant errors (namely, whether the `title` or `url` fields are missing):
 
 ~~~js
 //...
@@ -360,6 +382,8 @@ Template.postSubmit.events({
 
 Notice that we're using `return` to abort the execution of the helper if any errors are present, not because we want to actually return this value anywhere. 
 
+<%= screenshot "9-5", "Caught red-handed." %>
+
 ### Server-side Validation
 
 We're not quite done though. We're validating the presence of a URL and title on the *client*, but what about the *server*? After all, someone could still try to enter an empty post by manually calling the `postInsert` method through the browser console.
@@ -406,6 +430,14 @@ Meteor.methods({
 <%= highlight "9~11" %>
 
 Again, users should normally never have to see this “You must set a title and URL for your post” message. It will only ever show up if someone wants to bypass the user interface we painstakingly put together, and uses the console directly instead. 
+
+To test this out, open up the browser console and try entering a post with no URL:
+
+~~~js
+Meteor.call('postInsert', {url: '', title: 'No URL here!'});
+~~~
+
+If we've done our job properly, you'll get back a scary bunch of code along with the message “You must set a title and URL for your post”.
 
 <%= commit "9-4", "Validate post contents on submission." %>
 
@@ -496,19 +528,24 @@ Template.postEdit.events({
 
 Just like we did for the post submit form, we'll also want to validate our posts on the server. Except that you'll remember we're not using a method to edit posts, but an `update` call directly from the client. 
 
-This means we can add a new `deny` callback instead:
+This means we'll have to add a new `deny` callback instead:
 
 ~~~js
+//...
+
 Posts.deny({
   update: function(userId, post, fieldNames) {
     var errors = validatePost(modifier.$set);
     return errors.title || errors.url;
   }
 });
+
+//...
 ~~~
 <%= caption "lib/collections/posts.js" %>
+<%= highlight "3~8" %>
 
-Note that in this case, the `post` argument refers to the *existing* post. In this case, we want to validate the *update*, which is why we're calling `validatePost` on the contents of the `modifier`'s `$set` property (as in `Posts.update({$set: {title: ..., url: ...}})`).
+Note that the `post` argument refers to the *existing* post. In this case, we want to validate the *update*, which is why we're calling `validatePost` on the contents of the `modifier`'s `$set` property (as in `Posts.update({$set: {title: ..., url: ...}})`).
 
 This works because `modifier.$set` contains the same two `title` and `url` property as the whole `post` object would. Of course, it does mean that any partial update affecting only `title` or only `url` will fail, but in practice that shouldn't be an issue. 
 
