@@ -96,13 +96,14 @@ Meteor.publish('comments', function() {
 Router.configure({
   layoutTemplate: 'layout',
   loadingTemplate: 'loading',
+  notFoundTemplate: 'notFound',
   waitOn: function() {
     return [Meteor.subscribe('posts'), Meteor.subscribe('comments')];
   }
 });
 ~~~
 <%= caption "lib/router.js" %>
-<%= highlight "4~6" %>
+<%= highlight "5~7" %>
 
 <%= commit "10-1", "Added comments collection, pub/sub and fixtures." %>
 
@@ -110,7 +111,7 @@ Note that to trigger this fixture code, you'll need to `meteor reset` to clear y
 
 First, we created a couple of (completely fake) users, inserting them into the database and using their `id`s to select them out of the database afterwards. Then we added a comment for each user on the first post, linking the comment to the post (with `postId`), and the user (with `userId`). We also added a submission date and body to each comment, along with `author`, a denormalized field.
 
-Also, we augmented our router to wait on both the comments and the posts.
+Also, we augmented our router to wait on an *array* containing both the comments and the posts subscriptions.
 
 ### Displaying comments
 
@@ -122,7 +123,7 @@ It's all very well putting comments into the database, but we also need to show 
 
   <ul class="comments">
     {{#each comments}}
-      {{> comment}}
+      {{> commentItem}}
     {{/each}}
   </ul>
 </template>
@@ -142,10 +143,10 @@ Template.postPage.helpers({
 
 We put the `{{#each comments}}` block inside the post template, so `this` is a post within the `comments` helper. To find the relevant comments, we check those that are linked to that post via the `postId` attribute.
 
-Given what we've learnt about helpers and Spacebars, rendering a comment is fairly straightforward. We'll create a new `comments` directory inside `views` to store all our comment information:
+Given what we've learned about helpers and Spacebars, rendering a comment is fairly straightforward. We'll create a new `comments` directory inside `views` to store all our comment information, and a new `commentItem` template inside that:
 
 ~~~html
-<template name="comment">
+<template name="commentItem">
   <li>
     <h4>
       <span class="author">{{author}}</span>
@@ -155,18 +156,18 @@ Given what we've learnt about helpers and Spacebars, rendering a comment is fair
   </li>
 </template>
 ~~~
-<%= caption "client/views/comments/comment.html" %>
+<%= caption "client/views/comments/comment_item.html" %>
 
 Let's set up a quick template helper to format our `submitted` date to a more user-friendly format:
 
 ~~~js
-Template.comment.helpers({
+Template.commentItem.helpers({
   submittedText: function() {
     return this.submitted.toString();
   }
 });
 ~~~
-<%= caption "client/views/comments/comment.js" %>
+<%= caption "client/views/comments/comment_item.js" %>
 
 Then, we'll show the number of comments on each post:
 
@@ -181,14 +182,14 @@ Then, we'll show the number of comments on each post:
         {{#if ownPost}}<a href="{{pathFor 'postEdit'}}">Edit</a>{{/if}}
       </p>
     </div>
-    <a href="{{pathFor 'postPage'}}" class="discuss btn">Discuss</a>
+    <a href="{{pathFor 'postPage'}}" class="discuss btn btn-default">Discuss</a>
   </div>
 </template>
 ~~~
 <%= caption "client/views/posts/post_item.html" %>
 <%= highlight "6,7" %>
 
-And add the `commentsCount` helper to our `postItem` manager:
+And add the `commentsCount` helper to `post_item.js`:
 
 ~~~js
 Template.postItem.helpers({
@@ -260,7 +261,7 @@ And then create the comment form template:
 
 <%= screenshot "10-2", "The comment submit form" %>
 
-To submit our comments, we call a `comment` Method in the `commentSubmit` manager that operates in a similar way to the `postSubmit` manager:
+To submit our comments, we call a `comment` Method in `comment_submit.js` that operates in a similar way to what we did for submitting posts:
 
 ~~~js
 Template.commentSubmit.created = function() {
@@ -333,7 +334,7 @@ Meteor.methods({
   }
 });
 ~~~
-<%= caption "collections/comments.js" %>
+<%= caption "lib/collections/comments.js" %>
 <%= highlight "3~25" %>
 
 <%= commit "10-3", "Created a form to submit comments." %>
@@ -352,12 +353,13 @@ But we now want our subscription to depend on a path parameter, and that paramet
 
 This has another consequence: instead of loading our data when we initialize our app, we'll now be loading it whenever we hit our *route*. This means that you'll now get loading times while browsing within the app, but it's an unavoidable downside unless you intend to front-load the entirety of your data set forever.
 
-First, we'll stop preloading all comments in the `configure` block by removing `Meteor.subscribe('comments')`:
+First, we'll stop preloading all comments in the `configure` block by removing `Meteor.subscribe('comments')` (in other words, going back to what we had previously):
 
 ~~~js
 Router.configure({
   layoutTemplate: 'layout',
   loadingTemplate: 'loading',
+  notFoundTemplate: 'notFound',
   waitOn: function() {
     return Meteor.subscribe('posts');
   }
@@ -366,7 +368,7 @@ Router.configure({
 <%= caption "lib/router.js" %>
 <%= highlight "5" %>
 
-And we'll add a new route-level `waitOn` function:
+And we'll add a new *route*-level `waitOn` function just for the `postPage` route:
 
 ~~~js
 Router.map(function() {
@@ -388,7 +390,7 @@ Router.map(function() {
 <%= caption "lib/router.js" %>
 <%= highlight "7~9" %>
 
-You'll notice we're passing `this.params._id` as an argument to the subscription. So let's use that new information to make sure we restrict our data set to comments belonging to the current post:
+We're passing `this.params._id` as an argument to the subscription. So let's use that new information to make sure we restrict our data set to comments belonging to the current post:
 
 ~~~js
 Meteor.publish('posts', function() {
@@ -411,36 +413,81 @@ There's only one problem: when we return to the homepage, it claims that all our
 
 ### Counting Comments
 
-The reason for this will quickly become clear: we only ever have at most *one* of our post's comments loaded, so when we call `Comments.find({postId: this._id})` in the `commentsCount` helper in the `post_item` manager, Meteor can't find the necessary client-side data to provide us with a result.
+The reason for this will quickly become clear: we only load comments on the `postPage` route, so when we call `Comments.find({postId: this._id})` in the `commentsCount` helper, Meteor can't find the necessary client-side data to provide us with a result.
 
 The best way to deal with this is to *denormalize* the number of comments onto the post (if you're not sure what that means don't worry, the next sidebar has got you covered!). Although as we'll see, there's a minor addition of complexity in our code, the performance benefit we gain from not having to publish _all_ the comments to display the post list is worth it.
 
 We'll achieve this by adding a `commentsCount` property to the `post` data structure. To begin with, we update our post fixtures (and `meteor reset` to reload them -- don't forget to recreate your user account after):
 
 ~~~js
-var telescopeId = Posts.insert({
-  title: 'Introducing Telescope',
-  ..
-  commentsCount: 2
-});
-
-Posts.insert({
-  title: 'Meteor',
-  ...
-  commentsCount: 0
-});
-
-Posts.insert({
-  title: 'The Meteor Book',
-  ...
-  commentsCount: 0
-});
+// Fixture data 
+if (Posts.find().count() === 0) {
+  var now = new Date().getTime();
+  
+  // create two users
+  var tomId = Meteor.users.insert({
+    profile: { name: 'Tom Coleman' }
+  });
+  var tom = Meteor.users.findOne(tomId);
+  var sachaId = Meteor.users.insert({
+    profile: { name: 'Sacha Greif' }
+  });
+  var sacha = Meteor.users.findOne(sachaId);
+  
+  var telescopeId = Posts.insert({
+    title: 'Introducing Telescope',
+    userId: sacha._id,
+    author: sacha.profile.name,
+    url: 'http://sachagreif.com/introducing-telescope/',
+    submitted: new Date(now - 7 * 3600 * 1000),
+    commentsCount: 2
+  });
+  
+  Comments.insert({
+    postId: telescopeId,
+    userId: tom._id,
+    author: tom.profile.name,
+    submitted: new Date(now - 5 * 3600 * 1000),
+    body: 'Interesting project Sacha, can I get involved?'
+  });
+  
+  Comments.insert({
+    postId: telescopeId,
+    userId: sacha._id,
+    author: sacha.profile.name,
+    submitted: new Date(now - 3 * 3600 * 1000),
+    body: 'You sure can Tom!'
+  });
+  
+  Posts.insert({
+    title: 'Meteor',
+    userId: tom._id,
+    author: tom.profile.name,
+    url: 'http://meteor.com',
+    submitted: new Date(now - 10 * 3600 * 1000),
+    commentsCount: 0
+  });
+  
+  Posts.insert({
+    title: 'The Meteor Book',
+    userId: tom._id,
+    author: tom.profile.name,
+    url: 'http://themeteorbook.com',
+    submitted: new Date(now - 12 * 3600 * 1000),
+    commentsCount: 0
+  });
+}
 ~~~
 <%= caption "server/fixtures.js" %>
+<%= highlight "20,21,44,45,53,54" %>
+
+As usual when updating the fixtures file, you'll have to `meteor reset` your database to make sure it runs again. 
 
 Then, we make sure that all new posts start with 0 comments:
 
 ~~~js
+//...
+
 var post = _.extend(postAttributes, {
   userId: user._id,
   author: user.username,
@@ -449,18 +496,32 @@ var post = _.extend(postAttributes, {
 });
 
 var postId = Posts.insert(post);
+
+//...
 ~~~
 <%= caption "collections/posts.js" %>
+<%= highlight "6,7" %>
 
 And then we update the relevant `commentsCount` when we make a new comment using Mongo's `$inc` operator (which increments a numeric field by one):
 
 ~~~js
+//...
+
+comment = _.extend(commentAttributes, {
+  userId: user._id,
+  author: user.username,
+  submitted: new Date()
+});
+
 // update the post with the number of comments
 Posts.update(comment.postId, {$inc: {commentsCount: 1}});
 
 return Comments.insert(comment);
+
+//...
 ~~~
 <%= caption "collections/comments.js "%>
+<%= highlight "9,10" %>
 
 Finally, we can just simply remove the `commentsCount` helper from `client/views/posts/post_item.js`, as the field is now directly available on the post.
 
