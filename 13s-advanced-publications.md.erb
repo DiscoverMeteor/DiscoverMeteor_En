@@ -11,6 +11,7 @@ contents: Learn more advanced patterns for manipulating publications.|See just h
 paragraphs: 36
 ---
 
+
 By now you should have a good grasp of how publications and subscriptions interact. So let's get rid of the training wheels and examine a few more advanced scenarios.
  
 ### Publishing a Collection Multiple Times
@@ -37,7 +38,7 @@ Meteor.publish('postDetail', function(postId) {
 });
 ~~~
 
-Now when the client subscribes to those two publications (using `autorun` to ensure that the right `postId` is being sent to the `postDetail` subscription), its `'posts'` collection gets populated from two sources: a list of titles and author's names from the first subscription, and the full details of a post from the second.
+Now when the client subscribes to those two publications, its `'posts'` collection gets populated from two sources: a list of titles and author's names from the first subscription, and the full details of a post from the second.
 
 You may realize that the post published by `postDetail` is also being published by `allPosts` (although with only a subset of its properties). However, Meteor takes care of the overlap by merging the fields and ensuring there is no duplicate post.
 
@@ -84,6 +85,8 @@ Meteor.subscribe('posts', {baseScore: -1, submitted: -1, limit: 10});
 So what's happening here exactly? Each browser is opening up *two* different subscriptions, each connecting to the *same* publication on the server. 
 
 Each subscription provides different arguments to that publication, but fundamentally, each time a (different) set of documents is being plucked from the `posts` collection and sent down the wire to the client-side collection.
+
+You can even subscribe to the same publication twice with *the same arguments!* It's hard to think of many scenarios where that would be useful, but the flexibility might be useful one day!
 
 ### Multiple Collections in a Single Subscription
 
@@ -182,4 +185,6 @@ And although we'd have a single `Resources` collection on the server, we could  
 
 We are telling `_publishCursor` to publish our videos (just like returning) the cursor would do, but rather than publish to the `resources` collection on the client, instead we are publishing from `'resources'` to `'videos'`. 
 
-Is it a good idea to be doing this? It's not our place to judge. In any case, it's good to know what's possible in order to use Meteor to its fullest!
+Another similiar idea is to use publish to a client side collection where there's *no server side collection at all!* For instance, you might grab the data from a 3rd party service, and publish them into a client-side collection. 
+
+Thanks to the flexibility of the publish API, the possibilities are endless.

@@ -28,8 +28,6 @@ We'll be publishing these lists of upvoters to all users, which will also automa
 
 This is the kind of data privacy problem that can arise from the way collections work. For example, do we want people to be able to find out who has voted for their posts? In our case making that information publicly available won't really have any consequences, but it's important to at least acknowledge the issue. 
 
-Also note that if we *did* want to restrict some of this information, we'd have to make sure that the client can't tamper with the `fields` options of our publication, either by removing that property server-side, or by not passing the whole options object from client to server. 
-
 <% end %>
 
 We'll also denormalize the total number of upvoters on a post to make it easier to retrieve that figure. So we'll be adding two attributes to our posts, `upvoters` and `votes`. Let's start by adding them to our fixtures file:
@@ -360,13 +358,11 @@ Meteor.methods({
 //...
 ~~~
 <%= caption "collections/posts.js" %>
-<%= highlight "14~17" %>
+<%= highlight "12~21" %>
 
 <%= commit "13-4", "Better upvoting algorithm." %>
 
 What we are saying is "find all the posts with this `id` that this user hasn't yet voted for, and update them in this way". If the user *hasn't* yet voted, it will of course find the post with that `id`. On the other hand if the user *has* voted, then the query will match no documents, and consequently nothing will happen.
-
-The only downside is that now we can't explicitly tell the user that they've already voted for the post (since we got rid of the database call that checked this). But they should know that from the "upvote" button being disabled in the user interface anyway.
 
 <% note do %>
 
@@ -468,7 +464,7 @@ Router.map(function() {
 
 Note that now that we have more than one route, we're taking the `nextPath` logic out of `PostsListController` and into `NewPostsListController` and `BestPostsListController`, since the path will be different in either case. 
 
-Additionally, when we sort by `votes`, we have a secondary sort by submitted timestamp to ensure that the ordering is correct.
+Additionally, when we sort by `votes`, we have a subsequent sorts by submitted timestamp and then `_id` to ensure that the ordering is completely specified.
 
 With our new controllers in place, we can now safely get rid of the previous `postsList` route. Just delete the following code:
 
