@@ -135,7 +135,7 @@ Template.postsList.helpers({
   }
 });
 ~~~
-<%= caption "/client/views/posts/posts_list.js" %>
+<%= caption "/client/templates/posts/posts_list.js" %>
 <%= highlight "2~8" %>
 
 Instead of simply returning the `Posts.find({}, {sort: {submitted: -1}, limit: postsHandle.limit()})` cursor like our previous `posts` helper, `postsWithRank` takes the cursor and adds the `_rank` property to each of its documents. 
@@ -155,7 +155,7 @@ Don't forget to update the `postsList` template as well:
   </div>
 </template>
 ~~~
-<%= caption "/client/views/posts/posts_list.html" %>
+<%= caption "/client/templates/posts/posts_list.html" %>
 
 <%= highlight "3" %>
 
@@ -171,7 +171,7 @@ Since our animation will affect our DOM element's CSS attributes and classes, we
 
 </template>
 ```
-<%= caption "/client/views/posts/post_item.html" %>
+<%= caption "/client/templates/posts/post_item.html" %>
 <%= highlight "2" %>
 
 By using the `{{attributes}}` helper in this fashion, we also unlock a hidden feature of Spacebars: any property of the returned `attributes` object will get mapped to the DOM element's HTML attributes (such as `class`, `style`, and so on).
@@ -209,7 +209,7 @@ Template.postItem.helpers({
 
 //..
 ~~~
-<%= caption "/client/views/posts/post_item.js" %>
+<%= caption "/client/templates/posts/post_item.js" %>
 <%= highlight "1~2, 8~26" %>
 
 At the very top of our document, we're setting the height of each DOM element, in other words our `.post` divs. This presents the obvious downside that any change to this height (for example, a post title wrapping on two lines) will break our animation logic. But for the sake of keeping things simple, we'll assume that every post will be exactly 80 pixels high for now. 
@@ -299,7 +299,7 @@ attributes: function() {
 
 //..
 ~~~
-<%= caption "/client/views/posts/post_item.js" %>
+<%= caption "/client/templates/posts/post_item.js" %>
 <%= highlight "8~10" %>
 
 What we're doing here is isolating case **(A)** and adding the `invisible` CSS class to the element. When the helper next re-runs reactively and the element gets the `animate` class instead, the difference in opacity will be animated and fade the element in. 

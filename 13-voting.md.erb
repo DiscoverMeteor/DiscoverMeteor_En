@@ -28,8 +28,6 @@ We'll be publishing these lists of upvoters to all users, which will also automa
 
 This is the kind of data privacy problem that can arise from the way collections work. For example, do we want people to be able to find out who has voted for their posts? In our case making that information publicly available won't really have any consequences, but it's important to at least acknowledge the issue. 
 
-Also note that if we *did* want to restrict some of this information, we'd have to make sure that the client can't tamper with the `fields` options of our publication, either by removing that property server-side, or by not passing the whole options object from client to server. 
-
 <% end %>
 
 We'll also denormalize the total number of upvoters on a post to make it easier to retrieve that figure. So we'll be adding two attributes to our posts, `upvoters` and `votes`. Let's start by adding them to our fixtures file:
@@ -170,7 +168,7 @@ First off, we'll add an upvote button to our post partial and show the upvote co
   </div>
 </template>
 ~~~
-<%= caption "client/views/posts/post_item.html" %>
+<%= caption "client/templates/posts/post_item.html" %>
 <%= highlight "3,7" %>
 
 <%= screenshot "13-1", "The upvote button" %>
@@ -187,7 +185,7 @@ Template.postItem.events({
   }
 });
 ~~~
-<%= caption "client/views/posts/post_item.js" %>
+<%= caption "client/templates/posts/post_item.js" %>
 <%= highlight "3~8" %>
 
 Finally, we'll go back to our `lib/collections/posts.js` file and add a Meteor server-side Method that will upvote posts:
@@ -242,7 +240,7 @@ If the user is not logged in, or has already upvoted a post, they won't be able 
   </div>
 </template>
 ~~~
-<%= caption "client/views/posts/post_item.html" %>
+<%= caption "client/templates/posts/post_item.html" %>
 <%= highlight "3" %>
 
 ~~~js
@@ -270,7 +268,7 @@ Template.postItem.events({
   }
 });
 ~~~
-<%= caption "client/views/posts/post_item.js" %>
+<%= caption "client/templates/posts/post_item.js" %>
 <%= highlight "8~15, 19" %>
 
 We're changing our class from `.upvote` to `.upvotable`, so don't forget to change the click event handler too.
@@ -311,7 +309,7 @@ The helpers we've created before have been tied to the template they apply to. B
 
 </template>
 ~~~
-<%= caption "client/views/posts/post_item.html" %>
+<%= caption "client/templates/posts/post_item.html" %>
 <%= highlight "6, 8" %>
 
 <%= screenshot "13-3", "Perfecting Proper Pluralization (now say that 10 times)" %>
@@ -360,13 +358,11 @@ Meteor.methods({
 //...
 ~~~
 <%= caption "collections/posts.js" %>
-<%= highlight "14~17" %>
+<%= highlight "12~21" %>
 
 <%= commit "13-4", "Better upvoting algorithm." %>
 
 What we are saying is "find all the posts with this `id` that this user hasn't yet voted for, and update them in this way". If the user *hasn't* yet voted, it will of course find the post with that `id`. On the other hand if the user *has* voted, then the query will match no documents, and consequently nothing will happen.
-
-The only downside is that now we can't explicitly tell the user that they've already voted for the post (since we got rid of the database call that checked this). But they should know that from the "upvote" button being disabled in the user interface anyway.
 
 <% note do %>
 
@@ -468,7 +464,7 @@ Router.map(function() {
 
 Note that now that we have more than one route, we're taking the `nextPath` logic out of `PostsListController` and into `NewPostsListController` and `BestPostsListController`, since the path will be different in either case. 
 
-Additionally, when we sort by `votes`, we have a secondary sort by submitted timestamp to ensure that the ordering is correct.
+Additionally, when we sort by `votes`, we have a subsequent sorts by submitted timestamp and then `_id` to ensure that the ordering is completely specified.
 
 With our new controllers in place, we can now safely get rid of the previous `postsList` route. Just delete the following code:
 
@@ -520,7 +516,7 @@ We'll also add links in the header:
   </nav>
 </template>
 ~~~
-<%= caption "client/views/includes/header.html" %>
+<%= caption "client/templates/includes/header.html" %>
 <%= highlight "11, 15~20" %>
 
 And finally, we also need to update our post deleting event handler:
@@ -536,7 +532,7 @@ And finally, we also need to update our post deleting event handler:
     }
   }
 ~~~
-<%= caption "client/views/posts_edit.js" %>
+<%= caption "client/templates/posts_edit.js" %>
 <%= highlight "7" %>
 
 With all this done, we now gain a best posts list:
@@ -589,7 +585,7 @@ The reason why we want to support multiple named routes is that both our `home` 
   </nav>
 </template>
 ~~~
-<%= caption "client/views/includes/header.html" %>
+<%= caption "client/templates/includes/header.html" %>
 <%= highlight "9,12,15,19" %>
 
 ~~~js
@@ -606,7 +602,7 @@ Template.header.helpers({
   }
 });
 ~~~
-<%= caption "client/views/includes/header.js" %>
+<%= caption "client/templates/includes/header.js" %>
 
 <%= screenshot "13-5", "Showing the active page" %>
 

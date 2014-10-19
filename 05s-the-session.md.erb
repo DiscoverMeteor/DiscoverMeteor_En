@@ -45,14 +45,14 @@ To try this, add the following code to the layout template:
   </div>
 </header>
 ~~~
-<%= caption "client/views/application/layout.html"%>
+<%= caption "client/templates/application/layout.html"%>
 
 ~~~js
 Template.layout.helpers({
   pageTitle: function() { return Session.get('pageTitle'); }
 });
 ~~~
-<%= caption "client/views/application/layout.js"%>
+<%= caption "client/templates/application/layout.js"%>
 
 <% note do %>
 

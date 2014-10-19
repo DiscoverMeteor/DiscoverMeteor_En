@@ -10,6 +10,7 @@ contents: Learn more about Meteor's subscriptions, and how we can use them to co
 paragraphs: 67
 ---
 
+
 Things are looking great with Microscope, and we can expect a hit reception when it's released to the world. 
 
 So we should probably think a little about the performance implication of the number of new posts that will be entered into the site as it takes off!
@@ -159,11 +160,11 @@ Meteor.publish('notifications', function() {
 
 Our publications code is in effect telling the server it can trust any JavaScript object sent by the client (in our case, `{limit: postsLimit}`) to serve as the `find()` statement's `options`. This makes it possible for users to submit any options they'd like via the browser console.
 
-In our case, this is relatively harmless, since all a user could do is reorder posts differently, or change the limit (which is what we want to enable in the first place). 
+In our case, this is relatively harmless, since all a user could do is reorder posts differently, or change the limit (which is what we want to enable in the first place). Probably a secure app wouldn't allow *any* limit, but try to limit the limit :)
 
-But you shouldn't use this pattern when storing private data on unpublished fields, since the user could manipulate the `fields` option to access it, and you should probably also avoid using it for the `find()` statement's selector argument for the same security reasons. 
+Thankfully, by using `check()` we know users can't sneak extra options in (such as `fields`, which in some cases might expose private data on documents).
 
-A more secure pattern could be passing the individual parameters themselves instead of the whole object, to make sure you stay in control of your data:
+Still, a more secure pattern could be passing the individual parameters themselves instead of the whole object, to make sure you stay in control of your data:
 
 ~~~js
 Meteor.publish('posts', function(sort, limit) {
@@ -392,7 +393,7 @@ All that's left to do is to add the “load more” link at the bottom of our po
   </div>
 </template>
 ~~~
-<%= caption "client/views/posts/posts_list.html" %>
+<%= caption "client/templates/posts/posts_list.html" %>
 <%= highlight "7~10" %>
 
 Here's what your post list should now look like:
@@ -462,7 +463,7 @@ We'll then check this `ready` variable in the template to show a spinner at the 
   </div>
 </template>
 ~~~
-<%= caption "client/views/posts/posts_list.html" %>
+<%= caption "client/templates/posts/posts_list.html" %>
 <%= highlight "10~12" %>
 
 <%= commit "12-5", "Add a spinner to make pagination nicer." %>
@@ -485,7 +486,8 @@ Meteor.publish('posts', function(options) {
 });
 
 Meteor.publish('singlePost', function(id) {
-  return id && Posts.find(id);
+  check(id, String)
+  return Posts.find(id);
 });
 
 //...

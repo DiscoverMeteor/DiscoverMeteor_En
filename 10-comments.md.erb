@@ -128,7 +128,7 @@ It's all very well putting comments into the database, but we also need to show 
   </ul>
 </template>
 ~~~
-<%= caption "client/views/posts/post_page.html" %>
+<%= caption "client/templates/posts/post_page.html" %>
 <%= highlight "3~7" %>
 
 ~~~js
@@ -138,7 +138,7 @@ Template.postPage.helpers({
   }
 });
 ~~~
-<%= caption "client/views/posts/post_page.js" %>
+<%= caption "client/templates/posts/post_page.js" %>
 <%= highlight "2~4" %>
 
 We put the `{{#each comments}}` block inside the post template, so `this` is a post within the `comments` helper. To find the relevant comments, we check those that are linked to that post via the `postId` attribute.
@@ -156,7 +156,7 @@ Given what we've learned about helpers and Spacebars, rendering a comment is fai
   </li>
 </template>
 ~~~
-<%= caption "client/views/comments/comment_item.html" %>
+<%= caption "client/templates/comments/comment_item.html" %>
 
 Let's set up a quick template helper to format our `submitted` date to a more user-friendly format:
 
@@ -167,7 +167,7 @@ Template.commentItem.helpers({
   }
 });
 ~~~
-<%= caption "client/views/comments/comment_item.js" %>
+<%= caption "client/templates/comments/comment_item.js" %>
 
 Then, we'll show the number of comments on each post:
 
@@ -186,7 +186,7 @@ Then, we'll show the number of comments on each post:
   </div>
 </template>
 ~~~
-<%= caption "client/views/posts/post_item.html" %>
+<%= caption "client/templates/posts/post_item.html" %>
 <%= highlight "6,7" %>
 
 And add the `commentsCount` helper to `post_item.js`:
@@ -206,7 +206,7 @@ Template.postItem.helpers({
   }
 });
 ~~~
-<%= caption "client/views/posts/post_item.js" %>
+<%= caption "client/templates/posts/post_item.js" %>
 <%= highlight "9,10,11" %>
 
 <%= commit "10-2", "Display comments on `postPage`." %>
@@ -238,7 +238,7 @@ We'll start by adding a submit box at the bottom of each post:
   {{/if}}
 </template>
 ~~~
-<%= caption "client/views/posts/post_page.html" %>
+<%= caption "client/templates/posts/post_page.html" %>
 <%= highlight "10~14" %>
 
 And then create the comment form template:
@@ -257,7 +257,7 @@ And then create the comment form template:
   </form>
 </template>
 ~~~
-<%= caption "client/views/comments/comment_submit.html" %>
+<%= caption "client/templates/comments/comment_submit.html" %>
 
 <%= screenshot "10-2", "The comment submit form" %>
 
@@ -303,7 +303,7 @@ Template.commentSubmit.events({
   }
 });
 ~~~
-<%= caption "client/views/comments/comment_submit.js" %>
+<%= caption "client/templates/comments/comment_submit.js" %>
 
 Just like we previously set up a `post` server-side Meteor Method, we'll set up a `comment` Meteor Method to create our comments, check that everything is legit, and finally insert the new comment into the comments collection.
 
@@ -479,7 +479,7 @@ if (Posts.find().count() === 0) {
 }
 ~~~
 <%= caption "server/fixtures.js" %>
-<%= highlight "20,21,44,45,53,54" %>
+<%= highlight "20,21,45,46,54,55" %>
 
 As usual when updating the fixtures file, you'll have to `meteor reset` your database to make sure it runs again. 
 
@@ -523,7 +523,7 @@ return Comments.insert(comment);
 <%= caption "collections/comments.js "%>
 <%= highlight "9,10" %>
 
-Finally, we can just simply remove the `commentsCount` helper from `client/views/posts/post_item.js`, as the field is now directly available on the post.
+Finally, we can just simply remove the `commentsCount` helper from `client/templates/posts/post_item.js`, as the field is now directly available on the post.
 
 <%= commit "10-5", "Denormalized the number of comments into the post." %>
 

@@ -29,7 +29,7 @@ Since we'll be updating notifications from the client, we need to make sure our 
 - That single field is the `read` property of our notifications.
 
 ~~~js
-Notifications = new Meteor.Collection('notifications');
+Notifications = new Mongo.Collection('notifications');
 
 Notifications.allow({
   update: function(userId, doc, fieldNames) {
@@ -161,7 +161,7 @@ Now we can go ahead and add a list of notifications to the header.
   </nav>
 </template>
 ~~~
-<%= caption "client/views/includes/header.html" %>
+<%= caption "client/templates/includes/header.html" %>
 <%= highlight "15~22" %>
 
 And create the `notifications` and `notificationItem` templates (they'll share a single `notifications.html` file):
@@ -194,7 +194,7 @@ And create the `notifications` and `notificationItem` templates (they'll share a
   </li>
 </template>
 ~~~
-<%= caption "client/views/notifications/notifications.html" %>
+<%= caption "client/templates/notifications/notifications.html" %>
 
 We can see that the plan is for each notification to contain a link to the post that was commented on, and the name of the user that commented on it. 
 
@@ -222,7 +222,7 @@ Template.notification.events({
   }
 });
 ~~~
-<%= caption "client/views/notifications/notifications.js" %>
+<%= caption "client/templates/notifications/notifications.js" %>
 
 <%= commit "11-2", "Display notifications in the header." %>
 

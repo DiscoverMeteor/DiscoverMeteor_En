@@ -49,6 +49,8 @@ We'll use `isServer` to ask Meteor if the Method is currently being invoked on t
 So we'll ask Meteor if the code is being executed on the server. If so, we'll delay things by five seconds and add the string `(server)` at the end of our post's title. If not, we'll add the string `(client)`:
 
 ~~~js
+Posts = new Mongo.Collection('posts');
+
 Meteor.methods({
   postInsert: function(postAttributes) {
     check(this.userId, String);
@@ -56,13 +58,13 @@ Meteor.methods({
       title: String,
       url: String
     });
-    
-    if (Meteor.isServer){
-      postAttributes.title = postAttributes.title + "(server)";
+
+    if (Meteor.isServer) {
+      postAttributes.title += "(server)";
       // wait for 5 seconds
       Meteor._sleepForMs(5000);
-    } else{
-      postAttributes.postAttributes = postAttributes.title + "(client)";
+    } else {
+      postAttributes.title += "(client)";
     }
 
     var postWithSameLink = Posts.findOne({url: postAttributes.url});
@@ -79,7 +81,7 @@ Meteor.methods({
       author: user.username, 
       submitted: new Date()
     });
-
+    
     var postId = Posts.insert(post);
     
     return {
@@ -119,7 +121,7 @@ Template.postSubmit.events({
   }
 });
 ~~~
-<%= caption "client/views/posts/post_submit.js" %>
+<%= caption "client/templates/posts/post_submit.js" %>
 
 We've placed our `Router.go()` routing call inside the method call's callback. Which means the form is waiting for that method to succeed before redirecting.
 
@@ -152,7 +154,7 @@ Template.postSubmit.events({
   }
 });
 ~~~
-<%= caption "client/views/posts/post_submit.js" %>
+<%= caption "client/templates/posts/post_submit.js" %>
 <%= highlight "20" %>
 
 <%= scommit "7-5-1", "Demonstrate the order that posts appear using a sleep." %>

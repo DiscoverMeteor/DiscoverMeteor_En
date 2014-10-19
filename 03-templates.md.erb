@@ -41,7 +41,7 @@ This will be our main app template. As you can see it's all HTML except for a si
 
 At its core, a social news site is composed of posts organized in lists, and that's exactly how we'll organize our templates. 
 
-Let's create a `/views` directory inside `/client`. This will be where we put all our templates, and to keep things tidy we'll also create `/posts` inside `/views` just for our post-related templates. 
+Let's create a `/templates` directory inside `/client`. This will be where we put all our templates, and to keep things tidy we'll also create `/posts` inside `/templates` just for our post-related templates. 
 
 <% note do %>
 
@@ -53,7 +53,7 @@ It also means you could very well put all your files in the same directory, or e
 
 <% end %>
 
-We're finally ready to create our second template. Inside `client/views/posts`, create `posts_list.html`:
+We're finally ready to create our second template. Inside `client/templates/posts`, create `posts_list.html`:
 
 ~~~html
 <template name="postsList">
@@ -64,7 +64,7 @@ We're finally ready to create our second template. Inside `client/views/posts`, 
   </div>
 </template>
 ~~~
-<%= caption "client/views/posts/posts_list.html" %>
+<%= caption "client/templates/posts/posts_list.html" %>
 
 And `post_item.html`: 
 
@@ -77,7 +77,7 @@ And `post_item.html`:
   </div>
 </template>
 ~~~
-<%= caption "client/views/posts/post_item.html" %>
+<%= caption "client/templates/posts/post_item.html" %>
 
 Note the `name="postsList"` attribute of the template element. This is the name that will be used by Meteor to keep track of what template goes where (note that the name of the actual *file* is not relevant). 
 
@@ -123,7 +123,7 @@ So we decided to stay away from that terminology, and simply refer to “the tem
 
 <% end %>
 
-To keep things simple, we'll adopt the convention of naming the file containing the helpers after the template, but with a **.js** extension. So let's create `posts_list.js` inside `/client/views/posts` right away and start building our first helper:
+To keep things simple, we'll adopt the convention of naming the file containing the helpers after the template, but with a **.js** extension. So let's create `posts_list.js` inside `/client/templates/posts` right away and start building our first helper:
 
 ~~~js
 var postsData = [
@@ -144,7 +144,7 @@ Template.postsList.helpers({
   posts: postsData
 });
 ~~~
-<%= caption "client/views/posts/posts_list.js" %>
+<%= caption "client/templates/posts/posts_list.js" %>
 
 If you've done it right, you should now be seeing something similar to this in your browser:
 
@@ -165,7 +165,7 @@ If you remember, we are using that `posts` helper in our `postsList` template:
   </div>
 </template>
 ~~~
-<%= caption "client/views/posts/posts_list.html" %>
+<%= caption "client/templates/posts/posts_list.html" %>
 
 Defining the `posts` helper means it is now available for our template to use, so our template will be able to iterate over our `postsData` array and pass each object contained within to the `postItem` template. 
 
@@ -184,7 +184,7 @@ Template.postItem.helpers({
   }
 });
 ~~~
-<%= caption "client/views/posts/post_item.js" %>
+<%= caption "client/templates/posts/post_item.js" %>
 
 This time our `domain` helper's value is not an array, but an anonymous function. This pattern is much more common (and more useful) compared to our previous simplified dummy data example. 
 
