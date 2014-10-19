@@ -43,6 +43,8 @@ Let's start by building a simple “hello world” route, which we'll make avail
 Since our `router.js` file lives in the `/lib` directory, it's already available on both the client and server. This means we can append our new server-side route to our existing route map, using the `where` option to specify that this will be a server-side route:
 
 ~~~js
+//...
+
 Router.map(function() {
   this.route('home', {
     path: '/',
@@ -70,21 +72,24 @@ Router.map(function() {
 //...
 ~~~
 <%= caption "lib/router.js" %>
-<%= highlight "14~20" %>
+<%= highlight "16~22" %>
 
-If you tried out this route right now, you'd get an error. That's because we've assigned the `clearErrors()` filter to trigger on all routes, and that method happens to be only available to the client. 
+If you tried out this route right now, you'd get an error. That's because we've assigned the `loading` filter to trigger on all routes, and that filter happens to be only available to the client. 
 
-So before anything else, let's make sure we deactivate this filter when on the server:
+So before anything else, let's make sure we deactivate all filters when on the server:
 
 ~~~js
-if (Meteor.isClient)
-  Router.onBeforeAction(function() { clearErrors() });
+if (Meteor.isClient){
+  Router.onBeforeAction('loading');
+  Router.onBeforeAction('dataNotFound', {only: 'postPage'});
+  Router.onBeforeAction(requireLogin, {only: 'postSubmit'});
+}
 ~~~
 
-We can test if this route is working properly using the `curl` command line client:
+We can test that this route is working properly even without JavaScript by using the `curl` command:
 
 ~~~bash
-$ curl "http://localhost:3000/feed.xml"
+curl "http://localhost:3000/feed.xml"
 hello world
 ~~~
 <%= caption "console" %>
@@ -97,7 +102,7 @@ Iron Router supports a variety of options for server-side routing responses, not
 
 ### Building The RSS Package From NPM
 
-As you've probably guessed by now, the first thing we'll use server-side routes for is building an RSS feed for our `/new` view. Building our feed entirely by hand would quickly get tedious, so we'll use an existing [Node.js package](https://npmjs.org/) to help generate it for us.
+As you've probably guessed by now, the first thing we'll use server-side routes for is building an RSS feed for our `/new` view. Building our feed entirely by hand would quickly get tedious, so we'll use an existing [Node.js package](https://www.npmjs.org/package/rss) to help generate it for us.
 
 Unlike Atmosphere packages (which are specific to Meteor), Node.js Packaged Modules are not optimized for Meteor apps. A lot of them still work just fine though! 
 
@@ -105,14 +110,16 @@ To make use of the NPM RSS package, we'll create our own RSS local package to ac
 
 ~~~js
 Package.describe({
-  summary: "RSS feed generator"
+  summary: "RSS feed generator",
+  version: '0.1.0',
+  name: "rss"
 });
-Npm.depends({rss: '0.0.4'});
 
-Package.on_use(function (api) {
-  api.add_files('rss.js', 'server');
-  if(api.export)
-    api.export('RSS');
+Npm.depends({rss: '1.0.0'});
+
+Package.onUse(function (api) {
+  api.addFiles('rss.js', 'server');
+  api.export('RSS');
 });
 ~~~
 <%= caption "packages/rss/package.js" %>
@@ -129,14 +136,14 @@ RSS = Npm.require('rss');
 As usual, don't forget to load your new package with:
 
 ~~~bash
-meteor add rss
+meteor add microscope-rss
 ~~~
 
 <% note do %>
 
 ### Local Packages
 
-Local packages are a great way to isolate any third-party or generic code within your app, without having to go through the trouble of actually uploading a package to Atmosphere. As a rule of thumb, it's a good idea to use local packages for any code that's not specific to your app. 
+Local packages are a great way to isolate any third-party or generic code within your app, without having to go through the trouble of actually publishing a package. As a rule of thumb, it's a good idea to use local packages for any code that's not specific to your app. 
 
 Not only does this keep things cleaner, but it'll make it easier to swap things out if, say, somebody comes out with a better RSS package for Meteor in the future. 
 
