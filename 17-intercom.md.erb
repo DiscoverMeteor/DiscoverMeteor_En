@@ -42,31 +42,29 @@ Especially when it comes to integrating any kind of third-party code snippets, y
 
 ### Creating a Package
 
-First, create a new `/packages` root directory, and inside it an `intercom` sub-directory. 
+First, create a new `intercom` package directory. As usual, we'll start with the customary `package.js` file:
 
-Then copy-paste your Intercom code snippet into a new `intercom_loader.js` file inside that:
+~~~js
+Package.describe({
+  summary: "Intercom package",
+  version: "0.1.0",
+  name: 'intercom'
+});
 
-We'll get rid of the configuration block, since we're going to set all those properties from within our app, and we'll also get rid of the `<script>` tags since we're already inside a JavaScript file. 
+Package.onUse(function (api) {
+  api.addFiles('intercom_loader.js', 'client');
+});
+~~~
+<%= caption "packages/intercom/package.js" %>
+
+We'll then create a new `intercom_loader.js` file and copy-paste the Intercom code snippet inside it.
+
+We'll get rid of the configuration block, since we're going to set all those properties from within our app, and we'll also get rid of the `<script>` tags since we're already inside a JavaScript file. Here's the result:
 
 ~~~js
 (function(){var w=window;var ic=w.Intercom;if(typeof ic==="function"){ic('reattach_activator');ic('update',intercomSettings);}else{var d=document;var i=function(){i.c(arguments)};i.q=[];i.c=function(args){i.q.push(args)};w.Intercom=i;function l(){var s=d.createElement('script');s.type='text/javascript';s.async=true;s.src='https://static.intercomcdn.com/intercom.v1.js';var x=d.getElementsByTagName('script')[0];x.parentNode.insertBefore(s,x);}if(w.attachEvent){w.attachEvent('onload',l);}else{w.addEventListener('load',l,false);}};})()
 ~~~
 <%= caption "packages/intercom/intercom_loader.js" %>
-
-Now, we need to tell Meteor when and how to load our brand new package. First, create a new `package.js` file in the same directory and add a couple lines of code:
-
-~~~js
-Package.describe({
-  summary: "Intercom package"
-});
-
-Package.on_use(function (api) {
-  api.add_files('intercom_loader.js', 'client');
-});
-~~~
-<%= caption "packages/intercom/package.js" %>
-
-The [Package API](https://coderwall.com/p/ork35q)'s `add_files()` follows a simple pattern where you choose in which environment to add one or more files. It also takes arrays as arguments, so you can also write something like `api.add_files(['file1.js', 'file2.js'], ['client', 'server')`.
 
 That's it for our (very simple) package. You can now let Meteor know we'd like to use it by adding it to your app with:
 
@@ -78,26 +76,26 @@ Now let's finish our integration by implementing the settings block. At this sta
 
 ~~~js
 window.intercomSettings = {
+  // TODO: The current logged in user's full name
+  name: "John Doe",
   // TODO: The current logged in user's email address.
   email: "john.doe@example.com",
   // TODO: The current logged in user's sign-up date as a Unix timestamp.
   created_at: 1234567890,
-  app_id: "9b593f5995da6d2bd8f418754c0411d55201258a"
+  app_id: "4na10aq1"
 };
 ~~~
 <%= caption "client/main.js" %>
 
 <%= screenshot "15-2", "Intercom confirmation message." %>
 
-If you did everything right, you should get a prompt in the console suggesting you get rid of the dummy data, and a message over on the Intercom site confirming that Intercom is now receiving your data. You will then be taken to a sign-up screen where you can finish the sign-up process. 
+If you did everything right, you should see a small "?" button pop up on your site, and a message over on the Intercom site confirming that Intercom is now receiving your data. You will then be taken to a sign-up screen where you can finish the sign-up process. 
 
 <%= commit "17-1", "Added Intercom code snippet." %>
 
 ### Sending Custom Data
 
-Another reason why we picked Intercom as our first integration example is that they have a great installation wizard that takes you through each step of the process. So let's get started by bringing up the Intercom dashboard and clicking on the red progress bar in the top right corner. 
-
-The next step is "send more data about your users", so that's what we'll do. First, we're still sending out our dummy user email and sign-up date so let's take care of that. That's where we hit our first snag: we're not actually collecting either one!
+The integration works, but we're still sending out dummy emails and sign-up dates instead of actual data. That's where we hit our first snag: we're not actually collecting either one!
 
 Collecting emails is simple enough. We'll change our Meteor app's sign-up method from `USERNAME_ONLY` to `USERNAME_AND_EMAIL`:
 
@@ -123,28 +121,38 @@ Meteor.publish('currentUser', function() {
 ~~~
 <%= caption "server/publications.js" %>
 
-Then, we'll subscribe to it all the time in our router::
+Then, we'll subscribe to it in the router::
 
 ~~~js
 Router.configure({
   layoutTemplate: 'layout',
   loadingTemplate: 'loading',
-  waitOn: function() { 
-    return [
-      Meteor.subscribe('currentUser'),
-      Meteor.subscribe('notifications')
-    ]
+  notFoundTemplate: 'notFound',
+  waitOn: function() {
+    Meteor.subscribe('currentUser'),  
+    return [Meteor.subscribe('notifications')]
   }
 });
+
+//...
 ~~~
 <%= highlight "6" %>
 <%= caption "lib/router.js" %>
 
+We're subscribing in the `Router.configure()` block, which means the `currentUser` subscription will be preloaded on all routes.
+
 Note that we only need to publish that extra field (and not the whole user object). Meteor is then smart enough to add that new property to the user object that is already being published by default.
 
-We can then go back to our Intercom snippet and update it accordingly. Intercom takes a 10-digit UNIX timestamp, while Meteor provides a 13-digit one, so we'll divide by 1000 and round up the result. And to test out Intercom's custom data capabilities, we'll also throw in a user's username as a custom user property.
+### A Better Snippet
 
-We'll also wrap the whole thing into an `if` statement to check that the is logged in before attempting to access their info, and an `autorun` block to make sure we check again if the user's logged-in-ness changes (and that `autorun` block will also come in handy later on). 
+We can then go back to our Intercom snippet and update it accordingly. 
+
+First, we'll wrap the whole thing into an `if` statement to check that the user is logged in before attempting to access their info, and an `autorun` block to make sure we check again if the user's logged-in-ness changes (and that `autorun` block will also come in handy later on). 
+
+
+Intercom takes a 10-digit UNIX timestamp, while Meteor provides a 13-digit one, so we'll divide by 1000 and round up the result.
+
+To test out Intercom's custom user attributes feature (which lets you add custom properties to Intercom user profiles), we'll also throw in a randomly generated `favorite_color` attribute using Underscore's [`sample()`](http://underscorejs.org/#sample) method.
 
 Finally, we'll use Intercom's `boot` method to manually trigger Intercom's initialization. Most third-party services offer such methods, as their regular code snippets generally don't play nice with single-page apps. But you sometimes have to dig a little deeper in [their documentation](http://docs.intercom.io/#IntercomJS) to find them.
 
@@ -152,10 +160,11 @@ Finally, we'll use Intercom's `boot` method to manually trigger Intercom's initi
 Tracker.autorun(function(){
   if (Meteor.user() && !Meteor.loggingIn()) {
     var intercomSettings = {
+      name: Meteor.user().username,
       email: Meteor.user().emails[0].address,
       created_at: Math.round(Meteor.user().createdAt/1000),
-      user_name: Meteor.user().username,
-      app_id: "9b593f5995da6d2bd8f418754c0411d55201258a"
+      favorite_color: _.sample(['blue','red','green','yellow']),
+      app_id: "4na10aq1"
     };
     Intercom('boot', intercomSettings);
   }
@@ -167,13 +176,15 @@ Tracker.autorun(function(){
 
 ### Enabling Secure Mode
 
-To prevent just anybody from using your app ID to make fake requests and impersonate other users, Intercom's secure mode uses a secret server-side only key to hash each email. 
+To prevent just anybody from using your app ID to make fake requests and impersonate other users, Intercom's [secure mode](http://docs.intercom.io/configuring-Intercom/enable-secure-mode) uses a secret server-side only key to hash each email. 
 
-Of course our Meteor code runs in the client and so running 'secret server-side' code is out of the question. So we'll need to ensure that we attach the hash to the user when they are first created.
+Of course, our Meteor Intercom code runs in the client and so running “secret server-side” code is out of the question. So we'll need to ensure that we attach the hash to the user when they are first created.
 
 First, delete all the existing users in the database with a `meteor reset`.
 
-First, we'll add a simple `IntercomHash` function to our package, that takes a user and uses a SHA hash to create the hash, as per intercom's specs:
+We'll add a new `IntercomHash` function to our package, which will take a user and use a SHA hash (in other words, a unique identifier) to create the hash based on their `_id`, as per intercom's specs. 
+
+When creating that hash, we're also passing a secret that's unique to our app. So even if someone were able to encode the correct user `_id`, they would still be missing that secret and the final hash wouldn't match with the one sitting on Intercom's servers. 
 
 ~~~js
 var crypto = Npm.require('crypto');
@@ -188,26 +199,30 @@ IntercomHash = function(user, secret) {
 
 Note the use of `Npm.require`, Meteor's method of using NPM packages (we don't need to add a `Npm.depends` in our `package.js` here because `crypto` is a built in Node.js package - it doesn't actually come from NPM at all!).
 
-Now we just need to add that function to our intercom package, and export it so we can use it in the server `IntercomHash`.
+Now we just need to add that file to our intercom package, and export `IntercomHash` so that we can use it on the server.
 
 ~~~js
 Package.describe({
-  summary: "Intercom package"
+  summary: "Intercom package",
+  version: "0.1.0",
+  name: 'intercom'
 });
 
-Package.on_use(function (api) {
-  api.add_files('intercom_loader.js', 'client');
+Package.onUse(function (api) {
+  api.addFiles('intercom_loader.js', 'client');
+  
   api.add_files('intercom_server.js', 'server');
   
   api.export('IntercomHash', 'server');
 });
+});
 ~~~
-<%= highlight "7,9" %>
+<%= highlight "9,11" %>
 <%= caption "packages/intercom/package.js" %>
 
 Armed with our super-secret cryptographic hashing algorithm, we can now write our user creation hook. What we are aiming to do is ensure that users have a secret `intercomHash` field that we can send to Intercom. 
 
-First, create a new `accounts.js` file inside the `server` directory. Don't forget to replace `123456789` with the secure string provided by Intercom!
+First, create a new `accounts.js` file inside the `server` directory. Don't forget to replace `123456789` with the secure string provided by Intercom, which you can get by opening your Intercom dashboard, going to “Settings for AppName”, then “Secure Mode”. 
 
 ~~~js
 Accounts.onCreateUser(function(options, user) {
@@ -221,9 +236,16 @@ Accounts.onCreateUser(function(options, user) {
 ~~~
 <%= caption "server/accounts.js" %>
 
-The `onCreateUser` function is a built-in Meteor function that allows you to run custom code to create users.
+The `onCreateUser` function is a built-in Meteor function that allows you to run custom code to create users. To make sure the hash is being properly added, try creating a new account, and then exploring your database directly through the MongoDB console:
 
-Now, we make sure we are publishing that hash (only to the logged in user!) as well:
+~~~js
+db.users.find()
+~~~
+<%= caption "The MongoDB shell" %>
+
+That long string of gibberish you see is our `intercomHash` property!
+
+Now, let's go back to the `currentUser` publication and make sure we are publishing that hash (only to the logged in user!) as well:
 
 ~~~js
 //...
@@ -235,18 +257,19 @@ Meteor.publish('currentUser', function() {
 <%= caption "server/publications.js" %>
 <%= highlight "3~5" %>
 
-Finally, we send it up to intercom:
+Finally, we send it up to Intercom along with each user's `_id` (since that's what the hash is based on):
 
 ~~~js
 Tracker.autorun(function(){
   if (Meteor.user() && !Meteor.loggingIn()) {
     var intercomSettings = {
+      name: Meteor.user().username,
       email: Meteor.user().emails[0].address,
       created_at: Math.round(Meteor.user().createdAt/1000),
-      user_name: Meteor.user().username,
+      favorite_color: _.sample(['blue','red','green','yellow']),
       user_id: Meteor.user()._id,
       user_hash: Meteor.user().intercomHash,
-      app_id: "k20iexvc"
+      app_id: "4na10aq1"
     };
     Intercom('boot', intercomSettings);
   }
@@ -258,6 +281,7 @@ Tracker.autorun(function(){
 <%= commit "17-3", "Enabling secure mode." %>
 
 <% note do %>
+
 ### Where did my users go?!?
 
 You might be concerned that we deleted all the existing users as the first step of the process. If this was an app that was out there in production, we of course couldn't do that!
@@ -276,25 +300,31 @@ First, let's add a "Support" link to our global navigation:
 
 ~~~html
 <template name="header">
-  <header class="navbar">
-    <div class="navbar-inner">
-      <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </a>
-      <a class="brand" href="{{postsListPath}}">Microscope</a>
-      <div class="nav-collapse collapse">
-        <ul class="nav">
+  <nav class="navbar navbar-default" role="navigation">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navigation">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="{{pathFor 'home'}}">Microscope</a>
+      </div>
+      <div class="collapse navbar-collapse" id="navigation">
+        <ul class="nav navbar-nav">
           <li class="{{activeRouteClass 'home' 'newPosts'}}">
-            <a href="{{homePath}}">New</a>
+            <a href="{{pathFor 'newPosts'}}">New</a>
           </li>
           <li class="{{activeRouteClass  'bestPosts'}}">
-            <a href="{{bestPostsPath}}">Best</a>
+            <a href="{{pathFor 'bestPosts'}}">Best</a>
+          </li>
+          <li class="{{activeRouteClass  'clickedPosts'}}">
+            <a href="{{pathFor 'clickedPosts'}}">Most Clicked</a>
           </li>
           {{#if currentUser}}
-            <li>
-              <a href="{{postSubmitPath}}">Submit Post</a>
+            <li class="{{activeRouteClass 'postSubmit'}}">
+              <a href="{{pathFor 'postSubmit'}}">Submit Post</a>
             </li>
             <li class="dropdown">
               {{> notifications}}
@@ -304,66 +334,51 @@ First, let's add a "Support" link to our global navigation:
             </li>
           {{/if}}
         </ul>
-        <ul class="nav pull-right">
-          <li>{{> loginButtons}}</li>
+        <ul class="nav navbar-nav navbar-right">
+          {{> loginButtons}}
         </ul>
       </div>
     </div>
-  </header>
+  </nav>
 </template>
 ~~~
 <%= caption "client/views/includes/header.html" %>
-<%= highlight "25~27" %>
+<%= highlight "31~33" %>
 
 Then all we need to do is tell the Intercom settings code about our new `#Intercom` element:
 
 ~~~js
-var intercomSettings = {
-  email: Meteor.user().emails[0].address,
-  created_at: Math.round(Meteor.user().createdAt/1000),
-  user_name: Meteor.user().username,
-  user_id: Meteor.user()._id,
-  user_hash: Meteor.user().intercomHash,
-  widget: {
-    activator: '#Intercom',
-    use_counter: true
-  },
-  app_id: "k20iexvc"
-};
+Tracker.autorun(function(){
+  if (Meteor.user() && !Meteor.loggingIn()) {
+    var intercomSettings = {
+      name: Meteor.user().username,
+      email: Meteor.user().emails[0].address,
+      created_at: Math.round(Meteor.user().createdAt/1000),
+      favorite_color: _.sample(['blue','red','green','yellow']),
+      user_id: Meteor.user()._id,
+      user_hash: Meteor.user().intercomHash,
+      widget: {
+        activator: '#Intercom',
+        use_counter: true
+      },
+      app_id: "4na10aq1"
+    };
+    Intercom('boot', intercomSettings);
+  }
+});
 ~~~
 <%= caption "client/main.js" %>
-<%= highlight "7~10" %>
+<%= highlight "10~13" %>
 
 <%= screenshot "15-1", "The Intercom inbox." %>
 
-If we stopped here, you'd soon notice a weird behavior. Sometimes clicking the "Support" link would bring up the Intercom inbox like it's supposed to, but at other seemingly random times it would default back to trigger the `mailto:` link! What's going on?
-
-When Intercom first boots up, it looks for an `#Intercom` element and tells its `click` event to open that inbox. The only problem is, as soon as the containing template gets redrawn (which tends to happen a lot with Meteor apps), that element will be regenerated fresh without any memory of Intercom's click handler. This is another common gotcha when dealing with third-party code. Since Meteor code is usually reactive, it's easy to forget that other JavaScript code rarely is. 
-
-To prevent this all we need to do is wrap our `Support` link in a `{{#constant}}` block helper, which will tell Meteor not to redraw that specific template bit:
-
-~~~html
-{{#if currentUser}}
-  <li class="{{activeRouteClass 'postSubmit'}}">
-    <a href="{{postSubmitPath}}">Submit Post</a>
-  </li>
-  <li class="dropdown">
-    {{> notifications}}
-  </li>
-  <li>
-    {{#constant}}
-      <a id="Intercom" href="mailto:k20iexvc@incoming.intercom.io">Support</a>
-    {{/constant}}
-  </li>
-{{/if}}
-~~~
-<%= caption "client/views/includes/header.html" %>
+Note that you won't be able to send and receive message until you actually finish the Intercom sign-up and select a plan. 
 
 <%= commit "17-4", "Displaying the inbox link." %>
 
 ### Wrapping Up
 
-You can now complete your sign-up process by adding a photo, entering your credit card information (there's a 14-day free trial), and sending your users a few messages.
+You can now complete your Intercom sign-up process by adding a photo, entering your credit card information (there's a 14-day free trial), and sending your users a few messages.
 
 It probably would also make sense to use the <a href="https://github.com/percolatestudio/meteor-intercom">community Intercom package</a>, which deals with a few more edge cases, like users logging out, and reactive intercom data.
 

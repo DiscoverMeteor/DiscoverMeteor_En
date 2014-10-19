@@ -44,13 +44,14 @@ While we're at it, we'll also create a `bitly` directory inside `packages`, and 
 
 ~~~js
 Package.describe({
-  summary: "Bitly package"
+  summary: "Bitly package",
+  version: "0.1.0",
+  name: "bitly"
 });
 
-Package.on_use(function (api) {
-  api.add_files('bitly.js', 'server');
-  if(api.export)
-    api.export('Bitly');
+Package.onUse(function (api) {
+  api.addFiles('bitly.js', 'server');
+  api.export('Bitly');
 });
 ~~~
 <%= caption "packages/bitly/package.js" %>
@@ -90,7 +91,7 @@ All that's left is to tell Meteor to load that settings file. We can do this by 
 Then restart it with:
 
 ~~~bash
-$ meteor --settings settings.json
+meteor --settings settings.json
 ~~~
 
 <% note do %>
@@ -117,7 +118,7 @@ After saving and reloading your terminal window, you should now be able to run a
 
 <% end %>
 
-We're now ready to code our link shortening function. This function will simply use the [Meteor.http.get()](http://docs.meteor.com/#http) method to make an outbound GET call to the [Bitly API](http://dev.bitly.com/api.html), and – if the query is successful – return a shortened URL:
+We're now ready to code our link shortening function. This function will use the [Meteor.http.get()](http://docs.meteor.com/#http) method to make an outbound GET call to the [Bitly API](http://dev.bitly.com/api.html), and – if the query is successful – return a shortened URL:
 
 ~~~js
 Bitly = {};
@@ -151,17 +152,18 @@ We can then call our function from the `post` Meteor method that gets called eve
 ~~~js
 //...
 
-// pick out the whitelisted keys
-var post = _.extend(_.pick(postAttributes, 'url', 'title', 'message'), {
-  userId: user._id,
-  author: user.username,
-  submitted: new Date().getTime(),
+var user = Meteor.user();
+var post = _.extend(postAttributes, {
+  userId: user._id, 
+  author: user.username, 
+  submitted: new Date(),
   commentsCount: 0,
-  upvoters: [], votes: 0
-});
+  upvoters: [], 
+  votes: 0
+});    
 
 // shorten link URL
-if(!this.isSimulation){
+if(Meteor.isServer){
   var shortUrl = Bitly.shortenURL(post.url);
   if(post.url && shortUrl)
     post.shortUrl = shortUrl;
@@ -169,12 +171,14 @@ if(!this.isSimulation){
 
 var postId = Posts.insert(post);
 
-return postId;
+return {
+  _id: postId
+};
 
 //...
 ~~~
 <%= caption "collections/posts.js" %>
-<%= highlight "12~17" %>
+<%= highlight "13~18" %>
 
 Remember that because of latency compensation, a Meteor method can be executed in two different environments: once on the server, and once (as a "stub") on the client. In this case, we only want to do the shortening server-side, so we make sure to test for the `isSimulation` boolean first.
 
@@ -197,7 +201,7 @@ With our shortened URLs working, we can now display shortened links instead of t
 ~~~html
 <template name="postItem">
   <div class="post">
-    <a href="#" class="upvote btn {{upvotedClass}}">⬆</a>
+    <a href="#" class="upvote btn btn-default {{upvotedClass}}">⬆</a>
     <div class="post-content">
       <h3><a href="{{postUrl}}">{{title}}</a><span>{{domain}}</span></h3>
       <p>
@@ -207,7 +211,7 @@ With our shortened URLs working, we can now display shortened links instead of t
         {{#if ownPost}}<a href="{{pathFor 'postEdit'}}">Edit</a>{{/if}}
       </p>
     </div>
-    <a href="{{pathFor 'postPage'}}" class="discuss btn">Discuss</a>
+    <a href="{{pathFor 'postPage'}}" class="discuss btn btn-default">Discuss</a>
   </div>
 </template>
 ~~~
@@ -289,7 +293,7 @@ Meteor.methods({
   'getBitlyClicks': function(link){
     return Bitly.getClicks(link);
   }
-})
+});
 ~~~
 <%= caption "packages/bitly/bitly.js" %>
 
@@ -316,7 +320,7 @@ In [the Advanced Reactivity sidebar](/chapter/advanced-reactivity/), we saw how 
 
 In this chapter, we'll bypass that pattern by simply writing the return value of our API calls to the database, and letting Meteor's regular reactivity do its job.
 
-That being said, the Advanced Reactivity technique is still useful for cases when you can't –or don't want to– write to the database (for example, for temporary or user-specific data).
+That being said, the Advanced Reactivity technique is still useful for cases when you can't – or don't want to – write to the database (for example, for temporary or user-specific data).
 
 <% end %>
 
@@ -366,7 +370,7 @@ And to make sure everything is working properly, we'll also display a click coun
 ~~~html
 <template name="postItem">
   <div class="post">
-    <a href="#" class="upvote btn {{upvotedClass}}">⬆</a>
+    <a href="#" class="upvote btn btn-default {{upvotedClass}}">⬆</a>
     <div class="post-content">
       <h3><a href="{{postUrl}}">{{title}}</a><span>{{domain}}</span></h3>
       <p>
@@ -377,7 +381,7 @@ And to make sure everything is working properly, we'll also display a click coun
         {{#if ownPost}}<a href="{{pathFor 'postEdit'}}">Edit</a>{{/if}}
       </p>
     </div>
-    <a href="{{pathFor 'postPage'}}" class="discuss btn">Discuss</a>
+    <a href="{{pathFor 'postPage'}}" class="discuss btn btn-default">Discuss</a>
   </div>
 </template>
 ~~~
@@ -398,14 +402,14 @@ First, we'll create a `ClickedPostsListController` controller that sorts posts b
 BestPostsListController = PostsListController.extend({
   sort: {votes: -1, submitted: -1, _id: -1},
   nextPath: function() {
-    return Router.routes.bestPosts.path({postsLimit: this.limit() + this.increment})
+    return Router.routes.bestPosts.path({postsLimit: this.postsLimit() + this.increment})
   }
 });
 
 ClickedPostsListController = PostsListController.extend({
   sort: {clicks: -1, submitted: -1, _id: -1},
   nextPath: function() {
-    return Router.routes.clickedPosts.path({postsLimit: this.limit() + this.increment})
+    return Router.routes.clickedPosts.path({postsLimit: this.postsLimit() + this.increment})
   }
 });
 

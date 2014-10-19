@@ -126,6 +126,8 @@ Package.onUse(function (api) {
 
 The key function here is `Npm.depends()`. This is what tells Meteor that we want to include the [RSS NPM package](https://npmjs.org/package/rss).
 
+We're telling Meteor that our package will make use of a single file named `rss.js`, and that this file's code should only be executed on the server.
+
 Once we've included the package, we can then load it using `Npm.require()` to make it globally available at the `RSS` namespace. Create a new `rss.js` file in the `/package/rss` directory, and type:
 
 ~~~js

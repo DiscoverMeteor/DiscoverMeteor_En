@@ -19,13 +19,13 @@ In this particular case, the problem was that some users were missing the `inter
 
 One alternative would be writing some special code that deals with users without this property, but having to keep that method forever in our codebase feels like a large piece of technical debt just to deal with a few “incorrect” users.
 
-The better solution to this problem is to **migrate** the data -- to transform the database in such a way that it becomes entirely “correct”. In this chapter, we'll see how to use the Migrations chapter to get us there. 
+The better solution to this problem is to **migrate** the data -- to transform the database in such a way that it becomes entirely “correct”. In this chapter, we'll see how to use the `migrations` package to get us there. 
 
 ### The Migrations Package
 
 We won't be focusing closely on how the package works behind the scenes, but there are a few nice things that it does for us that are worth noticing.
 
-1. **Tracking data version**: The package uses the `migrations` collection to keep track of what version the database is up to date to. This makes it easy to copy databases around and run them against later code without needing to explicitly know what migrations have been run on them.
+1. **Tracking data version**: The package uses the `Migrations` collection to keep track of what version the database is up to date to. This makes it easy to copy databases around and run them against later code without needing to explicitly know what migrations have been run on them.
 2. **Reversible migrations**: By defining both a migration and its opposite operation, it becomes possible to reverse data migrations. This is useful if, for instance, we want to use our database against an old version of the code, or if we want to run a migration again.
 3. **Migration locking**: The package also tracks a migration in progress in the collection so it's not possible for two servers to be migrating the data at the same time (a potentially calamitous situation).
 
@@ -50,7 +50,7 @@ users.forEach(function(user) {
 });
 ~~~
 
-We're selecting every user without a hash, then updating it with the hash (which we calculate using the `intercomHash()` function we defined previously.
+We're selecting every user without a hash, then updating it with the hash (which we calculate using the `intercomHash()` function we defined previously. Again, make sure to replace `12345` with your actual secret key. 
 
 What if we changed our mind later, and wanted to undo the migration? We'd need to *remove* the hash we just inserted:
 
@@ -83,7 +83,7 @@ Migrations.add({
 
 ### Running the Migration Locally
 
-We can run the migration locally very simply, we can simply run the `migrate.sh` script included in the package:
+We can run the migration locally by running the `migrate.sh` script included in the package:
 
 ~~~bash
 packages/percolatestudio-migrations/migrate.sh latest
@@ -95,7 +95,7 @@ Migrating a production system is significantly more involved, as there are some 
 
 We need to decide if we want to automatically migrate up the latest data version when the server starts, of if we want to be a little more careful about it. 
 
-If we did want it, we could add the following code to a server file somewhere:
+If we did want to run on server start, all it would take would be addding the following code to any server file:
 
 ~~~js
 Migrations.migrateTo('latest');
@@ -103,7 +103,7 @@ Migrations.migrateTo('latest');
 
 Thanks to the migration locking code, we won't have problems with the migration running more than once, but it's often desirable to a little more control over when the migration runs than that.
 
-In that case, it's better to have a non-user-facing "master" server with the ability to connect to the database and run the application's code, much like our local migration above. Alternatively, you could manually log into a single webserver and run the migration on the commandline (like we did in development).
+If that's the case, it's often better to have a non-user-facing "master" server with the ability to connect to the database and run the application's code, much like our local migration above. 
 
 ### "In-Between" States
 
