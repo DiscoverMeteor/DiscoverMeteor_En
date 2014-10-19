@@ -160,7 +160,7 @@ Meteor.publish('notifications', function() {
 
 Our publications code is in effect telling the server it can trust any JavaScript object sent by the client (in our case, `{limit: postsLimit}`) to serve as the `find()` statement's `options`. This makes it possible for users to submit any options they'd like via the browser console.
 
-In our case, this is relatively harmless, since all a user could do is reorder posts differently, or change the limit (which is what we want to enable in the first place). Probably a secure app wouldn't allow *any* limit, but try to limit the limit :)
+In our case, this is relatively harmless, since all a user could do is reorder posts differently, or change the limit (which is what we want to enable in the first place). Although a real-world app would probably need to limit the limit!
 
 Thankfully, by using `check()` we know users can't sneak extra options in (such as `fields`, which in some cases might expose private data on documents).
 
