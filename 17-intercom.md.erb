@@ -46,13 +46,13 @@ First, create a new `intercom` package directory. As usual, we'll start with the
 
 ~~~js
 Package.describe({
+  name: 'intercom',
   summary: "Intercom package",
-  version: "0.1.0",
-  name: 'intercom'
+  version: '1.0.0'
 });
-
-Package.onUse(function (api) {
-  api.addFiles('intercom_loader.js', 'client');
+Package.on_use(function (api) {
+  api.versionsFrom('0.9.4');
+  api.add_files('intercom_loader.js', 'client');
 });
 ~~~
 <%= caption "packages/intercom/package.js" %>

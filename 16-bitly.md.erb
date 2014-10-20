@@ -44,12 +44,13 @@ While we're at it, we'll also create a `bitly` directory inside `packages`, and 
 
 ~~~js
 Package.describe({
+  name: 'bitly',
   summary: "Bitly package",
-  version: "0.1.0",
-  name: "bitly"
+  version: '1.0.0'
 });
 
 Package.onUse(function (api) {
+  api.versionsFrom('0.9.4');
   api.addFiles('bitly.js', 'server');
   api.export('Bitly');
 });
