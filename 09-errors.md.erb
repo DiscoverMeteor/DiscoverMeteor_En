@@ -552,17 +552,3 @@ This works because `modifier.$set` contains the same two `title` and `url` prope
 You might notice this is our second `deny` callback. When adding multiple `deny` callbacks, the operation will fail if any one of them returns `true`. In this case, this means the `update` will only succeed if it's only targeting the `title` and `url` fields, as well as if neither one of these fields are empty. 
 
 <%= commit "9-5", "Validate post contents when editing." %>
-
-<% note do %>
-
-### What About `Meteor.Error`?
-
-You might be wondering why we didn't make sure of Meteor's own error triggering feature in this chapter.
-
-There are two ways of communicating data from a method being executed on the server back to the client. One way is through the return value, and the other is through `Meteor.Error`.
-
-The problem with `Meteor.Error` is that although it's easy to use on the client (in fact this is exactly what we're doing when we do `alert(error.reason)`), it also triggers a very ugly error trace in the browser console.
-
-So in order avoid that scary error trace (which can make it seem like something went wrong with our code itself), we're instead reporting our warning (in this case, the presence of a duplicate post signaled by `postExists`) through the return value.
-
-<% end %>
