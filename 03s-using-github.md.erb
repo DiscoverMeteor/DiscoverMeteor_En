@@ -63,7 +63,7 @@ We've just seen how to browse a commit's entire code online on GitHub. But what 
 To do this, we'll take our first steps (well, in this book at least) with the `git` command line utility. For starters, [make sure you have Git installed](http://git-scm.com/downloads). Then **clone** (in other words, download a copy locally) the Microscope repository with:
 
 ~~~bash
-$ git clone git@github.com:DiscoverMeteor/Microscope.git github_microscope
+git clone git@github.com:DiscoverMeteor/Microscope.git github_microscope
 ~~~
 
 That `github_microscope` at the end is simply the name of the local directory you'll be cloning the app into. Assuming you already have a pre-existing `microscope` directory, just pick any different name (it doesn't need to have the same name as the GitHub repo).
@@ -71,7 +71,7 @@ That `github_microscope` at the end is simply the name of the local directory yo
 Let's `cd` into the repository so that we can start using the `git` command line utility:
 
 ~~~bash
-$ cd github_microscope
+cd github_microscope
 ~~~
 
 Now when we cloned the repository from GitHub, we downloaded *all* the code of the app, which means we're looking at the code for the last ever commit. 
@@ -79,7 +79,7 @@ Now when we cloned the repository from GitHub, we downloaded *all* the code of t
 Thankfully, there is a way to go back in time and “check out” a specific commit without affecting the other ones. Let's try it out:
 
 ~~~bash
-$ git checkout chapter3-1
+git checkout chapter3-1
 Note: checking out 'chapter3-1'.
 
 You are in 'detached HEAD' state. You can look around, make experimental
@@ -107,7 +107,7 @@ Once again, GitHub makes our life easier. You can find a commit's hash in the bo
 So let's try it with the hash instead of a tag:
 
 ~~~bash
-$ git checkout c7af59e425cd4e17c20cf99e51c8cd78f82c9932
+git checkout c7af59e425cd4e17c20cf99e51c8cd78f82c9932
 Previous HEAD position was a004b56... Added basic posts list template and static data.
 HEAD is now at c7af59e... Augmented the postsList route to take a limit
 ~~~
@@ -115,7 +115,7 @@ HEAD is now at c7af59e... Augmented the postsList route to take a limit
 And finally, what if we want to stop looking into our magic crystal ball and come back to the present? We tell Git that we want to check out the **master** branch:
 
 ~~~bash
-$ git checkout master
+git checkout master
 ~~~
 
 Note that you can also run the app with the `meteor` command at any point in the process, even when in “detached HEAD” state. You might need to run a quick `meteor update` first if Meteor complains about missing packages, since package code is not included in Microscope's Git repo. 

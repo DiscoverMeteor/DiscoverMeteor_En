@@ -86,7 +86,7 @@ These computations can then go ahead and deal with the change on a case-by-case 
 If that seemed like a lot of boilerplate for a simple reactive data source, you're right, and Meteor provides some built in tools to make it a bit easier (just like you don't have to use computations directly, you usually just use autoruns). There's a platform package called `reactive-var` that does exactly what our `currentLikeCount()` function is doing. If we add it:
 
 ~~~bash
-$ meteor add reactive-var
+meteor add reactive-var
 ~~~
 
 The we can use it to simplify our code a bit:

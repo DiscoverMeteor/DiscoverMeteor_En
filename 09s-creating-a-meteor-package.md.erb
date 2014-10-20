@@ -94,9 +94,9 @@ Template.meteorError.rendered = function() {
 We will now test things locally with Microscope to ensure our changed code works. To link the package into our project, we run `meteor add tmeasday:errors`. Then, we need to delete the existing files that have been made redundant by the new package:
 
 ~~~bash
-$ rm client/helpers/errors.js
-$ rm client/templates/includes/errors.html
-$ rm client/templates/includes/errors.js
+rm client/helpers/errors.js
+rm client/templates/includes/errors.html
+rm client/templates/includes/errors.js
 ~~~
 <%= caption "removing old files on the bash console" %>
 
@@ -186,7 +186,7 @@ Package.onTest(function(api) {
 Then we can run the tests with:
 
 ~~~bash
-$ meteor test-packages tmeasday:errors
+meteor test-packages tmeasday:errors
 ~~~
 <%= caption "Terminal" %>
 
@@ -207,8 +207,8 @@ meteor publish --create
 Now that the package is released, we can now delete it from the project and then add it back in directly:
 
 ~~~bash
-$ rm -r packages/errors
-$ meteor add tmeasday:errors
+rm -r packages/errors
+meteor add tmeasday:errors
 ~~~
 <%= caption "Terminal (run from the top level of the app)" %>
 

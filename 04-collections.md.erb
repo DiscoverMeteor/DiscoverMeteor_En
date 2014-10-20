@@ -97,7 +97,7 @@ Going back to the server, the collection acts as an API into your Mongo database
 To look inside the Mongo database, open up a second terminal window (while `meteor` is still running in your first), and go to your app's directory. Then, run the command `meteor mongo` to initiate a Mongo shell, into which you can type standard Mongo commands (and as usual, you can quit it with the `ctrl+c` keyboard shortcut). For example, let's insert a new post:
 
 ~~~bash
-$ meteor mongo
+meteor mongo
 
 > db.posts.insert({title: "A new post"});
 
@@ -204,7 +204,7 @@ First, let's make sure there's nothing in the database. We'll use `meteor reset`
 Stop the Meteor server (by pressing `ctrl-c`) and then, on the command line, run:
 
 ~~~bash
-$ meteor reset
+meteor reset
 ~~~
 
 The reset command completely clears out the Mongo database. It's a useful command in development, where there's a strong possibility of our database falling into an inconsistent state. 
@@ -212,7 +212,7 @@ The reset command completely clears out the Mongo database. It's a useful comman
 Let's start our Meteor app again:
 
 ~~~bash
-$ meteor
+meteor
 ~~~
 
 Now that the database is empty, we can add the following code that will load up three posts whenever the server starts, as long as the `Posts` collection is empty:
@@ -320,7 +320,7 @@ So far, we've had the `autopublish` package enabled, which is not intended for p
 Open a new terminal window, and type:
 
 ~~~bash
-$ meteor remove autopublish
+meteor remove autopublish
 ~~~
 
 This has an instant effect. If you look in your browser now, you'll see that all our posts have disappeared! This is because we were relying on `autopublish` to make sure our client-side collection of posts was a mirror of all the posts in the database.  

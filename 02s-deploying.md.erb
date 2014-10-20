@@ -34,7 +34,7 @@ Deploying on a Meteor subdomain (i.e. `http://myapp.meteor.com`) is the easiest 
 Deploying on Meteor is pretty simple. Just open up your terminal, go to to your Meteor app's directory, and type:
 
 ~~~bash
-$ meteor deploy myapp.meteor.com
+meteor deploy myapp.meteor.com
 ~~~
 
 Of course, you'll have to take care to replace "myapp" with a name of your choice, preferably one that isn't already in use. 
@@ -58,19 +58,19 @@ Modulus open-sourced a tool called [demeteorizer](https://github.com/onmodulus/d
 Start by [creating an account](https://modulus.io/register). To deploy our app on Modulus, we'll then need to install the Modulus command line tool:
 
 ~~~bash
-$ npm install -g modulus
+npm install -g modulus
 ~~~
 
 And then authenticate with: 
 
 ~~~bash
-$ modulus login
+modulus login
 ~~~
 
 We'll now create a Modulus project (note that you can also do this via Modulus' web dashboard):
 
 ~~~bash
-$ modulus project create
+modulus project create
 ~~~
 
 The next step will be creating a MongoDB database for our app. We can create a MongoDB database with [Modulus itself](https://modulus.io/codex/database/getting_started), [MongoHQ](https://www.mongohq.com/) or with any other cloud MongoDB provider.
@@ -78,13 +78,13 @@ The next step will be creating a MongoDB database for our app. We can create a M
 Once we've created our MongoDB database, we can get the `MONGO_URL` for our database from Modulus' web UI (go to Dashboard > Databases > Select your database > Administration), then use it to configure our app like so:
 
 ~~~bash
-$ modulus env set MONGO_URL "mongodb://<user>:<pass>@mongo.onmodulus.net:27017/<database_name>"
+modulus env set MONGO_URL "mongodb://<user>:<pass>@mongo.onmodulus.net:27017/<database_name>"
 ~~~
 
 It's now time to deploy our app. It's as simple as typing: 
 
 ~~~bash
-$ modulus deploy
+modulus deploy
 ~~~
 
 We've now successfully deployed our app to Modulus. Refer to [the Modulus documentation](https://modulus.io/codex/projects) for more information about accessing logs, custom domain setup, and SSL.
@@ -104,7 +104,7 @@ Whichever service you choose, you should end up with three things: your server's
 To start out, we'll need to install Meteor Up via `npm` as follows:
 
 ~~~bash
-$ npm install -g mup
+npm install -g mup
 ~~~
 
 We'll then create a special, separate directory that will hold our Meteor Up settings for a particular deployment. We're using a separate directory for two reasons: first, it's usually best to avoid including any private credentials in your Git repo, especially if you're working on a public codebase. 
@@ -114,9 +114,9 @@ Second, by using multiple separate directories, we'll be able to manage multiple
 So let's create this new directory and use it to initialize a new Meteor Up project:
 
 ~~~bash
-$ mkdir ~/microscope-deploy
-$ cd ~/microscope-deploy
-$ mup init
+mkdir ~/microscope-deploy
+cd ~/microscope-deploy
+mup init
 ~~~
 
 <% note do %>
@@ -187,13 +187,13 @@ You can specify all of your app's environment variables (such as `ROOT_URL`, `MA
 Before we can deploy, we'll need to set up the server so it's ready to host Meteor apps. The magic of Meteor Up encapsulates this complex process in a single command!
 
 ~~~bash
-$ mup setup
+mup setup
 ~~~
 
 This will take a few minutes depending on the server's performance and the network connectivity. After the setup is successful, we can finally deploy our app with:
 
 ~~~bash
-$ mup deploy
+mup deploy
 ~~~
 
 This will bundle the meteor app, and deploy to the server we just set up. 
@@ -203,7 +203,7 @@ This will bundle the meteor app, and deploy to the server we just set up.
 Logs are pretty important and Meteor Up provides a very easy way to handle them by emulating the `tail -f` command. Just type:
 
 ~~~bash
-$ mup logs -f
+mup logs -f
 ~~~
 
 This wraps up our overview of what Meteor Up can do. For more infomation, we suggest visiting [Meteor Up's GitHub repository](https://github.com/arunoda/meteor-up).

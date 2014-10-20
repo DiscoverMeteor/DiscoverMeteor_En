@@ -15,7 +15,7 @@ First impressions are important, and Meteor's install process should be relative
 To begin with, we can install Meteor by opening a terminal window and typing:
 
 ~~~bash
-$ curl https://install.meteor.com | sh
+curl https://install.meteor.com | sh
 ~~~
 
 This will install the `meteor` executable onto your system and have you ready to use Meteor.
@@ -37,7 +37,7 @@ You can simply follow that guide up to (and including) the "Installing Meteor" s
 Now that we have installed Meteor, let's create an app. To do this, we use Meteor's command line tool `meteor`:
 
 ~~~bash
-$ meteor create microscope
+meteor create microscope
 ~~~
 
 This command will download Meteor, and set up a basic, ready to use Meteor project for you. When it's done, you should see a directory, `microscope/`, containing the following:
@@ -54,8 +54,8 @@ The app that Meteor has created for you is a simple boilerplate application demo
 Even though our app doesn't do much, we can still run it. To run the app, go back to your terminal and type:
 
 ~~~bash
-$ cd microscope
-$ meteor
+cd microscope
+meteor
 ~~~
 
 Now point your browser to `http://localhost:3000/` (or the equivalent `http://0.0.0.0:3000/`) and you should see something like this: 
@@ -89,8 +89,8 @@ While we're at it, we'll also add the [Underscore](http://underscorejs.org/) pac
 As of this writing, the `underscore` package is still part of the “official” Meteor packages, which is why it doesn't have an author:
 
 ~~~bash
-$ meteor add mizzao:bootstrap-3
-$ meteor add underscore
+meteor add mizzao:bootstrap-3
+meteor add underscore
 ~~~
 
 Note that we're adding Bootstrap **3**. Some of the screenshots in this book were taken with an older version of Microscope running Boostrap **2**, which means they might look slightly different. 
