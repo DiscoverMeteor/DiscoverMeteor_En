@@ -110,14 +110,15 @@ To make use of the NPM RSS package, we'll create our own RSS local package to ac
 
 ~~~js
 Package.describe({
+  name: "rss",
   summary: "RSS feed generator",
-  version: '0.1.0',
-  name: "rss"
+  version: '0.1.0'
 });
 
 Npm.depends({rss: '1.0.0'});
 
 Package.onUse(function (api) {
+  api.versionsFrom('0.9.4');
   api.addFiles('rss.js', 'server');
   api.export('RSS');
 });
@@ -328,7 +329,7 @@ curl http://localhost:3000/api/posts?limit=3
 ]
 ~~~
 
-<%= commit "15-5", "Limiting the /api/posts route." %>
+<%= commit "15-6", "Limiting the /api/posts route." %>
 
 ### The Single Post API
 
@@ -376,7 +377,7 @@ $ curl http://localhost:3000/api/posts/1337
 Post not found.
 ~~~
 
-<%= commit "15-6", "Basic route for showing a post." %>
+<%= commit "15-7", "Basic route for showing a post." %>
 
 As of this writing, Meteor does not yet support *real* server-side rendering (i.e. rendering the same templates as on the client). But as we've just seen, that doesn't need to prevent us from building simple server-side routes for features such as RSS feeds or APIs. 
 
