@@ -120,7 +120,7 @@ Mongo's syntax is familiar, as it uses a JavaScript interface. We won't be doing
 
 ### Client-Side Collections
 
-Collections get more interesting client-side. When you declare `Posts = new Meteor.Collection('posts');` on the client, what you are creating is a *local, in-browser cache* of the real Mongo collection. When we talk about a client-side collection being a "cache", we mean it in the sense that it contains a *subset* of your data, and offers very *quick* access to this data.
+Collections get more interesting client-side. When you declare `Posts = new Mongo.Collection('posts');` on the client, what you are creating is a *local, in-browser cache* of the real Mongo collection. When we talk about a client-side collection being a "cache", we mean it in the sense that it contains a *subset* of your data, and offers very *quick* access to this data.
 
 It's important to understand these points as it's fundamental to the way Meteor works. In general, a client side collection consists of a subset of all the documents stored in the Mongo collection (after all, we generally don't want to send our *whole* database to the client). 
 
@@ -177,7 +177,7 @@ Unsurprisingly, the post made it into the local collection. Now let's check Mong
 ~~~
 <%= caption "The Mongo Shell" %>
 
-As you can see, the post made it all the way back to the Mongo database, without us writing a single line of code to hook our client up to the server (well, strictly speaking, we did write a _single_ line of code: `new Meteor.Collection('posts')`). But that's not all!
+As you can see, the post made it all the way back to the Mongo database, without us writing a single line of code to hook our client up to the server (well, strictly speaking, we did write a _single_ line of code: `new Mongo.Collection('posts')`). But that's not all!
 
 Bring up the second browser window and enter this in the browser console:
 

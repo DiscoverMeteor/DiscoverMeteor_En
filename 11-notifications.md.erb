@@ -60,7 +60,7 @@ We've also created a simple function that looks at the post that the user is com
 We are already creating comments in a server-side Method, so we can just augment that Method to call our function. We'll replace `return Comments.insert(comment);` by `comment._id = Comments.insert(comment)` in order to save the `_id` of the newly created comment in a variable, then call our `createCommentNotification` function:
 
 ~~~js
-Comments = new Meteor.Collection('comments');
+Comments = new Mongo.Collection('comments');
 
 Meteor.methods({
   comment: function(commentAttributes) {

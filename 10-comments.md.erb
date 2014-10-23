@@ -16,7 +16,7 @@ The goal of a social news site is to create a community of users, and it will be
 We'll begin by creating a new collection to store comments in, and adding some basic fixture data into that collection.
 
 ~~~js
-Comments = new Meteor.Collection('comments');
+Comments = new Mongo.Collection('comments');
 ~~~
 <%= caption "lib/collections/comments.js" %>
 
@@ -308,7 +308,7 @@ Template.commentSubmit.events({
 Just like we previously set up a `post` server-side Meteor Method, we'll set up a `comment` Meteor Method to create our comments, check that everything is legit, and finally insert the new comment into the comments collection.
 
 ~~~js
-Comments = new Meteor.Collection('comments');
+Comments = new Mongo.Collection('comments');
 
 Meteor.methods({
   commentInsert: function(commentAttributes) {

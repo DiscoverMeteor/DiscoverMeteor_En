@@ -157,7 +157,7 @@ We need to either set some explicit rules telling Meteor when it's OK for a clie
 To begin with, we'll show how to allow client-side post inserts in order to get our form working again. As it turns out, we'll eventually settle on a different technique, but for now, the following will get things working again easily enough:
 
 ~~~js
-Posts = new Meteor.Collection('posts');
+Posts = new Mongo.Collection('posts');
 
 Posts.allow({
   insert: function(userId, doc) {
@@ -359,7 +359,7 @@ So let's define the `postInsert` method in our `collections/posts.js` file. We'l
 We'll then `extend` the `postAttributes` object with three more properties: the user's `_id` and `username`, as well as the post's `submitted` timestamp, before inserting the whole thing in our database and returning the resulting `_id` to the client (in other words, the original caller of this method) in a JavaScript object. 
 
 ~~~js
-Posts = new Meteor.Collection('posts');
+Posts = new Mongo.Collection('posts');
 
 Meteor.methods({
   postInsert: function(postAttributes) {

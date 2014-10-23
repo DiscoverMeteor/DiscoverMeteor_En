@@ -195,7 +195,7 @@ In the [Creating Posts](/chapter/creating-posts) chapter, we got rid of the `all
 But now that we're editing and deleting posts from the client, let's go back to `posts.js` and add this `allow()` block:
 
 ~~~js
-Posts = new Meteor.Collection('posts');
+Posts = new Mongo.Collection('posts');
 
 Posts.allow({
   update: function(userId, post) { return ownsDocument(userId, post); },
@@ -216,7 +216,7 @@ Just because you can edit your own posts, doesn't mean you should be able to edi
 So we'll use Meteor's `deny()` callback to ensure users can only edit specific fields:
 
 ~~~js
-Posts = new Meteor.Collection('posts');
+Posts = new Mongo.Collection('posts');
 
 Posts.allow({
   update: ownsDocument,
