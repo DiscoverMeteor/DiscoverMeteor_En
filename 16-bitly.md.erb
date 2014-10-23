@@ -181,7 +181,7 @@ return {
 <%= caption "collections/posts.js" %>
 <%= highlight "13~18" %>
 
-Remember that because of latency compensation, a Meteor method can be executed in two different environments: once on the server, and once (as a "stub") on the client. In this case, we only want to do the shortening server-side, so we make sure to test for the `isSimulation` boolean first.
+Remember that because of latency compensation, a Meteor method can be executed in two different environments: once on the server, and once (as a "stub") on the client. In this case, we only want to do the shortening server-side, so we make sure to test for the `isServer` boolean first.
 
 And since we're on the server, we're able to run the call synchronously (i.e. without a callback). This greatly simplifies our code, letting us treat the outbound `GET` call just as any other function.
 
