@@ -39,11 +39,11 @@ In Meteor, the `var` keyword limits the scope of an object to the current file. 
 
 Web apps have three basic ways of storing data at their disposal, each filling a different role:
 
-- **The browser's memory:** things like JavaScript variables are stored in the browser's memory, which means they're not *permanent*: they'll local to the current browser tab, and will disappear as soon as you close it. 
+- **The browser's memory:** things like JavaScript variables are stored in the browser's memory, which means they're not *permanent*: they're local to the current browser tab, and will disappear as soon as you close it. 
 - **The browser's storage:** browsers can also store data more permanently using cookies or [Local Storage](http://diveintohtml5.info/storage.html). Although this data will persist from session to session, it's *local* to the current user (but available across tabs) and can't be easily shared with other users. 
 - **The server-side database**: the best place for permanent data that you also want to make available to more than one user is in a good old database (MongoDB being the default solution for Meteor apps).
 
-Meeteor makes use of all three, and will sometimes synchronize data from one place to another (as we'll soon see). That being said, the database remains the “canonical“ data source that contains the master copy of your data. 
+Meteor makes use of all three, and will sometimes synchronize data from one place to another (as we'll soon see). That being said, the database remains the “canonical“ data source that contains the master copy of your data. 
 
 ### Client & Server
 

@@ -130,7 +130,7 @@ The delete callback is extremely simple: suppress the default click event, then 
 
 The update callback is a little longer, but not much more complicated. After suppressing the default event and getting the current post, we get the new form field values from the page and store them in a `postProperties` object.
 
-We then pass this object to Meteor's `Collection.update()` Method, and use a callback that either displays an error if the update failed, or sends the user back to the post's page if the update succeeded.
+We then pass this object to Meteor's `Collection.update()` Method using the [`$set`](http://docs.mongodb.org/manual/reference/operator/update/set/) operator (which replaces a set of specified fields while leaving the others untouched), and use a callback that either displays an error if the update failed, or sends the user back to the post's page if the update succeeded.
 
 ### Adding Links
 
@@ -245,7 +245,7 @@ You might have noticed that nowhere in our post editing code do we check for dup
 
 ### Method Calls vs Client-side Data Manipulation
 
-To create posts, we are using a `post` Method, whereas to edit and delete them, we are calling `update` and `remove` directly on the client and limiting access via `allow` and `deny`.
+To create posts, we are using a `postInsert` Meteor Method, whereas to edit and delete them, we are calling `update` and `remove` directly on the client and limiting access via `allow` and `deny`.
 
 When is it appropriate to do one and not the other?
 

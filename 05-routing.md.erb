@@ -144,7 +144,7 @@ We want our main home link to point us back to the posts list, so instead of spe
 
 <%= commit "5-1", "Very basic routing." %>
 
-### Waiting on Data
+### Waiting On Data
 
 If you deploy the current version of the app (or launch the web instance using the link above), you'll notice that the list appears empty for a few moments before the posts appear. This is because when the page first loads, there are no posts to display until the `posts` subscription is done grabbing the post data from the server.
 
@@ -162,11 +162,9 @@ Router.configure({
 Router.map(function() {
   this.route('postsList', {path: '/'});
 });
-
-Router.onBeforeAction('loading');
 ~~~
 <%= caption "lib/router.js" %>
-<%= highlight "3,4, 11" %>
+<%= highlight "3,4" %>
 
 Let's break things down. First, we've modified the `Router.configure()` block to provide the router with the name of a loading template (which we'll create soon) to redirect to while our app is waiting for data. 
 
@@ -179,6 +177,31 @@ Note that since we're defining our `waitOn` function globally at the router leve
 Moreover since we are now letting the router handle our subscription, you can now safely remove it from `main.js` (which should now be empty). 
 
 It's usually a good idea to wait on your subscriptions, not just for the user experience, but also because it means you can safely assume that data will always be available from within a template. This eliminates the need to deal with templates being rendered before their underlying data is available, which often requires tricky workarounds. 
+
+### Get A Load Of This
+
+Our app is not doing much while it's waiting, and if this goes on for more than a second or two, our users might start thinking something is broken. 
+
+So let's add a loading spinner to keep them company while they wait for the data to appear. First, we'll add a `onBeforeAction` **router hook**. We're adding it to `Router` directly, which means it will run on all routes. 
+
+Now you can pass a function to `onBeforeAction`, but Iron Router also provides a few predefined hooks out of the box, which you can simply call by name. In this case, the `loading` hook simply redirects to the `loadingTemplate` template until a route's `waitOn` is ready. 
+
+~~~js
+Router.configure({
+  layoutTemplate: 'layout',
+  loadingTemplate: 'loading',
+  waitOn: function() { return Meteor.subscribe('posts'); }
+});
+
+Router.map(function() {
+  this.route('postsList', {path: '/'});
+});
+
+Router.onBeforeAction('loading');
+~~~
+<%= caption "lib/router.js" %>
+<%= highlight "11" %>
+
 
 The final piece of the puzzle is the actual loading template. We'll use the `spin` package to create a nice animated loading spinner. Add it with `meteor add sacha:spin`, and then create the `loading` template as follows in the `client/templates/includes` directory:
 
