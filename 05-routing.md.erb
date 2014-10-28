@@ -122,7 +122,7 @@ A bit of warning though: note that since the `/lib` folder is neither inside `/c
 
 Let's clear up a bit of ambiguity here. We named our route `postsList`, but we also have a *template* called `postsList`. So what's going on here?
 
-By default, Iron Router will look for a template with the same name as the route. In fact, it will even infer the name from the path you provide, (which wouldn't have been possible in this case as our path doesn't have any name in it, but would have been if we'd put our route at `/postsList` for example).
+By default, Iron Router will look for a template with the same name as the route name. In fact, it will even infer the name from the *path* you provide. Although it wouldn't work in this particular case (since our path is `/`), Iron Router would've found the correct template if we had used `http://localhost:3000/postsList` as our path.
 
 You may be wondering why we even need to name our routes in the first place. Naming routes lets us use a few Iron Router features that make it easier to build links inside our app. The most useful one is the `{{pathFor}}` Spacebars helper,  which returns the URL path component of any route.
 
@@ -148,14 +148,14 @@ If you deploy the current version of the app (or launch the web instance using t
 
 It would be a much better user experience to provide some visual feedback that something is happening, and that the user should wait a moment.
 
-Luckily, Iron Router gives us an easy way to do that -- we can ask it to wait on the subscription. Let's see how to do this.
+Luckily, Iron Router gives us an easy way to do just that: we can ask it to *wait on* the subscription. 
 
 We start by moving our `posts` subscription from `main.js` to the router:
 
 ~~~js
 Router.configure({
   layoutTemplate: 'layout',
-  subscriptions: function() { return Meteor.subscribe('posts'); }
+  waitOn: function() { return Meteor.subscribe('posts'); }
 });
 
 Router.route('/', {name: 'postsList'});
@@ -165,11 +165,11 @@ Router.route('/', {name: 'postsList'});
 
 What we are saying here is that for *every* route on the site (we only have one right now, but soon we'll have more!), we want subscribe to the `posts` subscription.
 
-The key difference between this and what we had before (where the subscription was in `main.js`, which should now be empty -- you can remove it), is that now the router "knows" when the route is "ready" -- that is when the route has the data it needs to render.
+The key difference between this and what we had before (when the subscription was in `main.js`, which should now be empty and can be removed), is that now Iron Router knows when the route is "ready" -- that is, when the route has the data it needs to render.
 
 ### Get A Load Of This
 
-Still, it doesn't help us that the router knows it's not ready if it's going to display the `postsList` template anyway. However, Iron Router comes with a built-in way to delay showing the template until the subscription is ready.
+Knowing when the `postsList` route is ready doesn't do us much good if we're just going to display an empty template anyway. Thankfully, Iron Router comes with a built-in way to delay showing a template until the route calling it is ready, and show a `loading` template instead:
 
 ~~~js
 Router.configure({
@@ -182,10 +182,6 @@ Router.route('/', {name: 'postsList'});
 ~~~
 <%= caption "lib/router.js" %>
 <%= highlight "3,4" %>
-
-We've changed the name `subscriptions` to `waitOn` -- indicating that we don't just want the router to know the subscriptions aren't ready, we want it do something about it. In fact, we want it to render the `loadingTemplate` we've provided until the subscription is ready. 
-
-This is exactly what the router will do.
 
 Note that since we're defining our `waitOn` function globally at the router level, this sequence will only happen once when a user first accesses your app. After that, the data will already be loaded in the browser's memory and the router won't need to wait for it again. 
 
