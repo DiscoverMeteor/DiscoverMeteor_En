@@ -22,41 +22,37 @@ Router.configure({
   waitOn: function() { return Meteor.subscribe('posts'); }
 });
 
-Router.map(function() {
-  this.route('postsList', {path: '/'});
+Router.route('/', {name: 'postsList'});
 
-  this.route('postPage', {
-    path: '/posts/:_id',
-    data: function() { return Posts.findOne(this.params._id); }
-  });
-
-  this.route('postEdit', {
-    path: '/posts/:_id/edit',
-    data: function() { return Posts.findOne(this.params._id); }
-  });
-
-  this.route('postSubmit', {
-    path: '/submit'
-  });
+Router.route('/posts/:_id', {
+  name: 'postPage',
+  data: function() { return Posts.findOne(this.params._id); }
 });
 
-var requireLogin = function(pause) {
-  if (! Meteor.user()) {
-    if (Meteor.loggingIn())
-      this.render('loading')
-    else
-      this.render('accessDenied');
+Router.route('/posts/:_id/edit', {
+  name: 'postEdit',
+  data: function() { return Posts.findOne(this.params._id); }
+});
 
-    pause();
+Router.route('/submit', {name: 'postSubmit'});
+
+var requireLogin = function() {
+  if (! Meteor.user()) {
+    if (Meteor.loggingIn()) {
+      this.render(this.loadingTemplate);
+    } else {
+      this.render('accessDenied');
+    }
+  } else {
+    this.next();
   }
 }
 
-Router.onBeforeAction('loading');
-Router.onBeforeAction('dataNotFound');
+Router.onBeforeAction('dataNotFound', {only: 'postPage'});
 Router.onBeforeAction(requireLogin, {only: 'postSubmit'});
 ~~~
 <%= caption "lib/router.js" %>
-<%= highlight "16~19" %>
+<%= highlight "15~18" %>
 
 ### The Post Edit Template
 

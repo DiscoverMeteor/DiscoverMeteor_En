@@ -411,7 +411,7 @@ PostsListController = RouteController.extend({
   findOptions: function() {
     return {sort: this.sort, limit: this.postsLimit()};
   },
-  onBeforeAction: function() {
+  subscriptions: function() {
     this.postsSub = Meteor.subscribe('posts', this.findOptions());
   },
   posts: function() {
@@ -427,51 +427,41 @@ PostsListController = RouteController.extend({
   }
 });
 
-NewPostsListController = PostsListController.extend({
+NewPostsController = PostsListController.extend({
   sort: {submitted: -1, _id: -1},
   nextPath: function() {
     return Router.routes.newPosts.path({postsLimit: this.postsLimit() + this.increment})
   }
 });
 
-BestPostsListController = PostsListController.extend({
+BestPostsController = PostsListController.extend({
   sort: {votes: -1, submitted: -1, _id: -1},
   nextPath: function() {
     return Router.routes.bestPosts.path({postsLimit: this.postsLimit() + this.increment})
   }
 });
 
-Router.map(function() {
-  this.route('home', {
-    path: '/',
-    controller: NewPostsListController
-  });
-  
-  this.route('newPosts', {
-    path: '/new/:postsLimit?',
-    controller: NewPostsListController
-  });
-  
-  this.route('bestPosts', {
-    path: '/best/:postsLimit?',
-    controller: BestPostsListController
-  });
-  // ..
+Router.route('/', {
+  name: 'home',
+  controller: NewPostsController
 });
+
+Router.route('/new/:postsLimit?', {name: 'newPosts'});
+
+Router.route('/best/:postsLimit?', {name: 'bestPosts'});
 ~~~
 <%= caption "lib/router.js" %>
 <%= highlight "10,22,27~39,42~55" %>
 
-Note that now that we have more than one route, we're taking the `nextPath` logic out of `PostsListController` and into `NewPostsListController` and `BestPostsListController`, since the path will be different in either case. 
+Note that now that we have more than one route, we're taking the `nextPath` logic out of `PostsListController` and into `NewPostsController` and `BestPostsController`, since the path will be different in either case. 
 
 Additionally, when we sort by `votes`, we have a subsequent sorts by submitted timestamp and then `_id` to ensure that the ordering is completely specified.
 
 With our new controllers in place, we can now safely get rid of the previous `postsList` route. Just delete the following code:
 
 ```
- this.route('postsList', {
-  path: '/:postsLimit?',
-  controller: PostsListController
+ Router.route('/:postsLimit?', {
+  name: 'postsList'
  })
 ```
 <%= caption "lib/router.js" %>
@@ -595,7 +585,7 @@ Template.header.helpers({
     args.pop();
     
     var active = _.any(args, function(name) {
-      return Router.current() && Router.current().route.name === name
+      return Router.current() && Router.current().route.getName() === name
     });
     
     return active && 'active';

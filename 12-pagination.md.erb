@@ -91,19 +91,14 @@ We'll then add a `postsLimit` parameter to the route's path. Adding a `?` after 
 ~~~js
 //...
 
-Router.map(function() {
-  //...
-  
-  this.route('postsList', {
-    path: '/:postsLimit?'
-  });
-
+Router.route('/:postsLimit?', {
+  name: 'postsList',
 });
 
 //...
 ~~~
 <%= caption "lib/router.js" %>
-<%= highlight "7" %>
+<%= highlight "3" %>
 
 It's important to note that a path of the form `/:parameter?` will match every possible path. Since each route will be parsed successively to see if it matches the current path, we need to make sure we organize our routes in order of decreasing specificity.
 
@@ -114,22 +109,18 @@ It's now time to tackle the tough problem of subscribing and finding the right d
 ~~~js
 //...
 
-Router.map(function() {
-  //..
-  
-  this.route('postsList', {
-    path: '/:postsLimit?',
-    waitOn: function() {
-      var postsLimit = parseInt(this.params.postsLimit) || 5; 
-      return Meteor.subscribe('posts', {sort: {submitted: -1}, limit: postsLimit});
-    }
-  });
+Router.route('/:postsLimit?', {
+  name: 'postsList',
+  waitOn: function() {
+    var limit = parseInt(this.params.postsLimit) || 5; 
+    return Meteor.subscribe('posts', {sort: {submitted: -1}, limit: limit});
+  }
 });
 
 //...
 ~~~
 <%= caption "lib/router.js" %>
-<%= highlight "6~9" %>
+<%= highlight "7~9" %>
 
 You'll notice we're now passing a JavaScript object ({sort: {submitted: -1}, limit: postsLimit}) along with the name of our `posts` publication. This object will serve as the `options` parameter for the server side `Posts.find()` statement. Let's switch over to our server-side code to implement this:
 
@@ -181,28 +172,24 @@ What this means is simply that instead of being implicitly available as `this` i
 ~~~js
 //...
 
-Router.map(function() {
-  //...
-
-  this.route('postsList', {
-    path: '/:postsLimit?',
-    waitOn: function() {
-      var limit = parseInt(this.params.postsLimit) || 5; 
-      return Meteor.subscribe('posts', {sort: {submitted: -1}, limit: limit});
-    },
-    data: function() {
-      var limit = parseInt(this.params.postsLimit) || 5; 
-      return {
-        posts: Posts.find({}, {sort: {submitted: -1}, limit: limit})
-      };
-    }
-  });
+Router.route('/:postsLimit?', {
+  name: 'postsList',
+  waitOn: function() {
+    var limit = parseInt(this.params.postsLimit) || 5; 
+    return Meteor.subscribe('posts', {sort: {submitted: -1}, limit: limit});
+  },
+  data: function() {
+    var limit = parseInt(this.params.postsLimit) || 5; 
+    return {
+      posts: Posts.find({}, {sort: {submitted: -1}, limit: limit})
+    };
+  }
 });
 
 //...
 ~~~
 <%= caption "lib/router.js" %>
-<%= highlight "12~17" %>
+<%= highlight "9~14" %>
 
 Now that we're setting the data context at the router level we can safely get rid of the `posts` template helper inside the `posts_list.js` file. And since we named our data context `posts` (the same name as the helper), we don't even need to touch our `postsList` template!
 
@@ -218,28 +205,52 @@ Router.configure({
   }
 });
 
-Router.map(function() {
-  //...
-
-  this.route('postsList', {
-    path: '/:postsLimit?',
-    waitOn: function() {
-      var limit = parseInt(this.params.postsLimit) || 5; 
-      return Meteor.subscribe('posts', {sort: {submitted: -1}, limit: limit});
-    },
-    data: function() {
-      var limit = parseInt(this.params.postsLimit) || 5; 
-      return {
-        posts: Posts.find({}, {sort: {submitted: -1}, limit: limit})
-      };
-    }
-  });
+Router.route('/posts/:_id', {
+  name: 'postPage',
+  waitOn: function() {
+    return Meteor.subscribe('comments', this.params._id);
+  },
+  data: function() { return Posts.findOne(this.params._id); }
 });
 
-//...
+Router.route('/posts/:_id/edit', {
+  name: 'postEdit',
+  data: function() { return Posts.findOne(this.params._id); }
+});
+
+Router.route('/submit', {name: 'postSubmit'});
+
+Router.route('/:postsLimit?', {
+  name: 'postsList',
+  waitOn: function() {
+    var limit = parseInt(this.params.postsLimit) || 5; 
+    return Meteor.subscribe('posts', {sort: {submitted: -1}, limit: limit});
+  },
+  data: function() {
+    var limit = parseInt(this.params.postsLimit) || 5; 
+    return {
+      posts: Posts.find({}, {sort: {submitted: -1}, limit: limit})
+    };
+  }
+});
+
+var requireLogin = function() {
+  if (! Meteor.user()) {
+    if (Meteor.loggingIn()) {
+      this.render(this.loadingTemplate);
+    } else {
+      this.render('accessDenied');
+    }
+  } else {
+    this.next();
+  }
+}
+
+Router.onBeforeAction('dataNotFound', {only: 'postPage'});
+Router.onBeforeAction(requireLogin, {only: 'postSubmit'});
 ~~~
 <%= caption "lib/router.js" %>
-<%= highlight "5, 11~21" %>
+<%= highlight "6,25~37" %>
 
 <%= commit "12-2", "Augmented the postsList route to take a limit." %>
 
@@ -297,14 +308,13 @@ PostsListController = RouteController.extend({
   }
 });
 
-Router.map(function() {
-  //...
+//...
 
-  this.route('postsList', {
-    path: '/:postsLimit?',
-    controller: PostsListController
-  });
+Router.route('/:postsLimit?', {
+  name: 'postsList'
 });
+
+//...
 ~~~
 <%= caption "lib/router.js" %>
 <%= highlight "3~18, 25" %>
@@ -315,7 +325,7 @@ We then define a new `limit` function which will return the current limit, and a
 
 Next, we define our `waitOn` and `data` functions just like before, except they're now making use of our new `findOptions` function. 
 
-The last thing to do is to tell the `postsList` route to route to our brand new controller, with the `controller` property (removing the route's `data` and `waitOn` in the process).
+Because our controller is called the `PostsListController` and our route is named `postsList`, Iron Router will automatically use the controller. So we just need to remove the `waitOn` and `data` from our route definition (as the controller is now handling them). If we needed to use a controller with a different name, we could have used to `controller` option (we'll see an example of this in the next chapter).
 
 <%= commit "12-3", "Refactored postsLists route into a RouteController." %>
 
@@ -406,7 +416,7 @@ Here's what your post list should now look like:
 
 Our pagination is now working properly, but it suffers from an annoying quirk: every time we click “load more” and the router asks for more posts, the Iron Router's `waitOn` feature sends us to the `loading` template while we wait for the new data to come in. The result is that we're sent back to the top of the page every time, and need to scroll all the way back down to resume our browsing. 
 
-So first, we'll have to tell Iron Router not to `waitOn` the subscription after all. Instead, we'll subscribe in an `onBeforeAction` hook.
+So first, we'll have to tell Iron Router not to `waitOn` the subscription after all. Instead, we'll define our subscriptions in a `subscriptions` hook.
 
 We're also passing a `ready` variable referring to `this.postsSub.ready` as part of our data context. This will let us tell the template when the post subscription is done loading.
 
@@ -422,7 +432,7 @@ PostsListController = RouteController.extend({
   findOptions: function() {
     return {sort: {submitted: -1}, limit: this.postsLimit()};
   },
-  onBeforeAction: function() {
+  subscriptions: function() {
     this.postsSub = Meteor.subscribe('posts', this.findOptions());
   },
   posts: function() {
@@ -500,37 +510,29 @@ Now, let's subscribe to the right posts client-side. We were already subscribing
 ~~~js
 //...
 
-Router.map(function() {
+Router.route('/posts/:_id', {
+  name: 'postPage',
+  waitOn: function() {
+    return [
+      Meteor.subscribe('singlePost', this.params._id),
+      Meteor.subscribe('comments', this.params._id)
+    ];
+  },
+  data: function() { return Posts.findOne(this.params._id); }
+});
 
-  //...
-    
-  this.route('postPage', {
-    path: '/posts/:_id',
-    waitOn: function() {
-      return [
-        Meteor.subscribe('singlePost', this.params._id),
-        Meteor.subscribe('comments', this.params._id)
-      ];
-    },
-    data: function() { return Posts.findOne(this.params._id); }
-  });
-
-  this.route('postEdit', {
-    path: '/posts/:_id/edit',
-    waitOn: function() { 
-      return Meteor.subscribe('singlePost', this.params._id);
-    },
-    data: function() { return Posts.findOne(this.params._id); }    
-  });
-  
-  //...
-
+Router.route('/posts/:_id/edit', {
+  name: 'postEdit',
+  waitOn: function() { 
+    return Meteor.subscribe('singlePost', this.params._id);
+  },
+  data: function() { return Posts.findOne(this.params._id); }
 });
 
 //...
 ~~~
 <%= caption "lib/router.js" %>
-<%= highlight "9~14,20~22" %>
+<%= highlight "6~9,16~18" %>
 
 <%= commit "12-6","Use a single post subscription to ensure that we can always see the right post." %>
 
