@@ -100,15 +100,13 @@ Router.configure({
   layoutTemplate: 'layout'
 });
 
-Router.map(function() {
-  this.route('postsList', {path: '/'});
-});
+Router.route('/', {name: 'postsList'});
 ~~~
 <%= caption "lib/router.js"%>
 
 We've done two important things. First, we've told the router to use the `layout` template we just created as the default layout for all routes. 
 
-Second, we've defined a new route called `postsList` and mapped it to the root `/` path. 
+Second, we've defined a new route named `postsList` and mapped it to the root `/` path. 
 
 <% note do %>
 
@@ -124,7 +122,7 @@ A bit of warning though: note that since the `/lib` folder is neither inside `/c
 
 Let's clear up a bit of ambiguity here. We named our route `postsList`, but we also have a *template* called `postsList`. So what's going on here?
 
-By default, Iron Router will look for a template with the same name as the route. In fact, it will even look for a *path* based on the route name, meaning that if we hadn't defined a custom path (which we did by providing a `path` option in our route definition), our template would've been accessible at URL `/postsList` by default. 
+By default, Iron Router will look for a template with the same name as the route. In fact, it will even infer the name from the path you provide, (which wouldn't have been possible in this case as our path doesn't have any name in it, but would have been if we'd put our route at `/postsList` for example).
 
 You may be wondering why we even need to name our routes in the first place. Naming routes lets us use a few Iron Router features that make it easier to build links inside our app. The most useful one is the `{{pathFor}}` Spacebars helper,  which returns the URL path component of any route.
 
@@ -150,7 +148,28 @@ If you deploy the current version of the app (or launch the web instance using t
 
 It would be a much better user experience to provide some visual feedback that something is happening, and that the user should wait a moment.
 
-Luckily, Iron Router gives us an easy way to do that -- we'll `waitOn` the subscription:
+Luckily, Iron Router gives us an easy way to do that -- we can ask it to wait on the subscription. Let's see how to do this.
+
+We start by moving our `posts` subscription from `main.js` to the router:
+
+~~~js
+Router.configure({
+  layoutTemplate: 'layout',
+  subscriptions: function() { return Meteor.subscribe('posts'); }
+});
+
+Router.route('/', {name: 'postsList'});
+~~~
+<%= caption "lib/router.js" %>
+<%= highlight "3" %>
+
+What we are saying here is that for *every* route on the site (we only have one right now, but soon we'll have more!), we want subscribe to the `posts` subscription.
+
+The key difference between this and what we had before (where the subscription was in `main.js`, which should now be empty -- you can remove it), is that now the router "knows" when the route is "ready" -- that is when the route has the data it needs to render.
+
+### Get A Load Of This
+
+Still, it doesn't help us that the router knows it's not ready if it's going to display the `postsList` template anyway. However, Iron Router comes with a built-in way to delay showing the template until the subscription is ready.
 
 ~~~js
 Router.configure({
@@ -159,49 +178,16 @@ Router.configure({
   waitOn: function() { return Meteor.subscribe('posts'); }
 });
 
-Router.map(function() {
-  this.route('postsList', {path: '/'});
-});
+Router.route('/', {name: 'postsList'});
 ~~~
 <%= caption "lib/router.js" %>
 <%= highlight "3,4" %>
 
-Let's break things down. First, we've modified the `Router.configure()` block to provide the router with the name of a loading template (which we'll create soon) to redirect to while our app is waiting for data. 
+We've changed the name `subscriptions` to `waitOn` -- indicating that we don't just want the router to know the subscriptions aren't ready, we want it do something about it. In fact, we want it to render the `loadingTemplate` we've provided until the subscription is ready. 
 
-Second, we've also added a `waitOn` function, which returns our `posts` subscription. 
-
-Finally, we enabled the built-in `loading` hook. What this means is that the router will ensure that the `posts` subscription is loaded before sending the user through to the route they requested.
+This is exactly what the router will do.
 
 Note that since we're defining our `waitOn` function globally at the router level, this sequence will only happen once when a user first accesses your app. After that, the data will already be loaded in the browser's memory and the router won't need to wait for it again. 
-
-Moreover since we are now letting the router handle our subscription, you can now safely remove it from `main.js` (which should now be empty). 
-
-It's usually a good idea to wait on your subscriptions, not just for the user experience, but also because it means you can safely assume that data will always be available from within a template. This eliminates the need to deal with templates being rendered before their underlying data is available, which often requires tricky workarounds. 
-
-### Get A Load Of This
-
-Our app is not doing much while it's waiting, and if this goes on for more than a second or two, our users might start thinking something is broken. 
-
-So let's add a loading spinner to keep them company while they wait for the data to appear. First, we'll add a `onBeforeAction` **router hook**. We're adding it to `Router` directly, which means it will run on all routes. 
-
-Now you can pass a function to `onBeforeAction`, but Iron Router also provides a few predefined hooks out of the box, which you can simply call by name. In this case, the `loading` hook simply redirects to the `loadingTemplate` template until a route's `waitOn` is ready. 
-
-~~~js
-Router.configure({
-  layoutTemplate: 'layout',
-  loadingTemplate: 'loading',
-  waitOn: function() { return Meteor.subscribe('posts'); }
-});
-
-Router.map(function() {
-  this.route('postsList', {path: '/'});
-});
-
-Router.onBeforeAction('loading');
-~~~
-<%= caption "lib/router.js" %>
-<%= highlight "11" %>
-
 
 The final piece of the puzzle is the actual loading template. We'll use the `spin` package to create a nice animated loading spinner. Add it with `meteor add sacha:spin`, and then create the `loading` template as follows in the `client/templates/includes` directory:
 
@@ -213,6 +199,8 @@ The final piece of the puzzle is the actual loading template. We'll use the `spi
 <%= caption "client/templates/includes/loading.html" %>
 
 Note that `{{>spinner}}` is a partial contained in the `spin` package. Even though this partial comes from “outside” our app, we can include it just like any other template. 
+
+It's usually a good idea to wait on your subscriptions, not just for the user experience, but also because it means you can safely assume that data will always be available from within a template. This eliminates the need to deal with templates being rendered before their underlying data is available, which often requires tricky workarounds.
 
 <%= commit "5-2", "Wait on the post subscription." %>
 
@@ -248,20 +236,19 @@ We'll add more elements to this template later on (such as comments), but for no
 We are going to create another named route, this time mapping URL paths of the form `/posts/<ID>` to the `postPage` template:
 
 ~~~js
-//...
-
-Router.map(function() {
-  this.route('postsList', {path: '/'});
-  
-  this.route('postPage', {
-    path: '/posts/:_id'
-  });
+Router.configure({
+  layoutTemplate: 'layout',
+  loadingTemplate: 'loading',
+  waitOn: function() { return Meteor.subscribe('posts'); }
 });
 
-//...
+Router.route('/', {name: 'postsList'});
+Router.route('/posts/:_id', {
+  name: 'postPage'
+});
 ~~~
 <%= caption "lib/router.js" %>
-<%= highlight "6~8" %>
+<%= highlight "8~10" %>
 
 The special `:_id` syntax tells the router two things: first, to match any route of the form `/posts/xyz/`, where “xyz” can be anything at all. Second, to put whatever it finds in this “xyz” spot inside an `_id` property in the router's `params` array. 
 
@@ -276,21 +263,20 @@ Thankfully, the router has a clever built-in solution: it lets you specify a tem
 In our case, we can get the proper data context by looking for our post based on the `_id` we got from the URL: 
 
 ~~~js
-//...
-
-Router.map(function() {
-  this.route('postsList', {path: '/'});
-  
-  this.route('postPage', {
-    path: '/posts/:_id',
-    data: function() { return Posts.findOne(this.params._id); }
-  });
+Router.configure({
+  layoutTemplate: 'layout',
+  loadingTemplate: 'loading',
+  waitOn: function() { return Meteor.subscribe('posts'); }
 });
 
-//...
+Router.route('/', {name: 'postsList'});
+Router.route('/posts/:_id', {
+  name: 'postPage',
+  data: function() { return Posts.findOne(this.params._id); }
+});
 ~~~
 <%= caption "lib/router.js" %>
-<%= highlight "8" %>
+<%= highlight "10" %>
 
 So every time a user accesses this route, we'll find the appropriate post and pass it to the template. Remember that `findOne` returns a single post that matches a query, and that providing just an `id` as an argument is a shorthand for `{_id: id}`. 
 
@@ -414,7 +400,6 @@ Thankfully, Iron Router is smart enough to figure this out if we just add a spec
 ~~~js
 //...
 
-Router.onBeforeAction('loading');
 Router.onBeforeAction('dataNotFound', {only: 'postPage'});
 ~~~
 <%= caption "lib/router.js"%>
