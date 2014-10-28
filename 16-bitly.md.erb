@@ -407,7 +407,7 @@ BestPostsListController = PostsListController.extend({
   }
 });
 
-ClickedPostsListController = PostsListController.extend({
+ClickedPostsController = PostsListController.extend({
   sort: {clicks: -1, submitted: -1, _id: -1},
   nextPath: function() {
     return Router.routes.clickedPosts.path({postsLimit: this.postsLimit() + this.increment})
@@ -426,22 +426,16 @@ Then, we'll use that controller to create a new route:
 ~~~js
 //...
 
-this.route('bestPosts', {
-  path: '/best/:postsLimit?',
-  controller: BestPostsListController
-});
+Router.route('/best/:postsLimit?', {name: 'bestPosts'});
 
-this.route('clickedPosts', {
-  path: '/clicked/:postsLimit?',
-  controller: ClickedPostsListController
-});
+Router.route('/clicked/:postsLimit?', {name: 'clickedPosts'});
 
-this.route('postPage', {
+Router.route('/posts/:_id', {
 
 //...
 ~~~
 <%= caption "lib/router.js" %>
-<%= highlight "8~11" %>
+<%= highlight "5" %>
 
 Finally, we'll add a link to our new `bestPosts` route in the header:
 

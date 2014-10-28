@@ -45,34 +45,19 @@ Since our `router.js` file lives in the `/lib` directory, it's already available
 ~~~js
 //...
 
-Router.map(function() {
-  this.route('home', {
-    path: '/',
-    controller: NewPostsListController
-  });
-  
-  //...
-  
-  this.route('postSubmit', {
-    path: '/submit',
-    disableProgress: true
-  });
-
-  this.route('rss', {
-    where: 'server',
-    path: '/feed.xml',
-    action: function() {
-      this.response.write('hello world');
-      this.response.end();
-    }
-  });
-  
+Router.route('/feed.xml', {
+  where: 'server',
+  name: 'rss',
+  action: function() {
+    this.response.write('hello world');
+    this.response.end();
+  }
 });
 
 //...
 ~~~
 <%= caption "lib/router.js" %>
-<%= highlight "16~22" %>
+<%= highlight "3~10" %>
 
 If you tried out this route right now, you'd get an error. That's because we've assigned the `loading` filter to trigger on all routes, and that filter happens to be only available to the client. 
 
@@ -80,7 +65,6 @@ So before anything else, let's make sure we deactivate all filters when on the s
 
 ~~~js
 if (Meteor.isClient){
-  Router.onBeforeAction('loading');
   Router.onBeforeAction('dataNotFound', {only: 'postPage'});
   Router.onBeforeAction(requireLogin, {only: 'postSubmit'});
 }
@@ -159,9 +143,9 @@ Let's flesh out our feed by giving it a title and a description:
 ~~~js
 //...
 
-this.route('rss', {
+Router.route('/feed.xml', {
   where: 'server',
-  path: '/feed.xml',
+  name: 'rss',
   action: function() {
     var feed = new RSS({
       title: "New Microscope Posts",
@@ -195,15 +179,15 @@ Building our feed is relatively straightforward: we'll get the 20 latest posts, 
 ~~~js
 //...
 
-this.route('rss', {
+Router.route('/feed.xml', {
   where: 'server',
-  path: '/feed.xml',
+  name: 'rss',
   action: function() {
     var feed = new RSS({
       title: "New Microscope Posts",
       description: "The latest posts from Microscope, the smallest news aggregator."
     });
-    
+
     Posts.find({}, {sort: {submitted: -1}, limit: 20}).forEach(function(post) {
       feed.item({
         title: post.title,
@@ -213,7 +197,7 @@ this.route('rss', {
         url: '/posts/' + post._id
       })
     });
-
+      
     this.response.write(feed.xml());
     this.response.end();
   }
@@ -262,13 +246,13 @@ First, let's build a route that displays the latest posts:
 ~~~js
 //...
 
-this.route('rss', {
+Router.route('/feed.xml', {
   //...
 });
 
-this.route('apiPosts', {
+Router.route('/api/posts', {
   where: 'server',
-  path: '/api/posts',
+  name: 'apiPosts',
   action: function() {
     var data = Posts.find().fetch();
     this.response.write(JSON.stringify(data));
@@ -296,13 +280,13 @@ this.route('rss', {
   //...
 });
 
-this.route('apiPosts', {
+Router.route('/api/posts', {
   where: 'server',
-  path: '/api/posts',
+  name: 'apiPosts',
   action: function() {
     var parameters = this.request.query,
-        limit = !!parameters.limit ? parameters.limit : 20,
-        data = Posts.find({}, {limit: limit, fields: {title: 1, author: 1, url: 1, submitted: 1}}).fetch();
+        limit = !!parameters.limit ? parseInt(parameters.limit) : 20,
+        data = Posts.find({}, {limit: limit, fields: {title: 1, author: 1, url: 1, submitted: 1, }}).fetch();
 
     this.response.write(JSON.stringify(data));
     this.response.end();
@@ -338,13 +322,13 @@ To finish up, let's also extend our API to handle requests for a specific post:
 ~~~js
 //...
 
-this.route('apiPosts', {
+Router.route('/api/posts', {
   //...
 });
 
-this.route('apiPost', {
+Router.route('/api/posts/:_id', {
   where: 'server',
-  path: '/api/posts/:_id',
+  name: 'apiPost',
   action: function() {
     var post = Posts.findOne(this.params._id);
 
