@@ -102,7 +102,7 @@ Router.route('/:postsLimit?', {
 
 It's important to note that a path of the form `/:parameter?` will match every possible path. Since each route will be parsed successively to see if it matches the current path, we need to make sure we organize our routes in order of decreasing specificity.
 
-In other words, routes that target more specific routes like `/posts/:_id` should come first, and our `postsList` route should be moved **to the bottom** of the `Router.map()` block since it pretty much matches everything,
+In other words, routes that target more specific routes like `/posts/:_id` should come first, and our `postsList` route should be moved **to the bottom** of the set of routes since it pretty much matches everything,
 
 It's now time to tackle the tough problem of subscribing and finding the right data. We need to deal with the case where the `postsLimit` parameter isn't present, so we'll assign it a default value. We'll use “5” to really give us enough room to play around with pagination.
 
