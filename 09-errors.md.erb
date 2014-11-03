@@ -534,7 +534,7 @@ This means we'll have to add a new `deny` callback instead:
 //...
 
 Posts.deny({
-  update: function(userId, post, fieldNames) {
+  update: function(userId, post, fieldNames, modifier) {
     var errors = validatePost(modifier.$set);
     return errors.title || errors.url;
   }
