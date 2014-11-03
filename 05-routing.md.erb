@@ -401,7 +401,7 @@ Router.onBeforeAction('dataNotFound', {only: 'postPage'});
 <%= caption "lib/router.js"%>
 <%= highlight "4" %>
 
-This tell Iron Router to show the “not found” page not just for invalid routes but also for the `postPage` route,  whenever the `data` function returns a “falsy” (i.e. `null`, `false`, `undefined`, or empty) object.
+This tells Iron Router to show the “not found” page not just for invalid routes but also for the `postPage` route,  whenever the `data` function returns a “falsy” (i.e. `null`, `false`, `undefined`, or empty) object.
 
 <%= commit "5-4", "Added not found template." %>
 
