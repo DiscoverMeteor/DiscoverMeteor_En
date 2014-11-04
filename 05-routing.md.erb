@@ -163,7 +163,7 @@ Router.route('/', {name: 'postsList'});
 <%= caption "lib/router.js" %>
 <%= highlight "3" %>
 
-What we are saying here is that for *every* route on the site (we only have one right now, but soon we'll have more!), we want subscribe to the `posts` subscription.
+What we are saying here is that for *every* route on the site (we only have one right now, but soon we'll have more!), we want to subscribe to the `posts` subscription.
 
 The key difference between this and what we had before (when the subscription was in `main.js`, which should now be empty and can be removed), is that now Iron Router knows when the route is "ready" -- that is, when the route has the data it needs to render.
 
