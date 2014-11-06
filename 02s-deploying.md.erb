@@ -11,9 +11,9 @@ contents: Learn how to deploy on Meteor.com.|Learn how to deploy on Modulus.|Lea
 paragraphs: 46
 ---
 
-Some people like to work quietly on a project until it's perfect, while others can't wait to show the world as soon as possible. 
+Some people like to work quietly on a project until it's perfect, while others can't wait to show the world as soon as possible.
 
-If you're the first kind of person and would rather develop locally for now, feel free to skip this chapter. On the other hand, if you'd rather take the time to learn how to deploy your Meteor app online, we've got you covered. 
+If you're the first kind of person and would rather develop locally for now, feel free to skip this chapter. On the other hand, if you'd rather take the time to learn how to deploy your Meteor app online, we've got you covered.
 
 We will be learning how to deploy a Meteor app in few different ways. Feel free to use each of them at any stage of your development process, whether you're working on Microscope or any other Meteor app. Let's get started!
 
@@ -23,7 +23,7 @@ We will be learning how to deploy a Meteor app in few different ways. Feel free 
 
 This is a **sidebar** chapter. Sidebars take a deeper look at more general Meteor topics independently of the rest of the book.
 
-So if you'd rather go on with building Microscope, you can safely skip it for now and come back to it later. 
+So if you'd rather go on with building Microscope, you can safely skip it for now and come back to it later.
 
 <% end %>
 
@@ -37,15 +37,15 @@ Deploying on Meteor is pretty simple. Just open up your terminal, go to to your 
 meteor deploy myapp.meteor.com
 ~~~
 
-Of course, you'll have to take care to replace "myapp" with a name of your choice, preferably one that isn't already in use. 
+Of course, you'll have to take care to replace "myapp" with a name of your choice, preferably one that isn't already in use.
 
 If this is your first time deploying an app, you'll be prompted to create a Meteor account. And if all goes well, after a few seconds you'll be able to access your app at `http://myapp.meteor.com`.
 
-You can refer to [the official documentation](http://docs.meteor.com/#deploying) for more information on things like accessing your hosted instance's database directly, or configuring a custom domain for your app. 
+You can refer to [the official documentation](http://docs.meteor.com/#deploying) for more information on things like accessing your hosted instance's database directly, or configuring a custom domain for your app.
 
 ### Deploying On Modulus
 
-[Modulus](https://modulus.io/) is a great option for deploying Node.js apps. It's one of the few PaaS (platform-as-a-service) provider that officially support Meteor, and there are already quite a few people running production Meteor apps on it. 
+[Modulus](https://modulus.io/) is a great option for deploying Node.js apps. It's one of the few PaaS (platform-as-a-service) provider that officially support Meteor, and there are already quite a few people running production Meteor apps on it.
 
 <% note do %>
 
@@ -61,7 +61,7 @@ Start by [creating an account](https://modulus.io/register). To deploy our app o
 npm install -g modulus
 ~~~
 
-And then authenticate with: 
+And then authenticate with:
 
 ~~~bash
 modulus login
@@ -73,7 +73,7 @@ We'll now create a Modulus project (note that you can also do this via Modulus' 
 modulus project create
 ~~~
 
-The next step will be creating a MongoDB database for our app. We can create a MongoDB database with [Modulus itself](https://modulus.io/codex/database/getting_started), [MongoHQ](https://www.mongohq.com/) or with any other cloud MongoDB provider.
+The next step will be creating a MongoDB database for our app. We can create a MongoDB database with [Modulus itself](http://help.modulus.io/customer/portal/articles/1647770-using-meteor-with-modulus), [Compose](https://www.compose.io/) or with any other cloud MongoDB provider.
 
 Once we've created our MongoDB database, we can get the `MONGO_URL` for our database from Modulus' web UI (go to Dashboard > Databases > Select your database > Administration), then use it to configure our app like so:
 
@@ -81,7 +81,7 @@ Once we've created our MongoDB database, we can get the `MONGO_URL` for our data
 modulus env set MONGO_URL "mongodb://<user>:<pass>@mongo.onmodulus.net:27017/<database_name>"
 ~~~
 
-It's now time to deploy our app. It's as simple as typing: 
+It's now time to deploy our app. It's as simple as typing:
 
 ~~~bash
 modulus deploy
@@ -91,9 +91,9 @@ We've now successfully deployed our app to Modulus. Refer to [the Modulus docume
 
 ### Meteor Up
 
-Although new cloud solutions are appearing every day, they often come with their own share of problems and limitations. So as of today, deploying on your own server remains the best way to put a Meteor application in production. The only thing is, deploying yourself is not that simple, especially if you're looking for production-quality deployment. 
+Although new cloud solutions are appearing every day, they often come with their own share of problems and limitations. So as of today, deploying on your own server remains the best way to put a Meteor application in production. The only thing is, deploying yourself is not that simple, especially if you're looking for production-quality deployment.
 
-[Meteor Up](https://github.com/arunoda/meteor-up) (or `mup` for short) is another attempt at fixing that issue, with a command-line utility that takes care of setup and deployment for you. So let's see how to deploy Microscope using Meteor Up. 
+[Meteor Up](https://github.com/arunoda/meteor-up) (or `mup` for short) is another attempt at fixing that issue, with a command-line utility that takes care of setup and deployment for you. So let's see how to deploy Microscope using Meteor Up.
 
 Before anything else, we'll need a server to push to. We recommend either [Digital Ocean](http://digitalocean.com), which starts at $5 per month, or [AWS](http://aws.amazon.com/), which provides Micro instances for free (you'll quickly run into scaling problems, but if you're just looking to play around with Meteor Up it should be enough).
 
@@ -107,9 +107,9 @@ To start out, we'll need to install Meteor Up via `npm` as follows:
 npm install -g mup
 ~~~
 
-We'll then create a special, separate directory that will hold our Meteor Up settings for a particular deployment. We're using a separate directory for two reasons: first, it's usually best to avoid including any private credentials in your Git repo, especially if you're working on a public codebase. 
+We'll then create a special, separate directory that will hold our Meteor Up settings for a particular deployment. We're using a separate directory for two reasons: first, it's usually best to avoid including any private credentials in your Git repo, especially if you're working on a public codebase.
 
-Second, by using multiple separate directories, we'll be able to manage multiple Meteor Up configurations in parallel. This will come in handy for deploying to production and staging instances, for example. 
+Second, by using multiple separate directories, we'll be able to manage multiple Meteor Up configurations in parallel. This will come in handy for deploying to production and staging instances, for example.
 
 So let's create this new directory and use it to initialize a new Meteor Up project:
 
@@ -123,13 +123,13 @@ mup init
 
 ### Sharing with Dropbox
 
-A great way to make sure you and your team all use the same deployment settings is to simply create your Meteor Up configuration folder inside your Dropbox, or any similar service. 
+A great way to make sure you and your team all use the same deployment settings is to simply create your Meteor Up configuration folder inside your Dropbox, or any similar service.
 
 <% end %>
 
 ### Meteor Up Configuration
 
-When initializing a new project, Meteor Up will create two files for you: `mup.json` and `settings.json`. 
+When initializing a new project, Meteor Up will create two files for you: `mup.json` and `settings.json`.
 
 `mup.json` will hold all our deployment-related settings, while `settings.json` will contain all app-related settings (OAuth tokens, analytics tokens, etc.).
 
@@ -170,13 +170,13 @@ You'll notice that Meteor Up supports password based and private key (PEM) based
 
 **MongoDB Configuration**
 
-The next step is to configure a MongoDB database for your app. We recommend using [MongoHQ](https://www.mongohq.com/home) or any other cloud MongoDB provider, since they offer professional support and better management tools.
+The next step is to configure a MongoDB database for your app. We recommend using [Compose](https://www.compose.io) or any other cloud MongoDB provider, since they offer professional support and better management tools.
 
-If you've decided to use MongoHQ, set `setupMongo` as `false` and add the `MONGO_URL` environmental variable in `mup.json`'s `env` block. If you decided to host MongoDB with Meteor Up, just set `setupMongo` as `true` and Meteor Up will take care of the rest.
+If you've decided to use Compose, set `setupMongo` as `false` and add the `MONGO_URL` environmental variable in `mup.json`'s `env` block. If you decided to host MongoDB with Meteor Up, just set `setupMongo` as `true` and Meteor Up will take care of the rest.
 
 **Meteor App Path**
 
-Since our Meteor Up configuration lives in a different directory, we'll need to point Meteor Up back to our app using the `app` property. Just input your full local path, which you can get using the `pwd` command from the terminal when located inside your app's directory. 
+Since our Meteor Up configuration lives in a different directory, we'll need to point Meteor Up back to our app using the `app` property. Just input your full local path, which you can get using the `pwd` command from the terminal when located inside your app's directory.
 
 **Environment Variables**
 
@@ -196,7 +196,7 @@ This will take a few minutes depending on the server's performance and the netwo
 mup deploy
 ~~~
 
-This will bundle the meteor app, and deploy to the server we just set up. 
+This will bundle the meteor app, and deploy to the server we just set up.
 
 ### Displaying Logs
 
