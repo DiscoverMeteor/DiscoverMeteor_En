@@ -10,7 +10,7 @@ contents: Install Meteor.|Learn about the 5 types of Meteor packages.|Setup the 
 paragraphs: 49
 ---
 
-First impressions are important, and Meteor's install process should be relatively painless. In most cases, you'll be up and running in less than five minutes. 
+First impressions are important, and Meteor's install process should be relatively painless. In most cases, you'll be up and running in less than five minutes.
 
 To begin with, we can install Meteor by opening a terminal window and typing:
 
@@ -26,9 +26,9 @@ This will install the `meteor` executable onto your system and have you ready to
 
 If you can't (or don't want to) install Meteor locally, we recommend checking out [Nitrous.io](http://nitrous.io).
 
-Nitrous.io is a service that lets you run apps and edit their code right in your browser, and we've written [a short guide](https://www.discovermeteor.com/blog/meteor-nitrous) to help you get set up. 
+Nitrous.io is a service that lets you run apps and edit their code right in your browser, and we've written [a short guide](https://www.discovermeteor.com/blog/meteor-nitrous) to help you get set up.
 
-You can simply follow that guide up to (and including) the "Installing Meteor" section, and then follow along with the book again starting from the "Creating a Simple App" section of this chapter. 
+You can simply follow that guide up to (and including) the "Installing Meteor" section, and then follow along with the book again starting from the "Creating a Simple App" section of this chapter.
 
 <% end %>
 
@@ -44,12 +44,12 @@ This command will download Meteor, and set up a basic, ready to use Meteor proje
 
 ~~~bash
 .meteor
-microscope.css  
-microscope.html 
-microscope.js   
+microscope.css
+microscope.html
+microscope.js
 ~~~
 
-The app that Meteor has created for you is a simple boilerplate application demonstrating a few simple patterns. 
+The app that Meteor has created for you is a simple boilerplate application demonstrating a few simple patterns.
 
 Even though our app doesn't do much, we can still run it. To run the app, go back to your terminal and type:
 
@@ -58,15 +58,15 @@ cd microscope
 meteor
 ~~~
 
-Now point your browser to `http://localhost:3000/` (or the equivalent `http://0.0.0.0:3000/`) and you should see something like this: 
+Now point your browser to `http://localhost:3000/` (or the equivalent `http://0.0.0.0:3000/`) and you should see something like this:
 
 <%= screenshot "2-1", "Meteor's Hello World." %>
 
 <%= commit "2-1", "Created basic microscope project." %>
 
-Congratulations! You've got your first Meteor app running. By the way, to stop the app all you need to do is bring up the terminal tab where the app is running, and press `ctrl+c`. 
+Congratulations! You've got your first Meteor app running. By the way, to stop the app all you need to do is bring up the terminal tab where the app is running, and press `ctrl+c`.
 
-Also note that if you're using Git, this is a good time to initialize your repo with `git init`. 
+Also, note that if you're using Git, this is a good time to initialize your repo with `git init`.
 
 <% note do %>
 
@@ -74,7 +74,7 @@ Also note that if you're using Git, this is a good time to initialize your repo 
 
 There was a time where Meteor relied on an external package manager called Meteorite. Since Meteor version 0.9.0, Meteorite is not needed anymore since its features have been assimilated into Meteor itself.
 
-So if you encounter any references to Meteorite's `mrt` command line utility throughout this book or while browsing Meteor-related material, you can safely replace them by the usual `meteor`. 
+So, if you encounter any references to Meteorite's `mrt` command line utility throughout this book or while browsing Meteor-related material, you can safely replace them by the usual `meteor`.
 
 <% end %>
 
@@ -93,7 +93,7 @@ meteor add mizzao:bootstrap-3
 meteor add underscore
 ~~~
 
-Note that we're adding Bootstrap **3**. Some of the screenshots in this book were taken with an older version of Microscope running Bootstrap **2**, which means they might look slightly different. 
+Note that we're adding Bootstrap **3**. Some of the screenshots in this book were taken with an older version of Microscope running Bootstrap **2**, which means they might look slightly different.
 
 <%= commit "2-2", "Added bootstrap and underscore packages." %>
 
@@ -101,7 +101,7 @@ As soon as you've added the Bootstrap package you should notice a change in our 
 
 <%= screenshot "2-1b", "With Bootstrap." %>
 
-Unlike the “traditional” way of including external assets, we haven't had to link up any CSS or JavaScript files, because Meteor takes care of all that for us! That's just one of the many advantages of Meteor packages. 
+Unlike the “traditional” way of including external assets, we haven't had to link up any CSS or JavaScript files, because Meteor takes care of all that for us! That's just one of the many advantages of Meteor packages.
 
 <% note do %>
 
@@ -110,35 +110,35 @@ Unlike the “traditional” way of including external assets, we haven't had to
 When speaking about packages in the context of Meteor, it pays to be specific. Meteor uses five basic types of packages:
 
 - The Meteor core itself is split into different **Meteor platform packages**. They are included with every Meteor app, and you will pretty much never need to worry about these.
-- Regular Meteor packages are known as “**isopacks**”, or isomorphic packages (meaning they can work both on client and server). **First-party packages** such as `accounts-ui` or `appcache` are maintained by the Meteor core team and [come bundled with Meteor](http://docs.meteor.com/#packages). 
+- Regular Meteor packages are known as “**isopacks**”, or isomorphic packages (meaning they can work both on client and server). **First-party packages** such as `accounts-ui` or `appcache` are maintained by the Meteor core team and [come bundled with Meteor](http://docs.meteor.com/#packages).
 - **Third-party packages** are just isopacks developed by other users that have been uploaded to Meteor's package server. You can browse them on [Atmosphere](http://atmosphere.meteor.com) or with the `meteor search` command.
-- **Local packages** are custom packages you can create yourself and put in the `/packages` directory. 
-- **NPM packages** (Node.js Packaged Modules) are Node.js packages. Although they don't work out of the box with Meteor, they *can* be used by the previous types of packages. 
+- **Local packages** are custom packages you can create yourself and put in the `/packages` directory.
+- **NPM packages** (Node.js Packaged Modules) are Node.js packages. Although they don't work out of the box with Meteor, they *can* be used by the previous types of packages.
 
 <% end %>
 
 ### The File Structure of a Meteor App
 
-Before we begin coding, we must set up our project properly. To ensure we have a clean build, open up the `microscope` directory and delete `microscope.html`, `microscope.js`, and `microscope.css`. 
+Before we begin coding, we must set up our project properly. To ensure we have a clean build, open up the `microscope` directory and delete `microscope.html`, `microscope.js`, and `microscope.css`.
 
-Next, create four root directories inside `/microscope`: `/client`, `/server`, `/public`, and `/lib`. 
+Next, create four root directories inside `/microscope`: `/client`, `/server`, `/public`, and `/lib`.
 
-Next, we'll also create empty `main.html` and `main.js` files inside `/client`. Don't worry if this breaks the app for now, we'll start filling in these files in the next chapter. 
+Next, we'll also create empty `main.html` and `main.js` files inside `/client`. Don't worry if this breaks the app for now, we'll start filling in these files in the next chapter.
 
 We should mention that some of these directories are special. When it comes to running code, Meteor has a few rules:
 
 - Code in the `/server` directory only runs on the server.
 - Code in the `/client` directory only runs on the client.
 - Everything else runs on both the client and server.
-- Your static assets (fonts, images, etc.) go in the `/public` directory. 
+- Your static assets (fonts, images, etc.) go in the `/public` directory.
 
 And it's also useful to know how Meteor decides in which order to load your files:
 
 - Files in `/lib` are loaded *before* anything else.
 - Any `main.*` file is loaded *after* everything else.
-- Everything else loads in alphabetical order based on the file name. 
+- Everything else loads in alphabetical order based on the file name.
 
-Note that although Meteor has these rules, it doesn't really force you to use any predefined file structure for your app if you don't want to. So the structure we suggest is just our way of doing things, not a rule set in stone. 
+Note that although Meteor has these rules, it doesn't really force you to use any predefined file structure for your app if you don't want to. So the structure we suggest is just our way of doing things, not a rule set in stone.
 
 We encourage you to check out the [official Meteor docs](http://docs.meteor.com/#structuringyourapp) if you want more details on this.
 
@@ -146,7 +146,7 @@ We encourage you to check out the [official Meteor docs](http://docs.meteor.com/
 
 ### Is Meteor MVC?
 
-If you're coming to Meteor from other frameworks such as Ruby on Rails, you might be wondering if Meteor apps adopt the MVC (Model View Controller) pattern. 
+If you're coming to Meteor from other frameworks such as Ruby on Rails, you might be wondering if Meteor apps adopt the MVC (Model View Controller) pattern.
 
 The short answer is no. Unlike Rails, Meteor doesn't impose any predefined structure to your app. So in this book we'll simply lay out code in the way that makes the most sense to us, without worrying too much about acronyms.
 
@@ -154,7 +154,7 @@ The short answer is no. Unlike Rails, Meteor doesn't impose any predefined struc
 
 ### No public?
 
-OK, we lied. We don't actually need the `public/` directory for the simple reason that Microscope doesn't use any static assets! But since most other Meteor apps are going to include at least a couple images, we thought it was important to cover it too. 
+OK, we lied. We don't actually need the `public/` directory for the simple reason that Microscope doesn't use any static assets! But, since most other Meteor apps are going to include at least a couple images, we thought it was important to cover it too.
 
 By the way, you might also notice a hidden `.meteor` directory. This is where Meteor stores its own code, and modifying  things in there is usually a very bad idea. In fact, you don't really ever need to look in this directory at all. The only exceptions to this are the `.meteor/packages` and `.meteor/release` files, which are respectively used to list your smart packages and the version of Meteor to use. When you add packages and change Meteor releases, it can be helpful to check the changes to these files.
 
@@ -162,9 +162,9 @@ By the way, you might also notice a hidden `.meteor` directory. This is where Me
 
 ### Underscores vs CamelCase
 
-The only thing we'll say about the age-old underscore (`my_variable`) vs camelCase (`myVariable`) debate is that it doesn't really matter which one you pick as long as you stick to it. 
+The only thing we'll say about the age-old underscore (`my_variable`) vs camelCase (`myVariable`) debate is that it doesn't really matter which one you pick as long as you stick to it.
 
-In this book, we're using camelCase because it's the usual JavaScript way of doing things (after all, it's JavaScript, not java_script!). 
+In this book, we're using camelCase because it's the usual JavaScript way of doing things (after all, it's JavaScript, not java_script!).
 
 The only exceptions to this rule are file names, which will use underscores (`my_file.js`), and CSS classes, which use hyphens (`.my-class`). The reason for this is that in the filesystem, underscores are most common, while the CSS syntax itself already uses hyphens (`font-family`, `text-align`, etc.).
 
@@ -172,7 +172,7 @@ The only exceptions to this rule are file names, which will use underscores (`my
 
 ### Taking Care of CSS
 
-This book is not about CSS. So to avoid slowing you down with styling details, we've decided to make the whole stylesheet available from the start, so you don't need to worry about it ever again. 
+This book is not about CSS. So to avoid slowing you down with styling details, we've decided to make the whole stylesheet available from the start, so you don't need to worry about it ever again.
 
 CSS automatically gets loaded and minified by Meteor, so unlike other static assets it goes into `/client`, not `/public`. Go ahead and create a `client/stylesheets/` directory now, and put this `style.css` file inside it:
 
