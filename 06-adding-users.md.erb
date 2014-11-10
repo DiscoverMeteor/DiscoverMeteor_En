@@ -32,7 +32,7 @@ meteor add accounts-password
 
 Those two commands make the special accounts templates available to us, and we can include them in our site using the `{{> loginButtons}}` helper. A handy tip: you can control on which side your log-in dropdown shows up using the `align` attribute (for example: `{{> loginButtons  align="right"}}`).
 
-We'll add the buttons to our header. And since that header is starting to grow larger, let's give it more room in its own template (we'll put it in `client/templates/includes/`). We're also using some extra markup and Bootstrap classes to make sure everything looks nice:
+We'll add the buttons to our header. And since that header is starting to grow larger, let's give it more room in its own template (we'll put it in `client/templates/includes/`). We're also using some extra markup and classes [as specified by Bootstrap](http://getbootstrap.com/components/#navbar) to make sure everything looks nice:
 
 ~~~html
 <template name="layout">

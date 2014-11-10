@@ -259,8 +259,6 @@ And then create the comment form template:
 ~~~
 <%= caption "client/templates/comments/comment_submit.html" %>
 
-<%= screenshot "10-2", "The comment submit form" %>
-
 To submit our comments, we call a `comment` Method in `comment_submit.js` that operates in a similar way to what we did for submitting posts:
 
 ~~~js
@@ -340,6 +338,8 @@ Meteor.methods({
 <%= commit "10-3", "Created a form to submit comments." %>
 
 This is not doing anything too fancy, just checking that the user is logged in, that the comment has a body, and that it's linked to a post.
+
+<%= screenshot "10-2", "The comment submit form" %>
 
 ### Controlling the Comments Subscription
 

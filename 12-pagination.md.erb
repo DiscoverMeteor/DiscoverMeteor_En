@@ -335,7 +335,7 @@ We have a working pagination, and our code is looking good. There's just one pro
 
 What we want to do is simple enough. We'll add a “load more” button at the bottom of our posts list, which will increment the number of posts currently displayed by 5 every time it's clicked. So if I'm currently on the URL `http://localhost:3000/5`, clicking “load more” should bring me to `http://localhost:3000/10`. If you've made it this far in the book, we trust you can handle a little arithmetic!
 
-As before, we'll add our pagination logic in our route. Remember when we explicitely named our data context rather than just use an anonymous cursor? Well, there's no rule that says the `data` function can only pass cursors, so we'll use the same technique to generate the URL of our “load more” button.
+As before, we'll add our pagination logic in our route. Remember when we explicitly named our data context rather than just use an anonymous cursor? Well, there's no rule that says the `data` function can only pass cursors, so we'll use the same technique to generate the URL of our “load more” button.
 
 ~~~js
 //...

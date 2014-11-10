@@ -16,7 +16,7 @@ To do so, we'll notify the post's owner that there's been a comment on their pos
 
 This is the kind of feature where Meteor really shines: because Meteor is realtime by default, we'll be displaying those notifications _instantly_. We don't need to wait for the user to refresh the page or check in any way, we can simply pop new notifications up without ever writing any special code. 
 
-### Creating notifications
+### Creating Notifications
 
 We'll create a notification when someone comments on your posts. In the future, notifications could be extended to cover many other scenarios, but for now this will be enough to keep users informed of what's going on.
 
@@ -63,7 +63,7 @@ We are already creating comments in a server-side Method, so we can just augment
 Comments = new Mongo.Collection('comments');
 
 Meteor.methods({
-  comment: function(commentAttributes) {
+  commentInsert: function(commentAttributes) {
 
     //...
     
