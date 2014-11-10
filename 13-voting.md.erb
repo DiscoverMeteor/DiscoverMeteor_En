@@ -145,7 +145,7 @@ return {
 //...
 ~~~
 <%= caption "collections/posts.js" %>
-<%= highlight "16~17" %>
+<%= highlight "17~18" %>
 
 ### Voting Templates
 
@@ -451,7 +451,7 @@ Router.route('/new/:postsLimit?', {name: 'newPosts'});
 Router.route('/best/:postsLimit?', {name: 'bestPosts'});
 ~~~
 <%= caption "lib/router.js" %>
-<%= highlight "10,22,27~39,42~55" %>
+<%= highlight "10,23,27~55" %>
 
 Note that now that we have more than one route, we're taking the `nextPath` logic out of `PostsListController` and into `NewPostsController` and `BestPostsController`, since the path will be different in either case. 
 
@@ -576,7 +576,7 @@ The reason why we want to support multiple named routes is that both our `home` 
 </template>
 ~~~
 <%= caption "client/templates/includes/header.html" %>
-<%= highlight "9,12,15,19" %>
+<%= highlight "15,18,22" %>
 
 ~~~js
 Template.header.helpers({

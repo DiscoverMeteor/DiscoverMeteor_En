@@ -84,7 +84,7 @@ Router.configure({
 });
 ~~~
 <%= caption "lib/router.js" %>
-<%= highlight "5" %>
+<%= highlight "6" %>
 
 We'll then add a `postsLimit` parameter to the route's path. Adding a `?` after the parameter name means that it's optional. So our route will not only match `http://localhost:3000/50`, but also plain old `http://localhost:3000`. 
 
@@ -102,7 +102,7 @@ Router.route('/:postsLimit?', {
 
 It's important to note that a path of the form `/:parameter?` will match every possible path. Since each route will be parsed successively to see if it matches the current path, we need to make sure we organize our routes in order of decreasing specificity.
 
-In other words, routes that target more specific routes like `/posts/:_id` should come first, and our `postsList` route should be moved **to the bottom** of the `Router.map()` block since it pretty much matches everything,
+In other words, routes that target more specific routes like `/posts/:_id` should come first, and our `postsList` route should be moved **to the bottom** of the `router.js` file since it pretty much matches everything,
 
 It's now time to tackle the tough problem of subscribing and finding the right data. We need to deal with the case where the `postsLimit` parameter isn't present, so we'll assign it a default value. We'll use “5” to really give us enough room to play around with pagination.
 
@@ -120,7 +120,7 @@ Router.route('/:postsLimit?', {
 //...
 ~~~
 <%= caption "lib/router.js" %>
-<%= highlight "7~9" %>
+<%= highlight "5~8" %>
 
 You'll notice we're now passing a JavaScript object ({sort: {submitted: -1}, limit: postsLimit}) along with the name of our `posts` publication. This object will serve as the `options` parameter for the server side `Posts.find()` statement. Let's switch over to our server-side code to implement this:
 
@@ -191,7 +191,7 @@ Router.route('/:postsLimit?', {
 <%= caption "lib/router.js" %>
 <%= highlight "9~14" %>
 
-Now that we're setting the data context at the router level we can safely get rid of the `posts` template helper inside the `posts_list.js` file. And since we named our data context `posts` (the same name as the helper), we don't even need to touch our `postsList` template!
+And since we're setting the data context at the route level, we can now safely get rid of the `posts` template helper inside the `posts_list.js` file. We named our data context `posts` (the same name as the helper), so we don't even need to touch our `postsList` template!
 
 Let's recap. Here's what our new and improved `router.js` code should look like:
 

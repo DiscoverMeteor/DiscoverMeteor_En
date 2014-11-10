@@ -143,7 +143,7 @@ Template.postPage.helpers({
 
 We put the `{{#each comments}}` block inside the post template, so `this` is a post within the `comments` helper. To find the relevant comments, we check those that are linked to that post via the `postId` attribute.
 
-Given what we've learned about helpers and Spacebars, rendering a comment is fairly straightforward. We'll create a new `comments` directory inside `views` to store all our comment information, and a new `commentItem` template inside that:
+Given what we've learned about helpers and Spacebars, rendering a comment is fairly straightforward. We'll create a new `comments` directory inside `templates` to store all our comment information, and a new `commentItem` template inside that:
 
 ~~~html
 <template name="commentItem">
@@ -371,24 +371,20 @@ Router.configure({
 And we'll add a new *route*-level `waitOn` function just for the `postPage` route:
 
 ~~~js
-Router.map(function() {
+//...
 
-  //...
-
-  this.route('postPage', {
-    path: '/posts/:_id',
-    waitOn: function() {
-      return Meteor.subscribe('comments', this.params._id);
-    },
-    data: function() { return Posts.findOne(this.params._id); }
-  });
-
-  //...
-
+Router.route('/posts/:_id', {
+  name: 'postPage',
+  waitOn: function() {
+    return Meteor.subscribe('comments', this.params._id);
+  },
+  data: function() { return Posts.findOne(this.params._id); }
 });
+
+//...
 ~~~
 <%= caption "lib/router.js" %>
-<%= highlight "7~9" %>
+<%= highlight "5~7" %>
 
 We're passing `this.params._id` as an argument to the subscription. So let's use that new information to make sure we restrict our data set to comments belonging to the current post:
 
