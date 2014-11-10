@@ -356,7 +356,7 @@ If everything is working correctly the page should change instantaneously. In fa
 
 ### Post Not Found
 
-Let's not forget that routing works both way: it can change the URL when we visit a page, but it can also display a new page when we change *the URL*. So we need to figure out what happens if somebody enters the *wrong* URL.
+Let's not forget that routing works both ways: it can change the URL when we visit a page, but it can also display a new page when we change *the URL*. So we need to figure out what happens if somebody enters the *wrong* URL.
 
 Thankfully, Iron Router takes care of this for us through the `notFoundTemplate` option.
 
@@ -401,7 +401,7 @@ Router.onBeforeAction('dataNotFound', {only: 'postPage'});
 <%= caption "lib/router.js"%>
 <%= highlight "4" %>
 
-This tell Iron Router to show the “not found” page not just for invalid routes but also for the `postPage` route,  whenever the `data` function returns a “falsy” (i.e. `null`, `false`, `undefined`, or empty) object.
+This tells Iron Router to show the “not found” page not just for invalid routes but also for the `postPage` route,  whenever the `data` function returns a “falsy” (i.e. `null`, `false`, `undefined`, or empty) object.
 
 <%= commit "5-4", "Added not found template." %>
 
