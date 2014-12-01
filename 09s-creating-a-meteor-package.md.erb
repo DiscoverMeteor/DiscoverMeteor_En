@@ -109,7 +109,7 @@ One other thing we need to do is to make some minor updates to use the correct A
 <%= caption "client/templates/application/layout.html" %>
 
 ~~~js
-Meteor.call('postInsert', post, function(error, id) {
+Meteor.call('postInsert', post, function(error, result) {
   if (error) {
     // display the error to the user
     Errors.throw(error.reason);

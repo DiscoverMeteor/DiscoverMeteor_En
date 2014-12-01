@@ -418,6 +418,8 @@ Our pagination is now working properly, but it suffers from an annoying quirk: e
 
 So first, we'll have to tell Iron Router not to `waitOn` the subscription after all. Instead, we'll define our subscriptions in a `subscriptions` hook.
 
+Note that we're not *returning* this subscriptions in the hook. Returning it (which is how the `subscriptions` hook is usually employed) would trigger the global loading hook, and that's exactly what we want to avoid in the first place. Instead we're simply using the `subscriptions` hook as a convenient place to define our subscription, similar to using an `onBeforeAction` hook. 
+
 We're also passing a `ready` variable referring to `this.postsSub.ready` as part of our data context. This will let us tell the template when the post subscription is done loading.
 
 ~~~js

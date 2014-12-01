@@ -215,8 +215,8 @@ So we'll use Meteor's `deny()` callback to ensure users can only edit specific f
 Posts = new Mongo.Collection('posts');
 
 Posts.allow({
-  update: ownsDocument,
-  remove: ownsDocument
+  update: function(userId, post) { return ownsDocument(userId, post); },
+  remove: function(userId, post) { return ownsDocument(userId, post); },
 });
 
 Posts.deny({
