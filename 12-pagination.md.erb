@@ -191,7 +191,9 @@ Router.route('/:postsLimit?', {
 <%= caption "lib/router.js" %>
 <%= highlight "9~14" %>
 
-And since we're setting the data context at the route level, we can now safely get rid of the `posts` template helper inside the `posts_list.js` file. We named our data context `posts` (the same name as the helper), so we don't even need to touch our `postsList` template!
+And since we're setting the data context at the route level, we can now safely get rid of the `posts` template helper inside the `posts_list.js` file and just delete the contents of that file. 
+
+We named our data context `posts` (the same name as the helper), so we don't even need to touch our `postsList` template!
 
 Let's recap. Here's what our new and improved `router.js` code should look like:
 
