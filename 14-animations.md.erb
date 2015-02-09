@@ -6,7 +6,7 @@ number: 14
 points: 10
 photoUrl: http://www.flickr.com/photos/ikewinski/8377615133/
 photoAuthor: Mike Lewinski
-contents: See what happens behind the scenes when Meteor swaps two DOM elements.|Learn how to animate the reordering of posts.|Learn how to animate the insertion of new posts.
+contents: See what happens behind the scenes when Meteor swaps two DOM elements.|Learn how to animate the reordering of posts.|Learn how to animate the insertion and deletion of posts.|Learn to animate transitions between two pages.
 paragraphs: 58
 ---
 
@@ -18,11 +18,13 @@ Before we can start the fun part (making things move around), we need to underst
 
 The crucial point to keep in mind is that elements in the DOM cannot really be “moved”; however, they can be deleted and created (note that this is a limitation of the DOM itself, not of Meteor). So to give the illusion of elements A and B switching place, Meteor will actually delete element B and insert a brand new copy (B') before element A. 
 
-This makes animation a little tricky, as we can't just animate B to move it to a new position, because B will be gone as soon as Meteor re-renders the page (which happens instantly thanks to reactivity). But don't worry, we'll find a way. 
+This makes animation a little tricky, as we can't just animate B to move it to a new position, because B will be gone as soon as Meteor re-renders the page (which happens instantly thanks to reactivity). Don't worry though, we'll find a way. 
 
 ### The Soviet Runner
 
-The year was 1980, at the height of the Cold War. The Olympics were being held in Moscow, and the Soviets were determined to win the 100 meters dash at any cost. So a group of brilliant Soviet scientists equipped one of their athletes with a teleporter, and as soon as the gunshot was heard the runner was instantly moved to the finish line. 
+But first, a story. 
+
+The year was 1980, at the height of the Cold War. The Olympics were being held in Moscow, and the Soviets were determined to win the 100 meters dash at any cost. So a group of brilliant Soviet scientists equipped one of their athletes with a teleporter, and as soon as the gunshot was heard the runner disappeared in a flash, and was instantly reinserted into the space-time continuum right at the finish line. 
 
 Thankfully, race officials noticed the infraction immediately, and the athlete had no choice but to teleport back to the starting blocks, before being allowed to participate in the race by running like everybody else. 
 
@@ -155,7 +157,7 @@ Knowing this, we can work out the following animation process (feel free to refe
 3. Nudge every element between `node` and `next` to make room for `node`.
 4. Animate all elements back to their new default position.
 
-We'll do all this through the magic of [jQuery](http://jquery.com), by far the best DOM manipulation library out there. jQuery itself is out of the scope of this book, but let's quickly go over the jQuery methods we'll use:
+We'll do all this through the magic of [jQuery](http://jquery.com), by far the best DOM manipulation library out there. jQuery in general is out of the scope of this book, but let's quickly go over the handful of jQuery methods we'll use:
 
 - [`$()`](http://api.jquery.com/jQuery/): wrap any DOM element with the jQuery method to make it a jQuery object.
 - [`offset()`](http://api.jquery.com/offset/): retrieve the current position of an element relative to *the document*, and returns an object containing `top` and `left` properties.
@@ -199,7 +201,7 @@ Template.postsList.rendered = function () {
         
       
       // force a redraw
-      $node.height();
+      $node.offset();
       
       // reset everything to 0, animated
       $node.addClass('animate').css('top', 0);
@@ -215,8 +217,23 @@ A few notes:
 - We calculate `$node`'s height so we know by how much to offset the `$inBetween` elements. We use `outerHeight(true)` so that margin and padding are factored in the calculation.
 - We don't know if `next` comes after or before `node` when going down the DOM. So we check both configurations when defining `$inBetween`. 
 - In order to switch between “teleporting” and “animating” elements, we're simply toggling the `animate` CSS class on and off (the actual animation being defined in the app's CSS code). 
-- We call `$node.height()` because XXXX.
 - Since we're using relative positioning, we can always reset any element's `top` property back to 0 to bring it back to where it's supposed to be. 
+
+<% note do %>
+
+### Forcing The Redraw
+
+You're probably wondering about that `$node.offset()` line. Why are we asking for `$node`'s position if we're not going to do anything with it? 
+
+Think of it this way: if you told a perfectly logical android to run north for 5 kilometers, and then once that's done run back to its starting point, it would probably deduce that since it will end up in the same place it might as well save its energy and not run at all. 
+
+So in order to ensure that our android runs during the entire 10 kilometers, we'll ask it to measure its coordinates at the 5k mark before turning around. 
+
+The browser works in a similar way: if we just gave both the `css('top', oldTop - newTop)` and `css('top', 0)` instructions simultaneously, the new coordinates would simply replace the old ones and nothing would happen. If we want to actually see our animation, we need to force the browser to redraw the element after the first position change.
+
+And a simple way to force that redraw is asking the browser to check the element's `offset`. 
+
+<% end %>
 
 Let's give it a spin. Go back to the “Best” view and start upvoting: you should now see our posts glide up and down with ballet-like grace!
 
@@ -288,8 +305,6 @@ meteor add percolate:momentum
 meteor add percolate:momentum-iron-router
 ```
 
-// TODO: talk about wrapping?
-
 We're now ready to animate the transitions. Open `layout.html`, and wrap the `{{>yield}}` template helper with Momentum's own helper:
 
 ```html
@@ -318,26 +333,8 @@ Template.layout.transition = function () {
 }
 ```
 
-It will return a function that itself returns another function, that then returns the `fade` keyword. This is obviously a little involved, but this pattern is useful for more complex transitions (such as iOS style left-to-right translations for example).
+It will return a function that itself returns another function, that then returns the `fade` keyword. This is obviously a little involved for our current use case, but this pattern is useful for defining more complex transitions.
 
 <%= commit "14-3", "Transition between pages by fading." %>
 
-### Loading Woes
-
-We're still not quite out of the woods though. As you'll notice if you try out our transitions, there's a weird glitchy effect where some of our “from” pages (specifically, any post list page) disappear as soon as we initiate the route change, without being faded out. 
-
-// TODO: do we still need this?
-
-// TODO: do we still need the following note?
-
-<% note do %>
-
-### CSS & JavaScript
-
-You might have noticed that we're using an `.invisible` CSS class to trigger the animation instead of animating the CSS `opacity` property directly like we did for `top`. This is because for `top`, we needed to animate the property to a specific value that depended on the instance data. 
-
-On the other hand, here we only want to show and hide an element independently of its data. Since it's a good idea to keep your CSS out of your JavaScript as much as possible, we'll only add and remove the class here, and specify the details of the animation over in our stylesheet. 
-
-<% end %>
-
-We should finally have the animation behavior we wanted. Load up your app and give it a try! And you can also play around with the `.post.animated` classes to see if you can come up with other transitions. Hint: [CSS easing functions](http://matthewlein.com/ceaser/) are a good place to start!
+We've just seen a few patterns for animating elements within your Meteor app. While this is not an exhaustive list by any means, hopefully it will provide a foundation on which to build more elaborate transitions.
