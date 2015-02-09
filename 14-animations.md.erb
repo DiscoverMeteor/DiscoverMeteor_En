@@ -12,6 +12,18 @@ paragraphs: 58
 
 We now have real-time voting, scoring, and ranking. However, this leads to a jarring, erratic user experience as posts jump around on the homepage. We'll use animations to smooth this over.
 
+### Introducing `_uihooks`
+
+`_uihooks` is a relatively new, and as yet undocumented feature of Blaze. As its name indicates, it gives access to hooks that can be triggered whenever elements are inserted, removed, or animated. 
+
+The full list of hooks is as follow:
+
+- `insertElement`: called whenever a new element is inserted.
+- `moveElement`: called when an element changes position.
+- `removeElement`: called when an element is removed.
+
+Once defined, these hooks will *replace* Meteor's default behavior. In other words, instead of inserting, moving, or removing elements, Meteor will now use whatever behavior we specify – and it'll be up to us to make sure this behavior actually works! 
+
 ### Meteor & the DOM
 
 Before we can start the fun part (making things move around), we need to understand how Meteor interacts with the DOM (Document Object Model -- the collection of HTML elements that make up a page's contents).
@@ -49,9 +61,7 @@ The following diagram explains these steps in more detail:
 
 Again, in steps 3 and 4 we're not *animating* A and B' to their positions but “teleporting” them instantly. Since this is instantaneous, it will give the illusion that B was never deleted, and properly position both elements to be animated back to their new position.
 
-Thankfully, Meteor takes care of steps 1 & 2 for us, so we only need to worry about steps 3 through 6. 
-
-Moreover, in steps 5 and 6 all we're doing is moving the elements to their proper spot. So the only part we really need to worry about is steps 3 and 4, i.e. sending the elements to the animation's starting point. 
+By default, Meteor takes care of steps 1 & 2. Reimplementing them ourselves will be easy enough. And in steps 5 and 6 all we're doing is moving the elements to their proper spot. So the only part we really need to worry about is steps 3 and 4, i.e. sending the elements to the animation's starting point. 
 
 ### CSS Positioning
 
@@ -87,19 +97,9 @@ This in turns means we'd need to artificially set the height of the container vi
 
 <% end %>
 
-### Introducing `_uihooks`
+### Implementing `_uihooks`
 
-Now that we understand the various factors at play in animating a list of items, we're ready to start implementing the animation. And for that, we'll use `_uihooks`. 
-
-`_uihooks` is a relatively new, and as yet undocumented feature of Blaze. As its name indicates, it gives access to hooks that can be triggered whenever elements are inserted, removed, or animated. 
-
-The full list of hooks is as follow:
-
-- `insertElement`: called whenever a new element is inserted.
-- `moveElement`: called when an element changes position.
-- `removeElement`: called when an element is removed.
-
-To see `_uihooks` in action, we'll first need to wrap our list of posts in a new `.wrapper` container element:
+Now that we understand the various factors at play in animating a list of items, we're ready to start implementing the animation. We'll first need to wrap our list of posts in a new `.wrapper` container element:
 
 ```html
 <template name="postsList">
@@ -194,7 +194,6 @@ Template.postsList.rendered = function () {
         .css('top', oldTop - newTop);
       
       // push every other element down (or up) to put them back
-      $inBetween.css('top', oldTop < newTop ? height : -1 * height)
       $inBetween
         .removeClass('animate')
         .css('top', oldTop < newTop ? height : -1 * height)
