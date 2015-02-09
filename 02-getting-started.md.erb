@@ -82,14 +82,14 @@ So if you encounter any references to Meteorite's `mrt` command line utility thr
 
 We will now use Meteor's package system to add the [Bootstrap](http://getbootstrap.com/) framework to our project.
 
-This is no different from adding Bootstrap the usual way by manually including its CSS and JavaScript files, except that we rely on Meteor community member [Andrew Mao](https://github.com/mizzao) (the “mizzao” in `mizzao:bootstrap-3` is the package author's username) to keep everything up to date for us.
+This is no different from adding Bootstrap the usual way by manually including its CSS and JavaScript files, except that we rely on the Meteor community to keep everything up to date for us. [XXX: more explanation?]
 
 While we're at it, we'll also add the [Underscore](http://underscorejs.org/) package. Underscore is a JavaScript utility library, and it's very useful when it comes to manipulating JavaScript data structures.
 
 As of this writing, the `underscore` package is still part of the “official” Meteor packages, which is why it doesn't have an author:
 
 ~~~bash
-meteor add mizzao:bootstrap-3
+meteor add twbs:bootstrap
 meteor add underscore
 ~~~
 
@@ -194,6 +194,15 @@ body {
   background: #eee;
   color: #666666; }
 
+#main {
+  position: relative;
+}
+.page {
+  position: absolute;
+  top: 0px;
+  width: 100%;
+}
+
 .navbar {
   margin-bottom: 10px; }
   /* line 32, ../sass/style.scss */
@@ -226,7 +235,7 @@ body {
     -o-transition: none;
     transition: none; }
   .post.animate{
-    -webkit-transition: all 300ms 0ms ease-in;
+    -webkit-transition: all 300ms 0ms;
     -moz-transition: all 300ms 0ms ease-in;
     -o-transition: all 300ms 0ms ease-in;
     transition: all 300ms 0ms ease-in; }
@@ -340,6 +349,7 @@ body {
   margin-bottom: 5px;
   pointer-events: auto;
 }
+
 ~~~
 <%= caption "client/stylesheets/style.css" %>
 
