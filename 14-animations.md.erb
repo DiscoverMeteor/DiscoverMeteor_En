@@ -230,7 +230,7 @@ So in order to ensure that our android runs during the entire 10 kilometers, we'
 
 The browser works in a similar way: if we just gave both the `css('top', oldTop - newTop)` and `css('top', 0)` instructions simultaneously, the new coordinates would simply replace the old ones and nothing would happen. If we want to actually see our animation, we need to force the browser to redraw the element after the first position change.
 
-And a simple way to force that redraw is asking the browser to check the element's `offset`. 
+And a simple way to force that redraw is asking the browser to check the element's `offset` -- it can't know what that is until it's drawn the element again. 
 
 <% end %>
 
