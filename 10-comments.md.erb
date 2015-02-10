@@ -119,13 +119,15 @@ It's all very well putting comments into the database, but we also need to show 
 
 ~~~html
 <template name="postPage">
-  {{> postItem}}
-
-  <ul class="comments">
-    {{#each comments}}
-      {{> commentItem}}
-    {{/each}}
-  </ul>
+  <div class="post-page page">
+    {{> postItem}}
+  
+    <ul class="comments">
+      {{#each comments}}
+        {{> commentItem}}
+      {{/each}}
+    </ul>
+  </div>
 </template>
 ~~~
 <%= caption "client/templates/posts/post_page.html" %>
@@ -223,19 +225,21 @@ We'll start by adding a submit box at the bottom of each post:
 
 ~~~html
 <template name="postPage">
-  {{> postItem}}
-
-  <ul class="comments">
-    {{#each comments}}
-      {{> commentItem}}
-    {{/each}}
-  </ul>
-
-  {{#if currentUser}}
-    {{> commentSubmit}}
-  {{else}}
-    <p>Please log in to leave a comment.</p>
-  {{/if}}
+  <div class="post-page page">
+    {{> postItem}}
+  
+    <ul class="comments">
+      {{#each comments}}
+        {{> commentItem}}
+      {{/each}}
+    </ul>
+  
+    {{#if currentUser}}
+      {{> commentSubmit}}
+    {{else}}
+      <p>Please log in to leave a comment.</p>
+    {{/if}}
+  </div>
 </template>
 ~~~
 <%= caption "client/templates/posts/post_page.html" %>

@@ -264,7 +264,7 @@ To get started, let's prep our `postSubmit` template to accept these new helpers
 
 ~~~html
 <template name="postSubmit">
-  <form class="main form">
+  <form class="main form page">
     <div class="form-group {{errorClass 'url'}}">
       <label class="control-label" for="url">URL</label>
       <div class="controls">
@@ -447,7 +447,7 @@ To round things up, we'll also apply the same validation to our post *edit* form
 
 ~~~html
 <template name="postEdit">
-  <form class="main form">
+  <form class="main form page">
     <div class="form-group {{errorClass 'url'}}">
       <label class="control-label" for="url">URL</label>
       <div class="controls">

@@ -76,7 +76,7 @@ Setting up our route means that if a user browses to the `/submit` URL, Meteor w
 
 ~~~html
 <template name="postSubmit">
-  <form class="main form">
+  <form class="main form page">
     <div class="form-group">
       <label class="control-label" for="url">URL</label>
       <div class="controls">
@@ -225,7 +225,7 @@ We also create the template for the access denied page:
 
 ~~~html
 <template name="accessDenied">
-  <div class="access-denied jumbotron">
+  <div class="access-denied page jumbotron">
     <h2>Access Denied</h2>
     <p>You can't get here! Please log in.</p>
   </div>
