@@ -82,7 +82,7 @@ So if you encounter any references to Meteorite's `mrt` command line utility thr
 
 We will now use Meteor's package system to add the [Bootstrap](http://getbootstrap.com/) framework to our project.
 
-This is no different from adding Bootstrap the usual way by manually including its CSS and JavaScript files, except that we rely on the Meteor community to keep everything up to date for us. [XXX: more explanation?]
+This is no different from adding Bootstrap the usual way by manually including its CSS and JavaScript files, except that we rely on the package maintainer to keep everything up to date for us.
 
 While we're at it, we'll also add the [Underscore](http://underscorejs.org/) package. Underscore is a JavaScript utility library, and it's very useful when it comes to manipulating JavaScript data structures.
 
@@ -179,10 +179,6 @@ CSS automatically gets loaded and minified by Meteor, so unlike other static ass
 ~~~css
 .grid-block, .main, .post, .comments li, .comment-form {
   background: #fff;
-  -webkit-border-radius: 3px;
-  -moz-border-radius: 3px;
-  -ms-border-radius: 3px;
-  -o-border-radius: 3px;
   border-radius: 3px;
   padding: 10px;
   margin-bottom: 10px;
@@ -207,10 +203,6 @@ body {
   margin-bottom: 10px; }
   /* line 32, ../sass/style.scss */
   .navbar .navbar-inner {
-    -webkit-border-radius: 0px 0px 3px 3px;
-    -moz-border-radius: 0px 0px 3px 3px;
-    -ms-border-radius: 0px 0px 3px 3px;
-    -o-border-radius: 0px 0px 3px 3px;
     border-radius: 0px 0px 3px 3px; }
 
 #spinner {
@@ -288,10 +280,6 @@ body {
 
 .load-more {
   display: block;
-  -webkit-border-radius: 3px;
-  -moz-border-radius: 3px;
-  -ms-border-radius: 3px;
-  -o-border-radius: 3px;
   border-radius: 3px;
   background: rgba(0, 0, 0, 0.05);
   text-align: center;
@@ -349,7 +337,6 @@ body {
   margin-bottom: 5px;
   pointer-events: auto;
 }
-
 ~~~
 <%= caption "client/stylesheets/style.css" %>
 

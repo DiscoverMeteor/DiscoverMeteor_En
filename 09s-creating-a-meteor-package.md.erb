@@ -129,7 +129,7 @@ Posts.update(currentPostId, {$set: postProperties}, function(error) {
 
 Once these changes have been made, we should get our original pre-package behaviour back.
 
-### Writing tests
+### Writing Tests
 
 The first step in developing a package is testing it against an application, but the next is to write a test suite that properly tests the package's behaviour. Meteor itself comes with Tinytest (a built in package tester), which makes it easy to run such tests and maintain peace of mind when sharing our package with others.
 
@@ -210,3 +210,5 @@ meteor add tmeasday:errors
 <%= scommit "9-5-4", "Removed package from development tree." %>
 
 Now we should see Meteor download our package for the very first time. Well done!
+
+As usual with sidebar chapters, make sure you revert your changes before moving on (or else be sure to account for them when following along the rest of the book).

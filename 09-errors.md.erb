@@ -311,8 +311,11 @@ Template.postSubmit.helpers({
     return !!Session.get('postSubmitErrors')[field] ? 'has-error' : '';
   }
 });
+
+//...
 ~~~
 <%= caption "client/templates/posts/post_submit.js" %>
+<%= highlight "1~12" %>
 
 You can test that our helpers are working properly by opening the browser console and typing the following line of code:
 
