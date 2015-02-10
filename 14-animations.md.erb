@@ -61,7 +61,7 @@ The following diagram explains these steps in more detail:
 
 Again, in steps 3 and 4 we're not *animating* A and B' to their positions but “teleporting” them instantly. Since this is instantaneous, it will give the illusion that B was never deleted, and properly position both elements to be animated back to their new position.
 
-By default, Meteor takes care of steps 1 & 2. Reimplementing them ourselves will be easy enough. And in steps 5 and 6 all we're doing is moving the elements to their proper spot. So the only part we really need to worry about is steps 3 and 4, i.e. sending the elements to the animation's starting point. 
+By default, Meteor takes care of steps 1 & 2, and reimplementing them ourselves will be easy enough. And in steps 5 and 6 all we're doing is moving the elements to their proper spot. So the only part we really need to worry about is steps 3 and 4, i.e. sending the elements to the animation's starting point. 
 
 ### CSS Positioning
 
@@ -86,16 +86,6 @@ We'll use relative positioning to animate our posts. We've already taken care of
 This makes steps 5 and 6 quite easy: all we need to do is reset `top` to `0px` (its default value) and our posts will slide back to their "normal" position. 
 
 So basically, our only challenge is figuring where to animate them *from* (steps 3 and 4) relative to their new position. In other words, how much to offset them. But that's not very hard either: the correct offset is simply a post's previous position minus its new one. 
-
-<% note do %>
-
-### Position:absolute
-
-We could also use `position:absolute` with a relative parent to position our elements. But a big downside of absolutely positioned elements is that they're completely removed from the flow of the page, causing their parent container to collapse as if it were empty. 
-
-This in turns means we'd need to artificially set the height of the container via JavaScript, instead of leaving the browser reflow elements naturally. Consequently, whenever possible it's best to stick with relative positioning. 
-
-<% end %>
 
 ### Implementing `_uihooks`
 
@@ -293,46 +283,52 @@ All done! Try inserting and deleting a few posts to see the effect in action.
 
 ### Page Transitions
 
-So far we've animated elements *within* a page. But what if we wanted to add transitions *in-between* pages?
+So far we've animated elements *within* a page. But what if we wanted to add animated transitions *in-between* pages?
 
-This presents a challenge: animating a transition implies having both the page we're leaving and the page we're going to present on the screen *at the same time*. Iron Router doesn't include any mechanism to handle this scenario. But thankfully, the [momentum](https://github.com/percolatestudio/meteor-momentum) and [momentum-iron-router](https://github.com/percolatestudio/momentum-iron-router) packages do just that. 
+Page transitions are Iron Router's job. You click a link, and the content of the `{{> yield}}` helper in `layout.html` are automatically replaced. 
 
-Let's add both with:
+It turns out that just like we overrode Blaze's default behavior for our post list, we can do the same thing for that `{{> yield}}` to add a fade transition in between routes!
 
+But first, if we want to fade pages in and out, we'll have to make sure they're displayed one on top of the other. We do that by using `position:absolute` on the `.page` container div that wraps every page template. 
+
+We don't want our pages to be absolutely positioned relative to the window though, since they would overlap the app's header. So we give `position:relative` to the containing `#main` div so that the `.page` div's `position:absolute` takes its origin from `#main`. 
+
+In `style.css`, just add:
+
+```css
+//...
+
+#main{
+  position: relative;
+}
+.page{
+  position: absolute;
+  top: 0px;
+  width: 100%;
+}
 ```
-meteor add percolate:momentum
-meteor add percolate:momentum-iron-router
-```
+<%= caption "/client/stylesheets/style.css" %>
 
-We're now ready to animate the transitions. Open `layout.html`, and wrap the `{{>yield}}` template helper with Momentum's own helper:
-
-```html
-<template name="layout">
-  <div class="container">
-    {{> header}}
-    {{> errors}}
-    <div id="main" class="row-fluid">
-      {{#momentum plugin='iron-router' options=transition}}
-        {{> yield}}
-      {{/momentum}}
-    </div>
-  </div>
-</template>
-```
-<%= caption "/client/templates/application/layout.html" %>
-<%= highlight "6~8" %>
-
-Finally, let's define the `transition` argument used by the helper:
+We can now add the fade code. It should look familiar, since it's the exact same code we already used for the post insertion and removal:
 
 ```js
-Template.layout.transition = function () {
-  return function(from, to, element) {
-    return 'fade'
+Template.layout.rendered = function() {
+  this.find('#main')._uihooks = {
+    insertElement: function(node, next) {
+      $(node)
+        .hide()
+        .insertBefore(next)
+        .fadeIn();
+    },
+    removeElement: function(node) {
+      $(node).fadeOut(function() {
+        $(this).remove();
+      });
+    }
   }
 }
 ```
-
-It will return a function that itself returns another function, that then returns the `fade` keyword. This is obviously a little involved for our current use case, but this pattern is useful for defining more complex transitions.
+<%= caption "/client/templates/application/layout.js" %>
 
 <%= commit "14-3", "Transition between pages by fading." %>
 
