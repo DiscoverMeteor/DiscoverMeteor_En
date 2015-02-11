@@ -115,7 +115,7 @@ Now that we understand the various factors at play in animating a list of items,
 
 Before we do anything else, let's review our posts' current behavior, *without* animations:
 
-<%= screenshot "14-1", "The non-animated post list.", "", "gif" %>
+<%= gifscreenshot "14-1", "The non-animated post list." %>
 
 Let's bring in `_uihooks`. We'll select that `.wrapper` div inside the template's `rendered` callback, and define a `moveElement` hook. 
 
@@ -135,7 +135,7 @@ The `moveElement` function we just defined will be called whenever an element's 
 
 Go ahead and try it: open up the “Best“ view and upvote a few posts: the ordering won't change until you force a rerender (either by reloading the page or switching routes).
 
-<%= screenshot "14-2", "An empty moveElement callback: nothing happens", "", "gif" %>
+<%= gifscreenshot "14-2", "An empty moveElement callback: nothing happens" %>
 
 We've ascertained that `_uihooks` works. Now let's make it animate!
 
@@ -232,7 +232,7 @@ And a simple way to force that redraw is asking the browser to check the element
 
 Let's give it a spin. Go back to the “Best” view and start upvoting: you should now see our posts glide up and down with ballet-like grace!
 
-<%= screenshot "14-3", "Animated reordering", "", "gif" %>
+<%= gifscreenshot "14-3", "Animated reordering" %>
 
 <%= commit "14-1", "Added post reordering animation." %>
 
@@ -266,7 +266,7 @@ To get a clear picture of the result, we can test out new animation by inserting
 Meteor.call('postInsert', {url: 'http://apple.com', title: 'Testing Animations'})
 ```
 
-<%= screenshot "14-4", "Fading in new posts", "", "gif" %>
+<%= gifscreenshot "14-4", "Fading in new posts" %>
 
 And then we'll fade out deleted posts:
 
@@ -295,7 +295,7 @@ Template.postsList.rendered = function () {
 
 Again, just delete a post via the console (using `Posts.remove('somePostId')`) to see the effect in action.
 
-<%= screenshot "14-5", "Fading out deleted posts", "", "gif" %>
+<%= gifscreenshot "14-5", "Fading out deleted posts" %>
 
 <%= commit "14-2", "Fade items in when they are drawn." %>
 
@@ -350,7 +350,7 @@ Template.layout.rendered = function() {
 ```
 <%= caption "/client/templates/application/layout.js" %>
 
-<%= screenshot "14-6", "Transitioning in-between pages with a fade", "", "gif" %>
+<%= gifscreenshot "14-6", "Transitioning in-between pages with a fade" %>
 
 <%= commit "14-3", "Transition between pages by fading." %>
 
