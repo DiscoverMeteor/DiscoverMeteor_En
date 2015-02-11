@@ -113,7 +113,11 @@ Now that we understand the various factors at play in animating a list of items,
 <%= caption "/client/templates/posts/post_list.html" %>
 <%= highlight "3,7" %>
 
-We'll then select that `.wrapper` div inside the template's `rendered` callback, and define a `moveElement` hook. 
+Before we do anything else, let's review our posts' current behavior, *without* animations:
+
+<%= screenshot "14-1", "The non-animated post list.", "gif" %>
+
+Let's bring in `_uihooks`. We'll select that `.wrapper` div inside the template's `rendered` callback, and define a `moveElement` hook. 
 
 ```js
 Template.postsList.rendered = function () {
@@ -130,6 +134,8 @@ Template.postsList.rendered = function () {
 The `moveElement` function we just defined will be called whenever an element's position changes *instead* of Blaze's default behavior. And since the function is empty, this means *nothing will happen*. 
 
 Go ahead and try it: open up the “Best“ view and upvote a few posts: the ordering won't change until you force a rerender (either by reloading the page or switching routes).
+
+<%= screenshot "14-2", "An empty moveElement callback: nothing happens", "gif" %>
 
 We've ascertained that `_uihooks` works. Now let's make it animate!
 
@@ -226,9 +232,11 @@ And a simple way to force that redraw is asking the browser to check the element
 
 Let's give it a spin. Go back to the “Best” view and start upvoting: you should now see our posts glide up and down with ballet-like grace!
 
+<%= screenshot "14-3", "Animated reordering", "gif" %>
+
 <%= commit "14-1", "Added post reordering animation." %>
 
-### Insertions & Removals
+### Can't Fade Me
 
 Now that we've taken care of the tricky reordering sequence, animating posts being inserted and removed will be a piece of cake!
 
@@ -251,6 +259,14 @@ Template.postsList.rendered = function () {
 ```
 <%= caption "/client/templates/posts/post_list.js" %>
 <%= highlight "3~7" %>
+
+To get a clear picture of the result, we can test out new animation by inserting a post via the console with:
+
+```js
+Meteor.call('postInsert', {url: 'http://apple.com', title: 'Testing Animations'})
+```
+
+<%= screenshot "14-4", "Fading in new posts", "gif" %>
 
 And then we'll fade out deleted posts:
 
@@ -277,7 +293,9 @@ Template.postsList.rendered = function () {
 <%= caption "/client/templates/posts/post_list.js" %>
 <%= highlight "12~16" %>
 
-All done! Try inserting and deleting a few posts to see the effect in action.
+Again, just delete a post via the console (using `Posts.remove('somePostId')`) to see the effect in action.
+
+<%= screenshot "14-5", "Fading out deleted posts", "gif" %>
 
 <%= commit "14-2", "Fade items in when they are drawn." %>
 
@@ -331,6 +349,8 @@ Template.layout.rendered = function() {
 }
 ```
 <%= caption "/client/templates/application/layout.js" %>
+
+<%= screenshot "14-6", "Transitioning in-between pages with a fade", "gif" %>
 
 <%= commit "14-3", "Transition between pages by fading." %>
 
