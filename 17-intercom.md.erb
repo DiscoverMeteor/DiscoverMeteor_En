@@ -129,8 +129,10 @@ Router.configure({
   loadingTemplate: 'loading',
   notFoundTemplate: 'notFound',
   waitOn: function() {
-    Meteor.subscribe('currentUser'),  
-    return [Meteor.subscribe('notifications')]
+    return [
+      Meteor.subscribe('currentUser'),
+      Meteor.subscribe('notifications')
+    ]
   }
 });
 
@@ -214,7 +216,6 @@ Package.onUse(function (api) {
   api.add_files('intercom_server.js', 'server');
   
   api.export('IntercomHash', 'server');
-});
 });
 ~~~
 <%= highlight "9,11" %>

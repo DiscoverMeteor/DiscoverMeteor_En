@@ -119,13 +119,15 @@ It's all very well putting comments into the database, but we also need to show 
 
 ~~~html
 <template name="postPage">
-  {{> postItem}}
-
-  <ul class="comments">
-    {{#each comments}}
-      {{> commentItem}}
-    {{/each}}
-  </ul>
+  <div class="post-page page">
+    {{> postItem}}
+  
+    <ul class="comments">
+      {{#each comments}}
+        {{> commentItem}}
+      {{/each}}
+    </ul>
+  </div>
 </template>
 ~~~
 <%= caption "client/templates/posts/post_page.html" %>
@@ -143,7 +145,7 @@ Template.postPage.helpers({
 
 We put the `{{#each comments}}` block inside the post template, so `this` is a post within the `comments` helper. To find the relevant comments, we check those that are linked to that post via the `postId` attribute.
 
-Given what we've learned about helpers and Spacebars, rendering a comment is fairly straightforward. We'll create a new `comments` directory inside `views` to store all our comment information, and a new `commentItem` template inside that:
+Given what we've learned about helpers and Spacebars, rendering a comment is fairly straightforward. We'll create a new `comments` directory inside `templates` to store all our comment information, and a new `commentItem` template inside that:
 
 ~~~html
 <template name="commentItem">
@@ -223,19 +225,21 @@ We'll start by adding a submit box at the bottom of each post:
 
 ~~~html
 <template name="postPage">
-  {{> postItem}}
-
-  <ul class="comments">
-    {{#each comments}}
-      {{> commentItem}}
-    {{/each}}
-  </ul>
-
-  {{#if currentUser}}
-    {{> commentSubmit}}
-  {{else}}
-    <p>Please log in to leave a comment.</p>
-  {{/if}}
+  <div class="post-page page">
+    {{> postItem}}
+  
+    <ul class="comments">
+      {{#each comments}}
+        {{> commentItem}}
+      {{/each}}
+    </ul>
+  
+    {{#if currentUser}}
+      {{> commentSubmit}}
+    {{else}}
+      <p>Please log in to leave a comment.</p>
+    {{/if}}
+  </div>
 </template>
 ~~~
 <%= caption "client/templates/posts/post_page.html" %>
@@ -259,14 +263,12 @@ And then create the comment form template:
 ~~~
 <%= caption "client/templates/comments/comment_submit.html" %>
 
-<%= screenshot "10-2", "The comment submit form" %>
-
 To submit our comments, we call a `comment` Method in `comment_submit.js` that operates in a similar way to what we did for submitting posts:
 
 ~~~js
-Template.commentSubmit.created = function() {
-  Session.set('commentSubmitErrors', {});
-}
+Template.postEdit.onCreated(function() {
+  Session.set('postEditErrors', {});
+});
 
 Template.commentSubmit.helpers({
   errorMessage: function(field) {
@@ -341,6 +343,8 @@ Meteor.methods({
 
 This is not doing anything too fancy, just checking that the user is logged in, that the comment has a body, and that it's linked to a post.
 
+<%= screenshot "10-2", "The comment submit form" %>
+
 ### Controlling the Comments Subscription
 
 As things stand, we are publishing all comments across all posts to all connected clients. That seems a little wasteful. After all, we're only actually using a small subset of this data at any given time. So let's improve our publication and subscription to control exactly which comments are published.
@@ -371,24 +375,20 @@ Router.configure({
 And we'll add a new *route*-level `waitOn` function just for the `postPage` route:
 
 ~~~js
-Router.map(function() {
+//...
 
-  //...
-
-  this.route('postPage', {
-    path: '/posts/:_id',
-    waitOn: function() {
-      return Meteor.subscribe('comments', this.params._id);
-    },
-    data: function() { return Posts.findOne(this.params._id); }
-  });
-
-  //...
-
+Router.route('/posts/:_id', {
+  name: 'postPage',
+  waitOn: function() {
+    return Meteor.subscribe('comments', this.params._id);
+  },
+  data: function() { return Posts.findOne(this.params._id); }
 });
+
+//...
 ~~~
 <%= caption "lib/router.js" %>
-<%= highlight "7~9" %>
+<%= highlight "5~7" %>
 
 We're passing `this.params._id` as an argument to the subscription. So let's use that new information to make sure we restrict our data set to comments belonging to the current post:
 

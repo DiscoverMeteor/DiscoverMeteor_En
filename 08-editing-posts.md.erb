@@ -60,7 +60,7 @@ We can now focus on the template. Our `postEdit` template will be a fairly stand
 
 ~~~html
 <template name="postEdit">
-  <form class="main form">
+  <form class="main form page">
     <div class="form-group">
       <label class="control-label" for="url">URL</label>
       <div class="controls">
@@ -215,8 +215,8 @@ So we'll use Meteor's `deny()` callback to ensure users can only edit specific f
 Posts = new Mongo.Collection('posts');
 
 Posts.allow({
-  update: ownsDocument,
-  remove: ownsDocument
+  update: function(userId, post) { return ownsDocument(userId, post); },
+  remove: function(userId, post) { return ownsDocument(userId, post); },
 });
 
 Posts.deny({
@@ -225,6 +225,8 @@ Posts.deny({
     return (_.without(fieldNames, 'url', 'title').length > 0);
   }
 });
+
+//...
 ~~~
 <%= caption "lib/collections/posts.js" %>
 <%= highlight "8~13" %>

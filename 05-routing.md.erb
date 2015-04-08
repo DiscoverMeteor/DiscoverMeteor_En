@@ -81,7 +81,7 @@ While the newly created `layout.html` will now contain the app's outer layout:
         <a class="navbar-brand" href="/">Microscope</a>
       </div>
     </header>
-    <div id="main" class="row-fluid">
+    <div id="main">
       {{> yield}}
     </div>
   </div>
@@ -222,7 +222,9 @@ To start with, we'll create a new template that simply renders the same post tem
 
 ~~~html
 <template name="postPage">
-  {{> postItem}}
+  <div class="post-page page">
+    {{> postItem}}
+  </div>
 </template>
 ~~~
 <%= caption "client/templates/posts/post_page.html" %>
@@ -364,7 +366,7 @@ First, we'll set up a new template to show a simple 404 error message:
 
 ~~~html
 <template name="notFound">
-  <div class="not-found jumbotron">
+  <div class="not-found page jumbotron">
     <h2>404</h2>
     <p>Sorry, we couldn't find a page at this address.</p>
   </div>

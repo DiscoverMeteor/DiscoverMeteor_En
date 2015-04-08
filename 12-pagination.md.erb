@@ -84,7 +84,7 @@ Router.configure({
 });
 ~~~
 <%= caption "lib/router.js" %>
-<%= highlight "5" %>
+<%= highlight "6" %>
 
 We'll then add a `postsLimit` parameter to the route's path. Adding a `?` after the parameter name means that it's optional. So our route will not only match `http://localhost:3000/50`, but also plain old `http://localhost:3000`. 
 
@@ -102,7 +102,7 @@ Router.route('/:postsLimit?', {
 
 It's important to note that a path of the form `/:parameter?` will match every possible path. Since each route will be parsed successively to see if it matches the current path, we need to make sure we organize our routes in order of decreasing specificity.
 
-In other words, routes that target more specific routes like `/posts/:_id` should come first, and our `postsList` route should be moved **to the bottom** of the set of routes since it pretty much matches everything,
+In other words, routes that target more specific routes like `/posts/:_id` should come first, and our `postsList` route should be moved **to the bottom** of the routes group since it pretty much matches everything,
 
 It's now time to tackle the tough problem of subscribing and finding the right data. We need to deal with the case where the `postsLimit` parameter isn't present, so we'll assign it a default value. We'll use “5” to really give us enough room to play around with pagination.
 
@@ -120,7 +120,7 @@ Router.route('/:postsLimit?', {
 //...
 ~~~
 <%= caption "lib/router.js" %>
-<%= highlight "7~9" %>
+<%= highlight "5~8" %>
 
 You'll notice we're now passing a JavaScript object ({sort: {submitted: -1}, limit: postsLimit}) along with the name of our `posts` publication. This object will serve as the `options` parameter for the server side `Posts.find()` statement. Let's switch over to our server-side code to implement this:
 
@@ -191,7 +191,9 @@ Router.route('/:postsLimit?', {
 <%= caption "lib/router.js" %>
 <%= highlight "9~14" %>
 
-Now that we're setting the data context at the router level we can safely get rid of the `posts` template helper inside the `posts_list.js` file. And since we named our data context `posts` (the same name as the helper), we don't even need to touch our `postsList` template!
+And since we're setting the data context at the route level, we can now safely get rid of the `posts` template helper inside the `posts_list.js` file and just delete the contents of that file. 
+
+We named our data context `posts` (the same name as the helper), so we don't even need to touch our `postsList` template!
 
 Let's recap. Here's what our new and improved `router.js` code should look like:
 
@@ -335,7 +337,7 @@ We have a working pagination, and our code is looking good. There's just one pro
 
 What we want to do is simple enough. We'll add a “load more” button at the bottom of our posts list, which will increment the number of posts currently displayed by 5 every time it's clicked. So if I'm currently on the URL `http://localhost:3000/5`, clicking “load more” should bring me to `http://localhost:3000/10`. If you've made it this far in the book, we trust you can handle a little arithmetic!
 
-As before, we'll add our pagination logic in our route. Remember when we explicitely named our data context rather than just use an anonymous cursor? Well, there's no rule that says the `data` function can only pass cursors, so we'll use the same technique to generate the URL of our “load more” button.
+As before, we'll add our pagination logic in our route. Remember when we explicitly named our data context rather than just use an anonymous cursor? Well, there's no rule that says the `data` function can only pass cursors, so we'll use the same technique to generate the URL of our “load more” button.
 
 ~~~js
 //...
@@ -417,6 +419,8 @@ Here's what your post list should now look like:
 Our pagination is now working properly, but it suffers from an annoying quirk: every time we click “load more” and the router asks for more posts, the Iron Router's `waitOn` feature sends us to the `loading` template while we wait for the new data to come in. The result is that we're sent back to the top of the page every time, and need to scroll all the way back down to resume our browsing. 
 
 So first, we'll have to tell Iron Router not to `waitOn` the subscription after all. Instead, we'll define our subscriptions in a `subscriptions` hook.
+
+Note that we're not *returning* this subscriptions in the hook. Returning it (which is how the `subscriptions` hook is usually employed) would trigger the global loading hook, and that's exactly what we want to avoid in the first place. Instead we're simply using the `subscriptions` hook as a convenient place to define our subscription, similar to using an `onBeforeAction` hook. 
 
 We're also passing a `ready` variable referring to `this.postsSub.ready` as part of our data context. This will let us tell the template when the post subscription is done loading.
 

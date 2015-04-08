@@ -27,7 +27,7 @@ If you haven't done so already, create a new file named `main.html` inside our `
         <a class="navbar-brand" href="/">Microscope</a>
       </div>
     </header>
-    <div id="main" class="row-fluid">
+    <div id="main">
       {{> postsList}}
     </div>
   </div>
@@ -158,7 +158,7 @@ If you remember, we are using that `posts` helper in our `postsList` template:
 
 ~~~html
 <template name="postsList">
-  <div class="posts">
+  <div class="posts page">
     {{#each posts}}
       {{> postItem}}
     {{/each}}

@@ -76,7 +76,7 @@ Setting up our route means that if a user browses to the `/submit` URL, Meteor w
 
 ~~~html
 <template name="postSubmit">
-  <form class="main form">
+  <form class="main form page">
     <div class="form-group">
       <label class="control-label" for="url">URL</label>
       <div class="controls">
@@ -225,7 +225,7 @@ We also create the template for the access denied page:
 
 ~~~html
 <template name="accessDenied">
-  <div class="access-denied jumbotron">
+  <div class="access-denied page jumbotron">
     <h2>Access Denied</h2>
     <p>You can't get here! Please log in.</p>
   </div>
@@ -235,7 +235,7 @@ We also create the template for the access denied page:
 
 <%= commit "7-3", "Denied access to new posts page when not logged in." %>
 
-If you now head to http://localhost:3000/submit/ without being logged in, you should see this:
+If you now head to http://localhost:3000/submit/ without being logged in, you should see a message similar to this one:
 
 <%= screenshot "7-3", "The access denied template" %>
 
@@ -375,7 +375,7 @@ Meteor.methods({
   }
 });
 ~~~
-<%= caption "collections/posts.js" %>
+<%= caption "lib/collections/posts.js" %>
 <%= highlight "3~24" %>
 
 Note that the `_.extend()` method is part of the [Underscore](http://underscorejs.org) library, and simply lets you “extend” one object with the properties of another. 
@@ -428,7 +428,7 @@ Meteor.methods({
   }
 });
 ~~~
-<%= caption "collections/posts.js" %>
+<%= caption "lib/collections/posts.js" %>
 <%= highlight "9~15" %>
 
 We're searching our database for any posts with the same URL. If any are found, we `return` that post's `_id` along with a `postExists: true` flag to let the client know about this special situation.
