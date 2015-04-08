@@ -240,19 +240,19 @@ Template.errors.helpers({
   }
 });
 
-Template.error.rendered = function() {
+Template.error.onRendered(function() {
   var error = this.data;
   Meteor.setTimeout(function () {
     Errors.remove(error._id);
   }, 3000);
-};
+});
 ~~~
 <%= caption "client/templates/includes/errors.js" %>
 <%= highlight "7~12" %>
 
 <%= commit "9-3", "Clear errors after 3 seconds." %>
 
-The [`rendered`](http://docs.meteor.com/#template_rendered) callback triggers once our template has been rendered in the browser. Inside the callback, `this` refers to the current template instance, and `this.data` lets us access the data of the object that is currently being rendered (in our case, an error).
+The [`onRendered`](http://docs.meteor.com/#/full/template_onRendered) callback triggers once our template has been rendered in the browser. Inside the callback, `this` refers to the current template instance, and `this.data` lets us access the data of the object that is currently being rendered (in our case, an error).
 
 ### Seeking Validation
 
@@ -299,9 +299,9 @@ We then define our two template helpers. They both look at the `field` property 
 While `errorMessage` simply returns the message itself, `errorClass` checks for the *presence* of a message and returns `has-error` if such a message exists.
 
 ~~~js
-Template.postSubmit.created = function() {
+Template.postSubmit.onCreated(function() {
   Session.set('postSubmitErrors', {});
-}
+});
 
 Template.postSubmit.helpers({
   errorMessage: function(field) {
@@ -477,9 +477,9 @@ To round things up, we'll also apply the same validation to our post *edit* form
 Then the template helpers:
 
 ~~~js
-Template.postEdit.created = function() {
+Template.postEdit.onCreated(function() {
   Session.set('postEditErrors', {});
-}
+});
 
 Template.postEdit.helpers({
   errorMessage: function(field) {

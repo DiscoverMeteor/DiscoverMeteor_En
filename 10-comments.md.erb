@@ -266,9 +266,9 @@ And then create the comment form template:
 To submit our comments, we call a `comment` Method in `comment_submit.js` that operates in a similar way to what we did for submitting posts:
 
 ~~~js
-Template.commentSubmit.created = function() {
-  Session.set('commentSubmitErrors', {});
-}
+Template.postEdit.onCreated(function() {
+  Session.set('postEditErrors', {});
+});
 
 Template.commentSubmit.helpers({
   errorMessage: function(field) {

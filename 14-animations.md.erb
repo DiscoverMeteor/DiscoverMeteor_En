@@ -117,16 +117,16 @@ Before we do anything else, let's review our posts' current behavior, *without* 
 
 <%= gifscreenshot "14-1", "The non-animated post list." %>
 
-Let's bring in `_uihooks`. We'll select that `.wrapper` div inside the template's `rendered` callback, and define a `moveElement` hook. 
+Let's bring in `_uihooks`. We'll select that `.wrapper` div inside the template's `onRendered` callback, and define a `moveElement` hook. 
 
 ```js
-Template.postsList.rendered = function () {
+Template.postsList.onRendered(function () {
   this.find('.wrapper')._uihooks = {
     moveElement: function (node, next) {
       // do nothing for now
     }
   }
-}
+});
 ```
 <%= caption "/client/templates/posts/post_list.js" %>
 <%= highlight "1~7" %>
@@ -166,7 +166,7 @@ We'll do all this through the magic of [jQuery](http://jquery.com), by far the b
 - [`addClass(class)`](http://api.jquery.com/addClass/): add the `class` CSS class to an element.
 
 ```js
-Template.postsList.rendered = function () {
+Template.postsList.onRendered(function () {
   this.find('.wrapper')._uihooks = {
     moveElement: function (node, next) {
       var $node = $(node), $next = $(next);
@@ -203,7 +203,7 @@ Template.postsList.rendered = function () {
       $inBetween.addClass('animate').css('top', 0);
     }
   }
-}
+});
 ```
 <%= caption "/client/templates/posts/post_list.js" %>
 
@@ -243,7 +243,7 @@ Now that we've taken care of the tricky reordering sequence, animating posts bei
 First, we'll fade in new posts (note that for simplicity's sake, we're using JavaScript animations this time):
 
 ```js
-Template.postsList.rendered = function () {
+Template.postsList.onRendered(function () {
   this.find('.wrapper')._uihooks = {
     insertElement: function (node, next) {
       $(node)
@@ -255,7 +255,7 @@ Template.postsList.rendered = function () {
       //...
     }
   }
-}
+});
 ```
 <%= caption "/client/templates/posts/post_list.js" %>
 <%= highlight "3~7" %>
@@ -271,7 +271,7 @@ Meteor.call('postInsert', {url: 'http://apple.com', title: 'Testing Animations'}
 And then we'll fade out deleted posts:
 
 ```js
-Template.postsList.rendered = function () {
+Template.postsList.onRendered(function () {
   this.find('.wrapper')._uihooks = {
     insertElement: function (node, next) {
       $(node)
@@ -288,7 +288,7 @@ Template.postsList.rendered = function () {
       });
     }
   }
-}
+});
 ```
 <%= caption "/client/templates/posts/post_list.js" %>
 <%= highlight "12~16" %>
@@ -332,7 +332,7 @@ To save time, we've already added the necessary CSS code to `style.css`:
 It's time to add the page fade code. It should look familiar, since it's the exact same code we already used for the post insertion and removal:
 
 ```js
-Template.layout.rendered = function() {
+Template.layout.onRendered(function() {
   this.find('#main')._uihooks = {
     insertElement: function(node, next) {
       $(node)
@@ -346,7 +346,7 @@ Template.layout.rendered = function() {
       });
     }
   }
-}
+});
 ```
 <%= caption "/client/templates/application/layout.js" %>
 
