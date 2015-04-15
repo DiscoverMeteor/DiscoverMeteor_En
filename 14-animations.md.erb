@@ -78,10 +78,14 @@ We'll use relative positioning to animate our posts. We've already taken care of
 ~~~css
 .post{
   position:relative;
+}
+.post.animate{
   transition:all 300ms 0ms ease-in;
 }
 ~~~
 <%= caption "client/stylesheets/style.css" %>
+
+Note that we only animate posts that have the CSS class `.animate`. This makes it possible to add and remove that class to control when animations should or shouldn't occur. 
 
 This makes steps 5 and 6 quite easy: all we need to do is reset `top` to `0px` (its default value) and our posts will slide back to their "normal" position. 
 

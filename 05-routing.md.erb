@@ -91,7 +91,7 @@ While the newly created `layout.html` will now contain the app's outer layout:
 
 You'll notice we've replaced the inclusion of the `postsList` template with a call to `yield` helper. 
 
-After this change, our browser tab will go blank and an error will show up in the browser console. This is because we haven't told the router what to do with the `/` URL yet, so it simply serves up an empty template.
+After this change, our browser tab will show the default Iron Router help page. This is because we haven't told the router what to do with the `/` URL yet, so it simply serves up an empty template.
 
 To begin, we can regain our old behavior by mapping the root `/` URL to the `postsList` template. We'll create a new `router.js` file inside the `/lib` directory at our project's root:
 
