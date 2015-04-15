@@ -110,7 +110,7 @@ Now that we understand the various factors at play in animating a list of items,
   </div>
 </template>
 ```
-<%= caption "/client/templates/posts/post_list.html" %>
+<%= caption "client/templates/posts/posts_list.html" %>
 <%= highlight "3,7" %>
 
 Before we do anything else, let's review our posts' current behavior, *without* animations:
@@ -128,7 +128,7 @@ Template.postsList.onRendered(function () {
   }
 });
 ```
-<%= caption "/client/templates/posts/post_list.js" %>
+<%= caption "client/templates/posts/posts_list.js" %>
 <%= highlight "1~7" %>
 
 The `moveElement` function we just defined will be called whenever an element's position changes *instead* of Blaze's default behavior. And since the function is empty, this means *nothing will happen*. 
@@ -205,7 +205,7 @@ Template.postsList.onRendered(function () {
   }
 });
 ```
-<%= caption "/client/templates/posts/post_list.js" %>
+<%= caption "client/templates/posts/posts_list.js" %>
 
 A few notes:
 
@@ -257,7 +257,7 @@ Template.postsList.onRendered(function () {
   }
 });
 ```
-<%= caption "/client/templates/posts/post_list.js" %>
+<%= caption "client/templates/posts/posts_list.js" %>
 <%= highlight "3~7" %>
 
 To get a clear picture of the result, we can test out new animation by inserting a post via the console with:
@@ -290,7 +290,7 @@ Template.postsList.onRendered(function () {
   }
 });
 ```
-<%= caption "/client/templates/posts/post_list.js" %>
+<%= caption "client/templates/posts/posts_list.js" %>
 <%= highlight "12~16" %>
 
 Again, just delete a post via the console (using `Posts.remove('somePostId')`) to see the effect in action.
@@ -327,7 +327,7 @@ To save time, we've already added the necessary CSS code to `style.css`:
 
 //...
 ```
-<%= caption "/client/stylesheets/style.css" %>
+<%= caption "client/stylesheets/style.css" %>
 
 It's time to add the page fade code. It should look familiar, since it's the exact same code we already used for the post insertion and removal:
 
@@ -348,7 +348,7 @@ Template.layout.onRendered(function() {
   }
 });
 ```
-<%= caption "/client/templates/application/layout.js" %>
+<%= caption "client/templates/application/layout.js" %>
 
 <%= gifscreenshot "14-6", "Transitioning in-between pages with a fade" %>
 
