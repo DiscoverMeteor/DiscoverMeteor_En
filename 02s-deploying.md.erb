@@ -47,47 +47,7 @@ You can refer to [the official documentation](http://docs.meteor.com/#deploying)
 
 [Modulus](https://modulus.io/) is a great option for deploying Node.js apps. It's one of the few PaaS (platform-as-a-service) provider that officially support Meteor, and there are already quite a few people running production Meteor apps on it.
 
-<% note do %>
-
-### Demeteorizer
-
-Modulus open-sourced a tool called [demeteorizer](https://github.com/onmodulus/demeteorizer) which converts your Meteor app into a standard Node.js app.
-
-<% end %>
-
-Start by [creating an account](https://modulus.io/register). To deploy our app on Modulus, we'll then need to install the Modulus command line tool:
-
-~~~bash
-npm install -g modulus
-~~~
-
-And then authenticate with:
-
-~~~bash
-modulus login
-~~~
-
-We'll now create a Modulus project (note that you can also do this via Modulus' web dashboard):
-
-~~~bash
-modulus project create
-~~~
-
-The next step will be creating a MongoDB database for our app. We can create a MongoDB database with [Modulus itself](http://help.modulus.io/customer/portal/articles/1647770-using-meteor-with-modulus), [Compose](https://www.compose.io/) or with any other cloud MongoDB provider.
-
-Once we've created our MongoDB database, we can get the `MONGO_URL` for our database from Modulus' web UI (go to Dashboard > Databases > Select your database > Administration), then use it to configure our app like so:
-
-~~~bash
-modulus env set MONGO_URL "mongodb://<user>:<pass>@mongo.onmodulus.net:27017/<database_name>"
-~~~
-
-It's now time to deploy our app. It's as simple as typing:
-
-~~~bash
-modulus deploy
-~~~
-
-We've now successfully deployed our app to Modulus. Refer to [the Modulus documentation](https://modulus.io/codex/projects) for more information about accessing logs, custom domain setup, and SSL.
+You can learn more about Modulus by reading their [deployment guide for Meteor apps](http://help.modulus.io/customer/portal/articles/1647770-using-meteor-with-modulus).
 
 ### Meteor Up
 

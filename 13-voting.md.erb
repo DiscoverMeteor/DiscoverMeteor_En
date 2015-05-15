@@ -280,7 +280,7 @@ We're changing our class from `.upvote` to `.upvotable`, so don't forget to chan
 Next, you may notice that posts with a single vote are labelled "1 vote**s**", so let's take the time to pluralize those labels properly. Pluralization can be a complicated process, but for now we'll do it in a fairly simplistic way. We'll make a general Spacebars helper that we can use anywhere:
 
 ~~~js
-UI.registerHelper('pluralize', function(n, thing) {
+Template.registerHelper('pluralize', function(n, thing) {
   // fairly stupid pluralizer
   if (n === 1) {
     return '1 ' + thing;
@@ -291,7 +291,7 @@ UI.registerHelper('pluralize', function(n, thing) {
 ~~~
 <%= caption "client/helpers/spacebars.js" %>
 
-The helpers we've created before have been tied to the template they apply to. But by using `UI.registerHelper`, we've created a *global* helper that can be used within any template:
+The helpers we've created before have been tied to the template they apply to. But by using `Template.registerHelper`, we've created a *global* helper that can be used within any template:
 
 ~~~html
 <template name="postItem">
@@ -471,37 +471,35 @@ We'll also add links in the header:
 ~~~html
 <template name="header">
   <nav class="navbar navbar-default" role="navigation">
-    <div class="container-fluid">
-      <div class="navbar-header">
-        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navigation">
-          <span class="sr-only">Toggle navigation</span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-        </button>
-        <a class="navbar-brand" href="{{pathFor 'home'}}">Microscope</a>
-      </div>
-      <div class="collapse navbar-collapse" id="navigation">
-        <ul class="nav navbar-nav">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navigation">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="{{pathFor 'home'}}">Microscope</a>
+    </div>
+    <div class="collapse navbar-collapse" id="navigation">
+      <ul class="nav navbar-nav">
+        <li>
+          <a href="{{pathFor 'newPosts'}}">New</a>
+        </li>
+        <li>
+          <a href="{{pathFor 'bestPosts'}}">Best</a>
+        </li>
+        {{#if currentUser}}
           <li>
-            <a href="{{pathFor 'newPosts'}}">New</a>
+            <a href="{{pathFor 'postSubmit'}}">Submit Post</a>
           </li>
-          <li>
-            <a href="{{pathFor 'bestPosts'}}">Best</a>
+          <li class="dropdown">
+            {{> notifications}}
           </li>
-          {{#if currentUser}}
-            <li>
-              <a href="{{pathFor 'postSubmit'}}">Submit Post</a>
-            </li>
-            <li class="dropdown">
-              {{> notifications}}
-            </li>
-          {{/if}}
-        </ul>
-        <ul class="nav navbar-nav navbar-right">
-          {{> loginButtons}}
-        </ul>
-      </div>
+        {{/if}}
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        {{> loginButtons}}
+      </ul>
     </div>
   </nav>
 </template>
@@ -522,7 +520,7 @@ And finally, we also need to update our post deleting event handler:
     }
   }
 ~~~
-<%= caption "client/templates/posts_edit.js" %>
+<%= caption "client/templates/posts/posts_edit.js" %>
 <%= highlight "7" %>
 
 With all this done, we now gain a best posts list:
@@ -540,37 +538,35 @@ The reason why we want to support multiple named routes is that both our `home` 
 ~~~html
 <template name="header">
   <nav class="navbar navbar-default" role="navigation">
-    <div class="container-fluid">
-      <div class="navbar-header">
-        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navigation">
-          <span class="sr-only">Toggle navigation</span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-        </button>
-        <a class="navbar-brand" href="{{pathFor 'home'}}">Microscope</a>
-      </div>
-      <div class="collapse navbar-collapse" id="navigation">
-        <ul class="nav navbar-nav">
-          <li class="{{activeRouteClass 'home' 'newPosts'}}">
-            <a href="{{pathFor 'newPosts'}}">New</a>
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navigation">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="{{pathFor 'home'}}">Microscope</a>
+    </div>
+    <div class="collapse navbar-collapse" id="navigation">
+      <ul class="nav navbar-nav">
+        <li class="{{activeRouteClass 'home' 'newPosts'}}">
+          <a href="{{pathFor 'newPosts'}}">New</a>
+        </li>
+        <li class="{{activeRouteClass  'bestPosts'}}">
+          <a href="{{pathFor 'bestPosts'}}">Best</a>
+        </li>
+        {{#if currentUser}}
+          <li class="{{activeRouteClass 'postSubmit'}}">
+            <a href="{{pathFor 'postSubmit'}}">Submit Post</a>
           </li>
-          <li class="{{activeRouteClass  'bestPosts'}}">
-            <a href="{{pathFor 'bestPosts'}}">Best</a>
+          <li class="dropdown">
+            {{> notifications}}
           </li>
-          {{#if currentUser}}
-            <li class="{{activeRouteClass 'postSubmit'}}">
-              <a href="{{pathFor 'postSubmit'}}">Submit Post</a>
-            </li>
-            <li class="dropdown">
-              {{> notifications}}
-            </li>
-          {{/if}}
-        </ul>
-        <ul class="nav navbar-nav navbar-right">
-          {{> loginButtons}}
-        </ul>
-      </div>
+        {{/if}}
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        {{> loginButtons}}
+      </ul>
     </div>
   </nav>
 </template>

@@ -12,11 +12,13 @@ paragraphs: 49
 
 First impressions are important, and Meteor's install process should be relatively painless. In most cases, you'll be up and running in less than five minutes.
 
-To begin with, we can install Meteor by opening a terminal window and typing:
+To begin with, if you're on Mac OS or Linux you can install Meteor by opening a terminal window and typing:
 
 ~~~bash
 curl https://install.meteor.com | sh
 ~~~
+
+If you're running Windows, refer to the [install instructions](https://www.meteor.com/install) on the Meteor site. 
 
 This will install the `meteor` executable onto your system and have you ready to use Meteor.
 
@@ -82,14 +84,16 @@ So if you encounter any references to Meteorite's `mrt` command line utility thr
 
 We will now use Meteor's package system to add the [Bootstrap](http://getbootstrap.com/) framework to our project.
 
-This is no different from adding Bootstrap the usual way by manually including its CSS and JavaScript files, except that we rely on Meteor community member [Andrew Mao](https://github.com/mizzao) (the “mizzao” in `mizzao:bootstrap-3` is the package author's username) to keep everything up to date for us.
+This is no different from adding Bootstrap the usual way by manually including its CSS and JavaScript files, except that we rely on the package maintainer to keep everything up to date for us.
 
 While we're at it, we'll also add the [Underscore](http://underscorejs.org/) package. Underscore is a JavaScript utility library, and it's very useful when it comes to manipulating JavaScript data structures.
 
-As of this writing, the `underscore` package is still part of the “official” Meteor packages, which is why it doesn't have an author:
+The `bootstrap` package is maintained by the `twbs` user, which gives us the full name of the package, `twbs:bootstrap`. 
+
+On the other hand, the `underscore` package is part of the “official” Meteor packages that come bundled with the framework, so it doesn't have an author:
 
 ~~~bash
-meteor add mizzao:bootstrap-3
+meteor add twbs:bootstrap
 meteor add underscore
 ~~~
 
@@ -179,10 +183,6 @@ CSS automatically gets loaded and minified by Meteor, so unlike other static ass
 ~~~css
 .grid-block, .main, .post, .comments li, .comment-form {
   background: #fff;
-  -webkit-border-radius: 3px;
-  -moz-border-radius: 3px;
-  -ms-border-radius: 3px;
-  -o-border-radius: 3px;
   border-radius: 3px;
   padding: 10px;
   margin-bottom: 10px;
@@ -194,14 +194,19 @@ body {
   background: #eee;
   color: #666666; }
 
+#main {
+  position: relative;
+}
+.page {
+  position: absolute;
+  top: 0px;
+  width: 100%;
+}
+
 .navbar {
   margin-bottom: 10px; }
   /* line 32, ../sass/style.scss */
   .navbar .navbar-inner {
-    -webkit-border-radius: 0px 0px 3px 3px;
-    -moz-border-radius: 0px 0px 3px 3px;
-    -ms-border-radius: 0px 0px 3px 3px;
-    -o-border-radius: 0px 0px 3px 3px;
     border-radius: 0px 0px 3px 3px; }
 
 #spinner {
@@ -226,7 +231,7 @@ body {
     -o-transition: none;
     transition: none; }
   .post.animate{
-    -webkit-transition: all 300ms 0ms ease-in;
+    -webkit-transition: all 300ms 0ms;
     -moz-transition: all 300ms 0ms ease-in;
     -o-transition: all 300ms 0ms ease-in;
     transition: all 300ms 0ms ease-in; }
@@ -279,10 +284,6 @@ body {
 
 .load-more {
   display: block;
-  -webkit-border-radius: 3px;
-  -moz-border-radius: 3px;
-  -ms-border-radius: 3px;
-  -o-border-radius: 3px;
   border-radius: 3px;
   background: rgba(0, 0, 0, 0.05);
   text-align: center;

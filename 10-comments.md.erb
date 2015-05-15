@@ -119,13 +119,15 @@ It's all very well putting comments into the database, but we also need to show 
 
 ~~~html
 <template name="postPage">
-  {{> postItem}}
+  <div class="post-page page">
+    {{> postItem}}
 
-  <ul class="comments">
-    {{#each comments}}
-      {{> commentItem}}
-    {{/each}}
-  </ul>
+    <ul class="comments">
+      {{#each comments}}
+        {{> commentItem}}
+      {{/each}}
+    </ul>
+  </div>
 </template>
 ~~~
 <%= caption "client/templates/posts/post_page.html" %>
@@ -223,19 +225,21 @@ We'll start by adding a submit box at the bottom of each post:
 
 ~~~html
 <template name="postPage">
-  {{> postItem}}
+  <div class="post-page page">
+    {{> postItem}}
 
-  <ul class="comments">
-    {{#each comments}}
-      {{> commentItem}}
-    {{/each}}
-  </ul>
+    <ul class="comments">
+      {{#each comments}}
+        {{> commentItem}}
+      {{/each}}
+    </ul>
 
-  {{#if currentUser}}
-    {{> commentSubmit}}
-  {{else}}
-    <p>Please log in to leave a comment.</p>
-  {{/if}}
+    {{#if currentUser}}
+      {{> commentSubmit}}
+    {{else}}
+      <p>Please log in to leave a comment.</p>
+    {{/if}}
+  </div>
 </template>
 ~~~
 <%= caption "client/templates/posts/post_page.html" %>
@@ -262,9 +266,9 @@ And then create the comment form template:
 To submit our comments, we call a `comment` Method in `comment_submit.js` that operates in a similar way to what we did for submitting posts:
 
 ~~~js
-Template.commentSubmit.created = function() {
+Template.commentSubmit.onCreated(function() {
   Session.set('commentSubmitErrors', {});
-}
+});
 
 Template.commentSubmit.helpers({
   errorMessage: function(field) {
@@ -278,19 +282,19 @@ Template.commentSubmit.helpers({
 Template.commentSubmit.events({
   'submit form': function(e, template) {
     e.preventDefault();
-    
+
     var $body = $(e.target).find('[name=body]');
     var comment = {
       body: $body.val(),
       postId: template.data._id
     };
-    
+
     var errors = {};
     if (! comment.body) {
       errors.body = "Please write some content";
       return Session.set('commentSubmitErrors', errors);
     }
-    
+
     Meteor.call('commentInsert', comment, function(error, commentId) {
       if (error){
         throwError(error.reason);
@@ -315,19 +319,19 @@ Meteor.methods({
       postId: String,
       body: String
     });
-    
+
     var user = Meteor.user();
     var post = Posts.findOne(commentAttributes.postId);
 
     if (!post)
       throw new Meteor.Error('invalid-comment', 'You must comment on a post');
-    
+
     comment = _.extend(commentAttributes, {
       userId: user._id,
       author: user.username,
       submitted: new Date()
     });
-    
+
     return Comments.insert(comment);
   }
 });
@@ -416,10 +420,10 @@ The best way to deal with this is to *denormalize* the number of comments onto t
 We'll achieve this by adding a `commentsCount` property to the `post` data structure. To begin with, we update our post fixtures (and `meteor reset` to reload them -- don't forget to recreate your user account after):
 
 ~~~js
-// Fixture data 
+// Fixture data
 if (Posts.find().count() === 0) {
   var now = new Date().getTime();
-  
+
   // create two users
   var tomId = Meteor.users.insert({
     profile: { name: 'Tom Coleman' }
@@ -429,7 +433,7 @@ if (Posts.find().count() === 0) {
     profile: { name: 'Sacha Greif' }
   });
   var sacha = Meteor.users.findOne(sachaId);
-  
+
   var telescopeId = Posts.insert({
     title: 'Introducing Telescope',
     userId: sacha._id,
@@ -438,7 +442,7 @@ if (Posts.find().count() === 0) {
     submitted: new Date(now - 7 * 3600 * 1000),
     commentsCount: 2
   });
-  
+
   Comments.insert({
     postId: telescopeId,
     userId: tom._id,
@@ -446,7 +450,7 @@ if (Posts.find().count() === 0) {
     submitted: new Date(now - 5 * 3600 * 1000),
     body: 'Interesting project Sacha, can I get involved?'
   });
-  
+
   Comments.insert({
     postId: telescopeId,
     userId: sacha._id,
@@ -454,7 +458,7 @@ if (Posts.find().count() === 0) {
     submitted: new Date(now - 3 * 3600 * 1000),
     body: 'You sure can Tom!'
   });
-  
+
   Posts.insert({
     title: 'Meteor',
     userId: tom._id,
@@ -463,7 +467,7 @@ if (Posts.find().count() === 0) {
     submitted: new Date(now - 10 * 3600 * 1000),
     commentsCount: 0
   });
-  
+
   Posts.insert({
     title: 'The Meteor Book',
     userId: tom._id,
@@ -477,7 +481,7 @@ if (Posts.find().count() === 0) {
 <%= caption "server/fixtures.js" %>
 <%= highlight "20,21,45,46,54,55" %>
 
-As usual when updating the fixtures file, you'll have to `meteor reset` your database to make sure it runs again. 
+As usual when updating the fixtures file, you'll have to `meteor reset` your database to make sure it runs again.
 
 Then, we make sure that all new posts start with 0 comments:
 
@@ -495,7 +499,7 @@ var postId = Posts.insert(post);
 
 //...
 ~~~
-<%= caption "collections/posts.js" %>
+<%= caption "lib/collections/posts.js" %>
 <%= highlight "6,7" %>
 
 And then we update the relevant `commentsCount` when we make a new comment using Mongo's `$inc` operator (which increments a numeric field by one):
@@ -516,7 +520,7 @@ return Comments.insert(comment);
 
 //...
 ~~~
-<%= caption "collections/comments.js "%>
+<%= caption "lib/collections/comments.js "%>
 <%= highlight "9,10" %>
 
 Finally, we can just simply remove the `commentsCount` helper from `client/templates/posts/post_item.js`, as the field is now directly available on the post.
