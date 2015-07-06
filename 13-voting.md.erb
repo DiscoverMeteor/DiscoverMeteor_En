@@ -14,19 +14,19 @@ Now that our site is getting more popular, finding the best links is quickly goi
 
 We could build a complex ranking system with karma, time-based decay of points, and many other things (most of which are implemented in [Telescope](http://telesc.pe), Microscope's big brother). But for our app, we'll keep things simple and just rate posts by the number of votes they've received.
 
-Let's start by giving users a way to vote on posts. 
+Let's start by giving users a way to vote on posts.
 
 ### Data Model
 
-We'll store a list of upvoters on each post so we can know whether to show the upvote button to users, as well as to prevent people from voting twice. 
+We'll store a list of upvoters on each post so we can know whether to show the upvote button to users, as well as to prevent people from voting twice.
 
 <% note do %>
 
 ### Data Privacy & Publications
 
-We'll be publishing these lists of upvoters to all users, which will also automatically make that data publicly accessible via the browser console. 
+We'll be publishing these lists of upvoters to all users, which will also automatically make that data publicly accessible via the browser console.
 
-This is the kind of data privacy problem that can arise from the way collections work. For example, do we want people to be able to find out who has voted for their posts? In our case making that information publicly available won't really have any consequences, but it's important to at least acknowledge the issue. 
+This is the kind of data privacy problem that can arise from the way collections work. For example, do we want people to be able to find out who has voted for their posts? In our case making that information publicly available won't really have any consequences, but it's important to at least acknowledge the issue.
 
 <% end %>
 
@@ -36,7 +36,7 @@ We'll also denormalize the total number of upvoters on a post to make it easier 
 // Fixture data
 if (Posts.find().count() === 0) {
   var now = new Date().getTime();
-  
+
   // create two users
   var tomId = Meteor.users.insert({
     profile: { name: 'Tom Coleman' }
@@ -46,7 +46,7 @@ if (Posts.find().count() === 0) {
     profile: { name: 'Sacha Greif' }
   });
   var sacha = Meteor.users.findOne(sachaId);
-  
+
   var telescopeId = Posts.insert({
     title: 'Introducing Telescope',
     userId: sacha._id,
@@ -54,10 +54,10 @@ if (Posts.find().count() === 0) {
     url: 'http://sachagreif.com/introducing-telescope/',
     submitted: new Date(now - 7 * 3600 * 1000),
     commentsCount: 2,
-    upvoters: [], 
+    upvoters: [],
     votes: 0
   });
-  
+
   Comments.insert({
     postId: telescopeId,
     userId: tom._id,
@@ -65,7 +65,7 @@ if (Posts.find().count() === 0) {
     submitted: new Date(now - 5 * 3600 * 1000),
     body: 'Interesting project Sacha, can I get involved?'
   });
-  
+
   Comments.insert({
     postId: telescopeId,
     userId: sacha._id,
@@ -73,7 +73,7 @@ if (Posts.find().count() === 0) {
     submitted: new Date(now - 3 * 3600 * 1000),
     body: 'You sure can Tom!'
   });
-  
+
   Posts.insert({
     title: 'Meteor',
     userId: tom._id,
@@ -81,10 +81,10 @@ if (Posts.find().count() === 0) {
     url: 'http://meteor.com',
     submitted: new Date(now - 10 * 3600 * 1000),
     commentsCount: 0,
-    upvoters: [], 
+    upvoters: [],
     votes: 0
   });
-  
+
   Posts.insert({
     title: 'The Meteor Book',
     userId: tom._id,
@@ -92,10 +92,10 @@ if (Posts.find().count() === 0) {
     url: 'http://themeteorbook.com',
     submitted: new Date(now - 12 * 3600 * 1000),
     commentsCount: 0,
-    upvoters: [], 
+    upvoters: [],
     votes: 0
   });
-  
+
   for (var i = 0; i < 10; i++) {
     Posts.insert({
       title: 'Test post #' + i,
@@ -104,7 +104,7 @@ if (Posts.find().count() === 0) {
       url: 'http://google.com/?q=test-' + i,
       submitted: new Date(now - i * 3600 * 1000 + 1),
       commentsCount: 0,
-      upvoters: [], 
+      upvoters: [],
       votes: 0
     });
   }
@@ -128,11 +128,11 @@ if (postWithSameLink) {
 
 var user = Meteor.user();
 var post = _.extend(postAttributes, {
-  userId: user._id, 
-  author: user.username, 
+  userId: user._id,
+  author: user.username,
   submitted: new Date(),
   commentsCount: 0,
-  upvoters: [], 
+  upvoters: [],
   votes: 0
 });
 
@@ -197,18 +197,18 @@ Meteor.methods({
   post: function(postAttributes) {
     //...
   },
-  
+
   upvote: function(postId) {
     check(this.userId, String);
     check(postId, String);
-    
+
     var post = Posts.findOne(postId);
     if (!post)
       throw new Meteor.Error('invalid', 'Post not found');
-    
+
     if (_.include(post.upvoters, this.userId))
       throw new Meteor.Error('invalid', 'Already upvoted this post');
-    
+
     Posts.update(post._id, {
       $addToSet: {upvoters: this.userId},
       $inc: {votes: 1}
@@ -289,7 +289,7 @@ Template.registerHelper('pluralize', function(n, thing) {
   }
 });
 ~~~
-<%= caption "client/helpers/spacebars.js" %>
+<%= caption "client/helpers/handlebars.js" %>
 
 The helpers we've created before have been tied to the template they apply to. But by using `Template.registerHelper`, we've created a *global* helper that can be used within any template:
 
@@ -320,7 +320,7 @@ We should now see "1 vote".
 
 ### Smarter Voting Algorithm
 
-Our upvoting code is looking good, but we can still do better. In the upvote Method, we make two calls to Mongo: one to grab the post, then another to update it. 
+Our upvoting code is looking good, but we can still do better. In the upvote Method, we make two calls to Mongo: one to grab the post, then another to update it.
 
 There are two issues with this. Firstly, it's somewhat inefficient to go to the database twice. But more importantly, it introduces a race condition. We are following the following algorithm:
 
@@ -337,19 +337,19 @@ Meteor.methods({
   post: function(postAttributes) {
     //...
   },
-  
+
   upvote: function(postId) {
     check(this.userId, String);
     check(postId, String);
-    
+
     var affected = Posts.update({
-      _id: postId, 
+      _id: postId,
       upvoters: {$ne: this.userId}
     }, {
       $addToSet: {upvoters: this.userId},
       $inc: {votes: 1}
     });
-    
+
     if (! affected)
       throw new Meteor.Error('invalid', "You weren't able to upvote that post");
   }
@@ -379,11 +379,11 @@ Let's say you tried to cheat and send one of your posts to the top of the list b
 
 This brazen attempt at gaming the system would be caught by our `deny()` callback (in `collections/posts.js`, remember?) and immediately negated.
 
-But if you look carefully, you might be able to see latency compensation in action. It may be quick, but the post will briefly jump to the top of the list before shooting back into position. 
+But if you look carefully, you might be able to see latency compensation in action. It may be quick, but the post will briefly jump to the top of the list before shooting back into position.
 
-What's happened? In your local `Posts` collection, the `update` was applied without incident. This happens instantly, so the post shot to the top of the list. Meanwhile, on the server, the `update` was being denied. So some time later (measured in the milliseconds if you are running Meteor on your own machine), the server returned an error, telling the local collection to revert itself. 
+What's happened? In your local `Posts` collection, the `update` was applied without incident. This happens instantly, so the post shot to the top of the list. Meanwhile, on the server, the `update` was being denied. So some time later (measured in the milliseconds if you are running Meteor on your own machine), the server returned an error, telling the local collection to revert itself.
 
-The end result: while waiting for the server to respond, the user interface can't help but trust the local collection. As soon as the server comes back and denies the modification, the user interfaces adapts to reflect that. 
+The end result: while waiting for the server to respond, the user interface can't help but trust the local collection. As soon as the server comes back and denies the modification, the user interfaces adapts to reflect that.
 
 <% end %>
 
@@ -395,7 +395,7 @@ To start off, we'll want to have *two* subscriptions, one for each sort order. T
 
 We'll also create two new routes called `newPosts` and `bestPosts`, accessible at the URLs `/new` and `/best` respectively (along with `/new/5` and `/best/5` for our pagination, of course).
 
-To do this, we'll *extend* our `PostsListController` into two distinct `NewPostsListController` and `BestPostsListController` controllers. This will let us re-use the exact same route options for both the `home` and `newPosts` routes, by giving us a single `NewPostsListController` to inherit from. And additionally, it's just a nice illustration of how flexible Iron Router can be. 
+To do this, we'll *extend* our `PostsListController` into two distinct `NewPostsListController` and `BestPostsListController` controllers. This will let us re-use the exact same route options for both the `home` and `newPosts` routes, by giving us a single `NewPostsListController` to inherit from. And additionally, it's just a nice illustration of how flexible Iron Router can be.
 
 So let's replace the `{submitted: -1}` sort property in `PostsListController` by `this.sort`, which will be provided by `NewPostsListController` and `BestPostsListController`:
 
@@ -404,9 +404,9 @@ So let's replace the `{submitted: -1}` sort property in `PostsListController` by
 
 PostsListController = RouteController.extend({
   template: 'postsList',
-  increment: 5, 
-  postsLimit: function() { 
-    return parseInt(this.params.postsLimit) || this.increment; 
+  increment: 5,
+  postsLimit: function() {
+    return parseInt(this.params.postsLimit) || this.increment;
   },
   findOptions: function() {
     return {sort: this.sort, limit: this.postsLimit()};
@@ -453,7 +453,7 @@ Router.route('/best/:postsLimit?', {name: 'bestPosts'});
 <%= caption "lib/router.js" %>
 <%= highlight "10,23,27~55" %>
 
-Note that now that we have more than one route, we're taking the `nextPath` logic out of `PostsListController` and into `NewPostsController` and `BestPostsController`, since the path will be different in either case. 
+Note that now that we have more than one route, we're taking the `nextPath` logic out of `PostsListController` and into `NewPostsController` and `BestPostsController`, since the path will be different in either case.
 
 Additionally, when we sort by `votes`, we have a subsequent sorts by submitted timestamp and then `_id` to ensure that the ordering is completely specified.
 
@@ -512,7 +512,7 @@ And finally, we also need to update our post deleting event handler:
 ~~~html
   'click .delete': function(e) {
     e.preventDefault();
-    
+
     if (confirm("Delete this post?")) {
       var currentPostId = this._id;
       Posts.remove(currentPostId);
@@ -533,7 +533,7 @@ With all this done, we now gain a best posts list:
 
 Now that we have two post list pages, it can be hard to know just which list you're currently viewing. So let's revisit our header to make it more obvious. We'll create a `header.js` manager and create a helper that uses the current path and one or more named routes to set an active class on our navigation items:
 
-The reason why we want to support multiple named routes is that both our `home` and `newPosts` routes (which correspond to the `/` and `/new` URLs respectively) bring up the same template. Meaning that our `activeRouteClass` should be smart enough to make the `<li>` tag active in both cases. 
+The reason why we want to support multiple named routes is that both our `home` and `newPosts` routes (which correspond to the `/` and `/new` URLs respectively) bring up the same template. Meaning that our `activeRouteClass` should be smart enough to make the `<li>` tag active in both cases.
 
 ~~~html
 <template name="header">
@@ -579,11 +579,11 @@ Template.header.helpers({
   activeRouteClass: function(/* route names */) {
     var args = Array.prototype.slice.call(arguments, 0);
     args.pop();
-    
+
     var active = _.any(args, function(name) {
       return Router.current() && Router.current().route.getName() === name
     });
-    
+
     return active && 'active';
   }
 });
@@ -596,17 +596,17 @@ Template.header.helpers({
 
 ### Helper Arguments
 
-We haven't used that specific pattern up to now, but just like any other Spacebars tags, template helper tags can take arguments. 
+We haven't used that specific pattern up to now, but just like any other Spacebars tags, template helper tags can take arguments.
 
-And while you can of course pass specific named arguments to your function, you can also pass an unspecified number of anonymous parameters and retrieve them by calling the `arguments` object inside a function. 
+And while you can of course pass specific named arguments to your function, you can also pass an unspecified number of anonymous parameters and retrieve them by calling the `arguments` object inside a function.
 
 In this last case, you will probably want to convert the `arguments` object to a regular JavaScript array and then call `pop()` on it to get rid of the hash added at the end by Spacebars.
 
 <% end %>
 
-For each navigation item, the `activeRouteClass` helper takes a list of route names, and then uses Underscore's `any()` helper to see if any of the routes pass the test (i.e. their corresponding URL being equal to the current path). 
+For each navigation item, the `activeRouteClass` helper takes a list of route names, and then uses Underscore's `any()` helper to see if any of the routes pass the test (i.e. their corresponding URL being equal to the current path).
 
-If any of the routes do match up with the current path, `any()` will return `true`. Finally, we're taking advantage of the `boolean && string` JavaScript pattern where `false && myString` returns `false`, but `true && myString` returns `myString`. 
+If any of the routes do match up with the current path, `any()` will return `true`. Finally, we're taking advantage of the `boolean && string` JavaScript pattern where `false && myString` returns `false`, but `true && myString` returns `myString`.
 
 <%= commit "13-6", "Added active classes to the header." %>
 
