@@ -334,7 +334,7 @@ What if the same user voted for the post again in between steps 1 and 3? Our cur
 //...
 
 Meteor.methods({
-  post: function(postAttributes) {
+  postInsert: function(postAttributes) {
     //...
   },
 
@@ -505,7 +505,7 @@ We'll also add links in the header:
 </template>
 ~~~
 <%= caption "client/templates/includes/header.html" %>
-<%= highlight "11, 15~20" %>
+<%= highlight "10, 14~19" %>
 
 And finally, we also need to update our post deleting event handler:
 

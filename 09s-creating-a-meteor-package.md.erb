@@ -80,12 +80,12 @@ Template.meteorErrors.helpers({
   }
 });
 
-Template.meteorError.rendered = function() {
+Template.meteorError.onRendered(function() {
   var error = this.data;
   Meteor.setTimeout(function () {
     Errors.collection.remove(error._id);
   }, 3000);
-};
+});
 ~~~
 <%= caption "packages/tmeasday:errors/errors_list.js" %>
 
@@ -109,26 +109,41 @@ One other thing we need to do is to make some minor updates to use the correct A
 <%= caption "client/templates/application/layout.html" %>
 
 ~~~js
-Meteor.call('postInsert', post, function(error, result) {
-  if (error) {
-    // display the error to the user
-    Errors.throw(error.reason);
+//...
 
+Meteor.call('postInsert', post, function(error, result) {
+  // display the error to the user and abort
+  if (error)
+    return Errors.throw(error.reason);
+  
+  // show this result but route anyway
+  if (result.postExists)
+    Errors.throw('This link has already been posted');
+  
+  Router.go('postPage', {_id: result._id});  
+});
+
+//...
 ~~~
 <%= caption "client/templates/posts/post_submit.js" %>
+<%= highlight "6, 10" %>
 
 ~~~js
+//...
+
 Posts.update(currentPostId, {$set: postProperties}, function(error) {
   if (error) {
     // display the error to the user
     Errors.throw(error.reason);
-    
-  // show this result but route anyway
-  if (result.postExists)
-    Errors.throw('This link has already been posted');
+  } else {
+    Router.go('postPage', {_id: currentPostId});
+  }
+});
+
+//...
 ~~~
 <%= caption "client/templates/posts/post_edit.js" %>
-<%= highlight "4,8" %>
+<%= highlight "6" %>
 
 <%= scommit "9-5-1", "Created basic errors package and linked it in." %>
 
@@ -155,7 +170,7 @@ Tinytest.addAsync("Errors - template", function(test, done) {
   test.equal(Errors.collection.find({}).count(), 1);
   
   // render the template
-  UI.insert(UI.render(Template.meteorErrors), document.body);
+  Template.insert(Template.render(Template.meteorErrors), document.body);
   
   Meteor.setTimeout(function() {
     test.equal(Errors.collection.find({}).count(), 0);
@@ -165,7 +180,7 @@ Tinytest.addAsync("Errors - template", function(test, done) {
 ~~~
 <%= caption "packages/tmeasday:errors/errors_tests.js" %>
 
-In these tests we're checking the basic `Meteor.Errors` functions work, as well as double checking that the `rendered` code in the template is still functioning.
+In these tests we're checking the basic `Meteor.Errors` functions work, as well as double checking that the `onRendered` code in the template is still functioning.
 
 We won't cover the specifics of writing Meteor package tests here (as the API is not yet finalized and highly in flux), but hopefully it's fairly self explanatory how it works.
 

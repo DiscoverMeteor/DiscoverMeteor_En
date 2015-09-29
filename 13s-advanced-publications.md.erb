@@ -108,7 +108,7 @@ It would be difficult to accomplish this with an independent comments publicatio
 
 ~~~js
 Meteor.publish('topComments', function(topPostIds) {
-  return Comments.find({postId: topPostIds});
+  return Comments.find({postId: {$in: topPostIds}});
 });
 ~~~
 

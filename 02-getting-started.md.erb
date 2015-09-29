@@ -86,20 +86,45 @@ We will now use Meteor's package system to add the [Bootstrap](http://getbootstr
 
 This is no different from adding Bootstrap the usual way by manually including its CSS and JavaScript files, except that we rely on the package maintainer to keep everything up to date for us.
 
-While we're at it, we'll also add the [Underscore](http://underscorejs.org/) package. Underscore is a JavaScript utility library, and it's very useful when it comes to manipulating JavaScript data structures.
-
 The `bootstrap` package is maintained by the `twbs` user, which gives us the full name of the package, `twbs:bootstrap`. 
-
-On the other hand, the `underscore` package is part of the “official” Meteor packages that come bundled with the framework, so it doesn't have an author:
 
 ~~~bash
 meteor add twbs:bootstrap
-meteor add underscore
 ~~~
 
 Note that we're adding Bootstrap **3**. Some of the screenshots in this book were taken with an older version of Microscope running Bootstrap **2**, which means they might look slightly different.
 
-<%= commit "2-2", "Added bootstrap and underscore packages." %>
+This is a good time to check which packages we're running. It turns out that in addition to the one we just added, Meteor also comes with a few packages enabled out of the box. You can see the full list by opening the `versions` file inside the hidden `.meteor` directory: 
+
+```
+# Meteor packages used by this project, one per line.
+# Check this file (and the other files in this directory) into your repository.
+#
+# 'meteor add' and 'meteor remove' will edit this file for you,
+# but you can also edit it by hand.
+
+meteor-base             # Packages every Meteor app needs to have
+mobile-experience       # Packages for a great mobile UX
+mongo                   # The database Meteor supports right now
+blaze-html-templates    # Compile .html files into Meteor Blaze views
+session                 # Client-side reactive dictionary for your app
+jquery                  # Helpful client-side library
+tracker                 # Meteor's client-side reactive programming library
+
+standard-minifiers      # JS/CSS minifiers run for production mode
+es5-shim                # ECMAScript 5 compatibility for older browsers.
+ecmascript              # Enable ECMAScript2015+ syntax in app code
+
+autopublish             # Publish all data to the clients (for prototyping)
+insecure                # Allow all DB writes from clients (for prototyping)
+twbs:bootstrap
+```
+
+This might seem a bit overwhelming, but you don't need to worry about every single package right now. Just verify that our `twbs:boostrap` package was successfully added at the end of your package list. 
+
+Also, note that unlike `twbs:bootstrap`, the other packages don't have an `author:` part in their name, signaling the fact that these are official, core Meteor packages. 
+
+<%= commit "2-2", "Added bootstrap package." %>
 
 As soon as you've added the Bootstrap package you should notice a change in our bare-bones app:
 
@@ -113,11 +138,11 @@ Unlike the “traditional” way of including external assets, we haven't had to
 
 When speaking about packages in the context of Meteor, it pays to be specific. Meteor uses five basic types of packages:
 
-- The Meteor core itself is split into different **Meteor platform packages**. They are included with every Meteor app, and you will pretty much never need to worry about these.
-- Regular Meteor packages are known as “**isopacks**”, or isomorphic packages (meaning they can work both on client and server). **First-party packages** such as `accounts-ui` or `appcache` are maintained by the Meteor core team and [come bundled with Meteor](http://docs.meteor.com/#packages).
-- **Third-party packages** are just isopacks developed by other users that have been uploaded to Meteor's package server. You can browse them on [Atmosphere](http://atmosphere.meteor.com) or with the `meteor search` command.
-- **Local packages** are custom packages you can create yourself and put in the `/packages` directory.
-- **NPM packages** (Node.js Packaged Modules) are Node.js packages. Although they don't work out of the box with Meteor, they *can* be used by the previous types of packages.
+- The `meteor-base` package stands alone: it contains **Meteor's core components**, and a Meteor app can't run without it. 
+- **First-party packages** come bundled with Meteor. Some, such as `mongo` or `session`, are included with new Meteor apps by default but can be removed if you don't need them, while others (such as `check` or `http`) need to be added explicitly.
+- **Local packages** are specific to your app, and live in its local `/packages` directory. 
+- **Atmosphere packages** are custom, third-party packages that have been published to [Atmosphere](http://atmosphere.meteor.com), Meteor's online package repository. They all follow the `author:package` naming convention. 
+- Finally, **NPM packages** are Node.js packages. They can't be included in your Meteor package list directly, but instead can be imported and used from within a Meteor local or Atmosphere package. 
 
 <% end %>
 
