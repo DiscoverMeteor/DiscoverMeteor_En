@@ -345,7 +345,7 @@ We'll take advantage of this opportunity to add some security to our method by u
 
 This package lets you check any JavaScript object against a predefined pattern. In our case, we'll use it to check that the user calling the method is properly logged in (by making sure that `Meteor.userId()` is a `String`), and that the `postAttributes` object being passed as argument to the method contains `title` and `url` strings, so we don't end up entering any random piece of data into our database.  
 
-So let's define the `postInsert` method in our `collections/posts.js` file. We'll remove the `allow()` block from `posts.js` since Meteor Methods bypass them anyway. 
+So let's define the `postInsert` method in our `lib/collections/posts.js` file. We'll remove the `allow()` block from `posts.js` since Meteor Methods bypass them anyway. 
 
 We'll then `extend` the `postAttributes` object with three more properties: the user's `_id` and `username`, as well as the post's `submitted` timestamp.
 

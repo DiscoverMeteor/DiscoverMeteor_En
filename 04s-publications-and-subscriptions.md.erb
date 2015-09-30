@@ -47,7 +47,7 @@ An app's database can contain tens of thousands of documents, some of which migh
 
 So we'll need a way to tell Meteor which **subset** of data can be sent to the client, and we'll accomplish this through a **publication**.
 
-Let's go back to Microscope. Here are all of our app's posts sitting in the database:
+Let's go back and use Microscope as an example. Here are all of our app's posts sitting in the database:
 
 <%= diagram "collections-1", "All the posts contained in our database.", "pull-center" %>
 
@@ -67,6 +67,8 @@ Meteor.publish('posts', function() {
 ~~~
 
 This ensures there is **no possible way** that a client will be able to access a flagged post. This is exactly how you'd make a Meteor app secure: just ensure you're only publishing data you want the current client to have access to. 
+
+By the way, note that the code snippets contained in this chapter are only provided to illustrate the concepts covered here, and shouldn't be taken literally as part of Microscope's codebase. 
 
 <% note do %>
 
