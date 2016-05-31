@@ -83,10 +83,10 @@ Migrations.add({
 
 ### Running the Migration Locally
 
-We can run the migration locally by running the `migrate.sh` script included in the package:
+We can run the migration locally by opening up a Meteor shell (with `meteor shell`) and then running the following command:
 
-~~~bash
-packages/percolatestudio-migrations/migrate.sh latest
+~~~js
+Migrations.migrateTo('latest');
 ~~~
 
 ### Migrating On Production Systems

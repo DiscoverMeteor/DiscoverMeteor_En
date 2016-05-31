@@ -382,7 +382,7 @@ We're taking that path and adding it to the data context for our template, but *
 
 We know that `this.limit()` returns the current number of posts we'd like to show, which can either be the value in the current URL, or our default value (5) if the URL doesn't contain any parameter. 
 
-On the other hand, `this.posts` refers to the current cursor, so `this.posts.count()` refers to the number of posts that are actually in the cursor.
+On the other hand, `this.posts` refers to the current cursor, so `this.posts().count()` refers to the number of posts that are actually in the cursor.
 
 So what we're saying here is that if we ask for `n` posts and we get `n` back, we'll keep showing the “load more” button. But if we ask for `n` and we get *less* than `n` back, then it means we've hit the limit and we should stop showing that button. 
 

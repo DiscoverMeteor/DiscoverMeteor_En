@@ -19,6 +19,16 @@ On the other hand, we didn't really need to create new Methods for updating and 
 
 Using these callbacks lets us be more declarative about database modifications, and say what kind of updates can be used. The fact that they integrate with the accounts system is an added bonus.
 
+<% note do %>
+
+### Deprecating Allow & Deny
+
+We're keeping this chapter around for reference's sake, but it's important to note that the allow & deny approach is no longer officially recommended, mainly because it makes it very easy to introduce security failures in your code. 
+
+Meteor Methods are a much safer alternative.
+
+<% end %>
+
 ### Multiple callbacks
 
 We can define as many `allow` callbacks as required. We just need _at least one_ of them to return `true` for the given change that is happening. So when `Posts.insert` is called in a browser (no matter if it's from our app's client-side code or from the console), the server will in turn call whatever allowed-`insert` checks it can until it finds one that returns true. If it does not find any, it will not allow the insert, and will return a `403` error to the client.

@@ -14,6 +14,8 @@ note: NOT INCLUDED IN FREE/TRANSLATED VERSIONS
 
 In this chapter, we'll look at integrating [Intercom](http://intercom.io) into your Meteor app. Intercom bills itself as "a smarter way to do lifecycle marketing, customer development, newsletters, support", and is in effect a CRM (Customer Relationship Manager) for your app.
 
+**Note that Intercom's user interface may have changed since this chapter was first written. But hopefully you'll still be able to make sense of our instructions.**
+
 What this means is that Intercom provides you with a dashboard listing all your users, and lets you message each of them, either automatically or manually. But the best part is that you can pick how your users will actually receive that message: either in their email inbox, or as a notification within your web app the next time they log on.
 
 <%= screenshot "15-1", "The Intercom dashboard." %>
@@ -34,7 +36,7 @@ Compared with what we'll be covering here, the package handles a few other edge 
 
 As soon as you click "Start Using Intercom", Intercom will provide you with its code snippet without even asking for an email or password. 
 
-This code snippet is made of two distinct `<script>` tags: an app-specific block where you'll configure Intercom's settings, and a second generic part that will actually load in the Intercom script. 
+This code snippet is made of two distinct `<script>...</script>` blocks: an app-specific block where you'll configure Intercom's settings, and a second generic part that will actually load in the Intercom script. 
 
 A lot of the time, Meteor makes traditionally complex operations very easy to do. But the other side of the coin is that it can also make seemingly simple things more complicated!
 
@@ -62,8 +64,17 @@ We'll then create a new `intercom_loader.js` file and copy-paste the Intercom co
 We'll get rid of the configuration block, since we're going to set all those properties from within our app, and we'll also get rid of the `<script>` tags since we're already inside a JavaScript file. Here's the result:
 
 ~~~js
-(function(){var w=window;var ic=w.Intercom;if(typeof ic==="function"){ic('reattach_activator');ic('update',intercomSettings);}else{var d=document;var i=function(){i.c(arguments)};i.q=[];i.c=function(args){i.q.push(args)};w.Intercom=i;function l(){var s=d.createElement('script');s.type='text/javascript';s.async=true;s.src='https://static.intercomcdn.com/intercom.v1.js';var x=d.getElementsByTagName('script')[0];x.parentNode.insertBefore(s,x);}if(w.attachEvent){w.attachEvent('onload',l);}else{w.addEventListener('load',l,false);}};})()
+(function(){var w=window;var ic=w.Intercom;if(typeof ic==="function")
+{ic('reattach_activator');ic('update',intercomSettings);}else{va
+r d=document;var i=function(){i.c(arguments)};i.q=
+[];i.c=function(args){i.q.push(args)};w.Intercom=i;function l()
+{var s=d.createElement('script');s.type='text/javascript';s.async=tr
+ue;s.src='https://widget.intercom.io/widget/APP_ID';var x=d.getElementsByTagName('script')[0];x.parentNode.insertBefore(s,x);}if(w.attachEvent){w.attachEvent('onload',l);}else{w.addEventListener('load',l,fa
+lse);}}})()
 ~~~
+
+Don't forget to replace `APP_ID` with your actual Intercom app ID. 
+
 <%= caption "packages/intercom/intercom_loader.js" %>
 
 That's it for our (very simple) package. You can now let Meteor know we'd like to use it by adding it to your app with:
@@ -75,14 +86,12 @@ meteor add intercom
 Now let's finish our integration by implementing the settings block. At this stage we just want to make sure that everything is working so we won't even bother with custom data yet. We'll simply take the dummy code provided by Intercom and stick it in our `main.js` file:
 
 ~~~js
-window.intercomSettings = {
-  // TODO: The current logged in user's full name
-  name: "John Doe",
-  // TODO: The current logged in user's email address.
-  email: "john.doe@example.com",
-  // TODO: The current logged in user's sign-up date as a Unix timestamp.
-  created_at: 1234567890,
-  app_id: "4na10aq1"
+window.intercomSettings = { 
+  app_id: 'APP_ID', 
+  email: 'john.doe@example.com', // Replace with email of current user 
+  user_id: '9876', // Optional: Replace with a unique identifier that will not change 
+  created_at: 1234567890, // Replace with Unix timestamp of signup date  
+  name: 'John Doe' // Optional: Replace with real name if available
 };
 ~~~
 <%= caption "client/main.js" %>
@@ -223,7 +232,7 @@ Package.onUse(function (api) {
 
 Armed with our super-secret cryptographic hashing algorithm, we can now write our user creation hook. What we are aiming to do is ensure that users have a secret `intercomHash` field that we can send to Intercom. 
 
-First, create a new `accounts.js` file inside the `server` directory. Don't forget to replace `123456789` with the secure string provided by Intercom, which you can get by opening your Intercom dashboard, going to “Settings for AppName”, then “Secure Mode”. 
+First, create a new `accounts.js` file inside the `server` directory. Don't forget to replace `123456789` with the secure string provided by Intercom, which you can get by opening your Intercom dashboard, going to “Integrations for AppName”, then “Secure Mode”. 
 
 ~~~js
 Accounts.onCreateUser(function(options, user) {
@@ -277,7 +286,7 @@ Tracker.autorun(function(){
 });
 ~~~
 <%= caption "client/main.js" %>
-<%= highlight "7~8" %>
+<%= highlight "8~9" %>
 
 <%= commit "17-3", "Enabling secure mode." %>
 

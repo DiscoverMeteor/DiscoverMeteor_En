@@ -23,7 +23,8 @@ First we need to create some structure for our package to reside in. We can use 
 Package.describe({
   name: "tmeasday:errors",
   summary: "A pattern to display application errors to the user",
-  version: "1.0.0"
+  version: "1.0.0",
+  documentation: null
 });
 
 Package.onUse(function (api, where) {
@@ -170,7 +171,7 @@ Tinytest.addAsync("Errors - template", function(test, done) {
   test.equal(Errors.collection.find({}).count(), 1);
   
   // render the template
-  Template.insert(Template.render(Template.meteorErrors), document.body);
+  Blaze.insert(Blaze.render(Template.meteorErrors), document.body);
   
   Meteor.setTimeout(function() {
     test.equal(Errors.collection.find({}).count(), 0);
@@ -189,7 +190,7 @@ To tell Meteor how to run the tests in `package.js`, use the following code:
 ~~~js
 Package.onTest(function(api) {
   api.use('tmeasday:errors', 'client');
-  api.use(['tinytest', 'test-helpers'], 'client');  
+  api.use(['templating', 'tinytest', 'test-helpers'], 'client');  
   
   api.addFiles('errors_tests.js', 'client');
 });

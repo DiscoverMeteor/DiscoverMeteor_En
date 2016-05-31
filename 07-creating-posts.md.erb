@@ -68,7 +68,7 @@ With that route defined, we can now add a link to our submit page in our header:
 </template>
 ~~~
 <%= caption "client/templates/includes/header.html" %>
-<%= highlight "13~15" %>
+<%= highlight "14~16" %>
 
 Setting up our route means that if a user browses to the `/submit` URL, Meteor will display the `postSubmit` template. So let's write that template:
 
@@ -335,7 +335,17 @@ Template.postSubmit.events({
 
 The `Meteor.call` function calls a Method named by its first argument. You can provide arguments to the call (in this case, the `post` object we constructed from the form), and finally attach a callback, which will execute when the server-side Method is done. 
 
-Meteor method callbacks always have two arguments, `error` and `result`. If for whatever reason the `error` argument exists, we'll alert the user (using `return` to abort the callback). If everything's working as it should, we'll redirect the user to the freshly created post's discussion page.
+Meteor method callbacks always have two arguments, `error` and `result`. If for whatever reason the `error` argument exists, we'll alert the user (using `return` to abort the callback). If everything is working as it should, we'll redirect the user to the freshly created post's discussion page.
+
+<% node do %>
+
+### Methods & Security
+
+It's often good practice to share a method's code on both client and server, in order to enable latency compensation (also known as optimistic updates – see next chapter).
+
+You might think sharing server code on the client is a bad idea, but in fact there's no security risk, since even if the method's code was somehow tampered with on the client, the client part of the method will only ever affect the in-client copy of the database, not the actual, server-side database. Moreover, any discrepancies that may arise will get automatically corrected by Meteor from the "real", server-side db.
+
+<% end %>
 
 ### Security Check
 

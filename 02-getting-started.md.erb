@@ -42,13 +42,18 @@ Now that we have installed Meteor, let's create an app. To do this, we use Meteo
 meteor create microscope
 ~~~
 
-This command will download Meteor, and set up a basic, ready to use Meteor project for you. When it's done, you should see a directory, `microscope/`, containing the following:
+This command will download Meteor, and set up a basic, ready to use Meteor project for you. When it's done, you should see a directory, `microscope/`, containing the following directories and files:
 
 ~~~bash
 .meteor
-microscope.css
-microscope.html
-microscope.js
+client
+| main.css
+| main.html
+| main.js
+server
+| main.js
+.gitignore
+package.json
 ~~~
 
 The app that Meteor has created for you is a simple boilerplate application demonstrating a few simple patterns.
@@ -76,7 +81,7 @@ Also note that if you're using Git, this is a good time to initialize your repo 
 
 There was a time where Meteor relied on an external package manager called Meteorite. Since Meteor version 0.9.0, Meteorite is not needed anymore since its features have been assimilated into Meteor itself.
 
-So if you encounter any references to Meteorite's `mrt` command line utility throughout this book or while browsing Meteor-related material, you can safely replace them by the usual `meteor`.
+So if you encounter any references to Meteorite's `mrt` command line utility while browsing Meteor-related material, you can safely replace them by the usual `meteor`.
 
 <% end %>
 
@@ -94,7 +99,15 @@ meteor add twbs:bootstrap
 
 Note that we're adding Bootstrap **3**. Some of the screenshots in this book were taken with an older version of Microscope running Bootstrap **2**, which means they might look slightly different.
 
-This is a good time to check which packages we're running. It turns out that in addition to the one we just added, Meteor also comes with a few packages enabled out of the box. You can see the full list by opening the `versions` file inside the hidden `.meteor` directory: 
+We'll also add the [Session](http://docs.meteor.com/#/full/session) package, which will come in handy later:
+
+~~~bash
+meteor add session
+~~~
+
+Although Session is a first-party Meteor package, it's not enabled by default in new Meteor apps so we need to add it manually. 
+
+This is a good time to check which packages we're running. It turns out that in addition to the one we just added, Meteor also comes with a few packages enabled out of the box. You can see the list by opening the `packages` file inside the hidden `.meteor` directory: 
 
 ```
 # Meteor packages used by this project, one per line.
@@ -107,20 +120,23 @@ meteor-base             # Packages every Meteor app needs to have
 mobile-experience       # Packages for a great mobile UX
 mongo                   # The database Meteor supports right now
 blaze-html-templates    # Compile .html files into Meteor Blaze views
-session                 # Client-side reactive dictionary for your app
+reactive-var            # Reactive variable for tracker
 jquery                  # Helpful client-side library
 tracker                 # Meteor's client-side reactive programming library
 
-standard-minifiers      # JS/CSS minifiers run for production mode
+standard-minifier-css   # CSS minifier run for production mode
+standard-minifier-js    # JS minifier run for production mode
 es5-shim                # ECMAScript 5 compatibility for older browsers.
 ecmascript              # Enable ECMAScript2015+ syntax in app code
 
 autopublish             # Publish all data to the clients (for prototyping)
 insecure                # Allow all DB writes from clients (for prototyping)
+
+session
 twbs:bootstrap
 ```
 
-This might seem a bit overwhelming, but you don't need to worry about every single package right now. Just verify that our `twbs:boostrap` package was successfully added at the end of your package list. 
+This might seem a bit overwhelming, but you don't need to worry about every single package right now. Just verify that our `twbs:bootstrap` package was successfully added at the end of your package list. 
 
 Also, note that unlike `twbs:bootstrap`, the other packages don't have an `author:` part in their name, signaling the fact that these are official, core Meteor packages. 
 
@@ -132,6 +148,31 @@ As soon as you've added the Bootstrap package you should notice a change in our 
 
 Unlike the “traditional” way of including external assets, we haven't had to link up any CSS or JavaScript files, because Meteor takes care of all that for us! That's just one of the many advantages of Meteor packages.
 
+### NPM Packages
+
+While we're on the subject of packages, you'll notice we also have a `package.json` file in our repository:
+
+~~~js
+{
+  "name": "microscope",
+  "private": true,
+  "scripts": {
+    "start": "meteor run"
+  },
+  "dependencies": {
+    "meteor-node-stubs": "~0.2.0"
+  }
+}
+~~~
+
+This file is used to tell NPM (Node's package manager) what to do, just like the `.meteor/packages` file tells Meteor which packages to run. One key difference between both packages system though is that unlike Meteor, NPM doesn't automatically parse an app's `package.json` file. So you'll have to do it manually every time you add or remove an NPM package. 
+
+Let's do it right now with: 
+
+~~~bash
+npm install
+~~~
+
 <% note do %>
 
 ### A Note on Packages
@@ -142,17 +183,17 @@ When speaking about packages in the context of Meteor, it pays to be specific. M
 - **First-party packages** come bundled with Meteor. Some, such as `mongo` or `session`, are included with new Meteor apps by default but can be removed if you don't need them, while others (such as `check` or `http`) need to be added explicitly.
 - **Local packages** are specific to your app, and live in its local `/packages` directory. 
 - **Atmosphere packages** are custom, third-party packages that have been published to [Atmosphere](http://atmosphere.meteor.com), Meteor's online package repository. They all follow the `author:package` naming convention. 
-- Finally, **NPM packages** are Node.js packages. They can't be included in your Meteor package list directly, but instead can be imported and used from within a Meteor local or Atmosphere package. 
+- Finally, **NPM packages** are Node.js packages. They can't be included in your Meteor package list, but instead are listed in your app's `package.json` file. 
 
 <% end %>
 
 ### The File Structure of a Meteor App
 
-Before we begin coding, we must set up our project properly. To ensure we have a clean build, open up the `microscope` directory and delete `microscope.html`, `microscope.js`, and `microscope.css`.
+Before we begin coding, we must set up our project properly. To ensure we have a clean build, open up the `client` and `server` directory and delete the contents of `client/main.html`, `client/main.js`. Then go ahead and delete `server/main.js` entirely.
 
-Next, create four root directories inside `/microscope`: `/client`, `/server`, `/public`, and `/lib`.
+Next, create two new root directories inside `/microscope`: `/public`, and `/lib`.
 
-Next, we'll also create empty `main.html` and `main.js` files inside `/client`. Don't worry if this breaks the app for now, we'll start filling in these files in the next chapter.
+Don't worry if all this breaks the app for now, we'll start filling in these files in the next chapter.
 
 We should mention that some of these directories are special. When it comes to running code, Meteor has a few rules:
 
@@ -367,7 +408,7 @@ body {
   pointer-events: auto;
 }
 ~~~
-<%= caption "client/stylesheets/style.css" %>
+<%= caption "client/main.css" %>
 
 <%= commit "2-3","Re-arranged file structure." %>
 
