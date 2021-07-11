@@ -194,7 +194,7 @@ The `domain` helper takes a URL and returns its domain via a bit of JavaScript m
 
 To answer that question we need to go back to our `posts_list.html` template. The `{{#each}}` block helper not only iterates over our array, it also **sets the value of `this` inside the block to the iterated object**. 
 
-This means that between both `{{#each}}` tags, each post is assigned to `this` successively, and that extends all the way inside the included template's manager (`post_item.js`). 
+This means that between both `{{#each}}` tags, each post is assigned to `this` successively, and that extends all the way inside the included template's helper (`post_item.js`). 
 
 We now understand why `this.url` returns the current post's URL. And moreover, if we use `{{title}}` and `{{url}}` inside our `post_item.html` template, Meteor knows that we mean `this.title` and `this.url` and returns the correct values. 
 
